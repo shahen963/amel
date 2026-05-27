@@ -808,36 +808,7 @@
             <i class="fas fa-phone-alt" id="call-driver-btn" style="color:var(--gold); font-size: 18px; cursor: pointer;"></i>
         </div>
         <!-- ===== خريطة تتبع المندوب الحي للعميل ===== -->
-        <div id="client-live-tracking-card" style="display:none; margin-bottom:8px; border-radius:14px; overflow:hidden; border:1px solid rgba(52,152,219,0.5);">
-            <div style="background:linear-gradient(135deg,rgba(52,152,219,0.2),rgba(0,0,0,0.6)); padding:8px 12px; display:flex; justify-content:space-between; align-items:center;">
-                <div>
-                    <b style="color:#3498db; font-size:12px;"><i class="fas fa-satellite"></i> موقع الصقر مباشر 🦅</b>
-                    <div id="client-driver-status-text" style="font-size:9px; color:#aaa; margin-top:2px;">جاري التحديث...</div>
-                </div>
-                <div style="text-align:center;">
-                    <div style="font-size:9px; color:#aaa;">الوصول خلال</div>
-                    <div id="client-eta-display" style="font-size:18px; font-weight:bold; color:#2ecc71;">---</div>
-                    <div style="font-size:9px; color:#aaa;">دقيقة</div>
-                </div>
-            </div>
-            <!-- خريطة الليفليت -->
-            <div id="client-tracking-map" style="height:180px; width:100%;"></div>
-            <!-- بطاقة معلومات صغيرة -->
-            <div style="background:rgba(0,0,0,0.6); padding:8px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:4px; text-align:center;">
-                <div>
-                    <div style="font-size:8px; color:#aaa;">📏 المسافة</div>
-                    <div id="client-dist-display" style="font-size:11px; color:var(--gold); font-weight:bold;">---</div>
-                </div>
-                <div>
-                    <div style="font-size:8px; color:#aaa;">🏎️ السرعة</div>
-                    <div id="client-speed-display" style="font-size:11px; color:#8e44ad; font-weight:bold;">---</div>
-                </div>
-                <div>
-                    <div style="font-size:8px; color:#aaa;">📡 الحالة</div>
-                    <div id="client-moving-badge" style="font-size:10px; color:#2ecc71; font-weight:bold;">---</div>
-                </div>
-            </div>
-        </div>
+        <!-- [DEL-TRACK] نظام تتبع المندوب الحي - محذوف -->
         <!-- ===== نهاية خريطة التتبع ===== -->
         <div id="chat-box" style="flex:1; display:flex; flex-direction:column; overflow-y:auto; padding:8px; background: rgba(0,0,0,0.1); border-radius: 12px; position: relative;">
         </div>
@@ -937,12 +908,14 @@
             <a href="https://www.instagram.com/shahe_enexpress?igsh=MWNhYjZqam8wOHEzMg%3D%3D&utm_source=qr" target="_blank" style="text-decoration: none;">
                 <i class="fab fa-instagram" style="color: #e4405f; font-size: 30px;"></i>
             </a>
-            <!-- ===== أيقونة التواصل مع الإدارة عبر تيليجرام ===== -->
-            <a id="admin-telegram-social-btn" href="#" target="_blank" style="text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px;">
-                <i class="fab fa-telegram" style="color: #2ca5e0; font-size: 30px;"></i>
-                <span style="font-size: 8px; color: #2ca5e0;">التواصل مع الإدارة</span>
-            </a>
-            <!-- ===== نهاية أيقونة التواصل مع الإدارة ===== -->
+            <!-- ===== FIX-TG-CLIENT-2: أيقونة التواصل مع الإدارة عبر تيليجرام ===== -->
+            <div id="admin-telegram-social-btn"
+                onclick="_openTelegram('admin')"
+                style="text-decoration:none; display:flex; flex-direction:column; align-items:center; gap:3px; cursor:pointer;">
+                <i class="fab fa-telegram" style="color:#2ca5e0; font-size:30px;"></i>
+                <span style="font-size:8px; color:#2ca5e0;">التواصل مع الإدارة</span>
+            </div>
+            <!-- ===== نهاية FIX-TG-CLIENT-2 ===== -->
         </div>
         
         <h3 style="color:var(--gold); font-size: 13px; margin-top: 8px;">تحديد موقعي الدقيق 📍</h3>
@@ -956,11 +929,10 @@
         <button class="btn-gold" style="background:#e74c3c; color:white; margin-top:auto; font-size: 12px;" onclick="logout()">تسجيل خروج من طلبات الشاهين</button>
         <!-- ===== زر قناة التليجرام للمندوبين ===== -->
         <div style="display:flex; gap:8px; margin-top: 10px;">
-            <a id="driver-telegram-channel-btn" href="#" target="_blank" style="flex:1; text-decoration:none;">
-                <button class="btn-gold" style="width:100%; background:linear-gradient(135deg,#1c7bd6,#2ca5e0); color:#fff; font-size:12px; padding:10px; display:flex; align-items:center; justify-content:center; gap:8px; border:none; border-radius:10px; cursor:pointer;">
-                    <i class="fab fa-telegram" style="font-size:16px;"></i> قناة التليجرام 📢
-                </button>
-            </a>
+            <!-- تم استبدال button داخل a بـ div لتجنب invalid HTML -->
+            <div id="driver-telegram-channel-btn" onclick="_openTelegram('channel')" style="flex:1; background:linear-gradient(135deg,#1c7bd6,#2ca5e0); color:#fff; font-size:12px; padding:10px; display:flex; align-items:center; justify-content:center; gap:8px; border:none; border-radius:10px; cursor:pointer; text-decoration:none;">
+                <i class="fab fa-telegram" style="font-size:16px;"></i> قناة التليجرام 📢
+            </div>
         </div>
         <!-- ===== نهاية زر قناة التليجرام ===== -->
     </div>
@@ -1049,10 +1021,15 @@
         localStorage.removeItem('shahen_user');
         currentUser = null;
     }
+    // ===== FIX-LOC-INIT: استعادة موقع المستخدم المحفوظ مسبقاً =====
+    let userLoc = { lat: 35.1318, lng: 36.7578 }; // موقع افتراضي
+    if (currentUser && currentUser.lat && currentUser.lng) {
+        userLoc = { lat: currentUser.lat, lng: currentUser.lng };
+    }
     let data = getStorage('cached_restaurants'); 
     let pharmacyData = getStorage('cached_pharmacies'); 
     let cart = [], currentResId = null, orderHistory = getStorage('shahen_local_history'), cancelInterval = null, isLoginMode = true;
-    let currentOrderKey = localStorage.getItem('shahen_active_order_id'), userLoc = { lat: 35.1318, lng: 36.7578 }; 
+    let currentOrderKey = localStorage.getItem('shahen_active_order_id'); 
     let profileMap = null, mapMarker = null, mapPickup = null, mapDropoff = null, markerPickup = null, markerDropoff = null;
     let pickupLoc = {lat:0, lng:0}, dropoffLoc = {lat:0, lng:0}, historyTab = 'active', currentRating = 0, lastStatusNotified = ""; 
     let discountAmount = 0, appliedCoupon = "", paymentMethod = 'cash', pointsDiscountUsed = 0;
@@ -1427,10 +1404,20 @@
             updatePromoBar(config.news_text);
             // ===== تحميل رابط قناة تيليجرام المناديب من الإعدادات =====
             if (config.driver_telegram_channel) {
+                // حفظ الرابط في _tgLinks للفتح الموثوق
+                _tgLinks.admin   = config.driver_telegram_channel;
+                _tgLinks.channel = config.driver_telegram_channel;
+                // الاحتفاظ بـ href للتوافق
                 const tgBtnSocial = document.getElementById('admin-telegram-social-btn');
-                const tgBtnChannel = document.getElementById('driver-telegram-channel-btn');
                 if (tgBtnSocial) tgBtnSocial.href = config.driver_telegram_channel;
-                if (tgBtnChannel) tgBtnChannel.href = config.driver_telegram_channel;
+                // [FIX-TG-6] عرض إشعار للمستخدم الجديد لدعوته للقناة
+                const _tgShownKey = 'tg_invite_shown_' + (currentUser ? currentUser.uid : 'guest');
+                if (!localStorage.getItem(_tgShownKey)) {
+                    localStorage.setItem(_tgShownKey, '1');
+                    setTimeout(() => {
+                        showNotify('📢 انضم لقناة شاهين على تيليجرام للأخبار والعروض!', 'info');
+                    }, 4000);
+                }
             }
             // ===== نهاية تحميل رابط تيليجرام =====
         }
@@ -1445,10 +1432,11 @@
             if(payload.new.bonus_points) pointsConfig.bonusPoints = payload.new.bonus_points;
             // ===== تحديث رابط تيليجرام المناديب لحظياً =====
             if(payload.new.driver_telegram_channel) {
+                _tgLinks.admin   = payload.new.driver_telegram_channel;
+                _tgLinks.channel = payload.new.driver_telegram_channel;
                 const tgBtnSocial = document.getElementById('admin-telegram-social-btn');
-                const tgBtnChannel = document.getElementById('driver-telegram-channel-btn');
                 if (tgBtnSocial) tgBtnSocial.href = payload.new.driver_telegram_channel;
-                if (tgBtnChannel) tgBtnChannel.href = payload.new.driver_telegram_channel;
+                // [FIX-TG-6b] تحديث الروابط فور تغييرها من الإدارة
             }
             // ===== نهاية تحديث تيليجرام =====
         }).subscribe();
@@ -1462,6 +1450,12 @@
             currentUser.address = dbUser.address;
             currentUser.name = dbUser.name;
             currentUser.phone = dbUser.phone;
+            // ===== FIX-LOC-3: استعادة الإحداثيات المحفوظة من قاعدة البيانات =====
+            if(dbUser.lat && dbUser.lng) {
+                currentUser.lat = dbUser.lat;
+                currentUser.lng = dbUser.lng;
+                userLoc = { lat: dbUser.lat, lng: dbUser.lng };
+            }
             localStorage.setItem('shahen_user', JSON.stringify(currentUser));
         }
 
@@ -2138,9 +2132,13 @@
             if(markerDropoff) mapDropoff.removeLayer(markerDropoff);
             markerDropoff = L.marker(finalLoc).addTo(mapDropoff);
         } else if(activeMapType === 'profile') {
-            userLoc = finalLoc;
+            userLoc = { lat: finalLoc.lat, lng: finalLoc.lng };
             document.getElementById('my-address').innerText = areaName;
             currentUser.address = areaName;
+            // ===== FIX-LOC-1: حفظ الإحداثيات الحقيقية في كائن المستخدم =====
+            currentUser.lat = finalLoc.lat;
+            currentUser.lng = finalLoc.lng;
+            localStorage.setItem('shahen_user', JSON.stringify(currentUser));
             if(profileMap) {
                 profileMap.setView(finalLoc, 15);
                 if(mapMarker) profileMap.removeLayer(mapMarker);
@@ -2426,7 +2424,18 @@
     }
     // ===== نهاية دوال طريقة دفع رسوم الاستشارة =====
 
+    let _medConsultPending = false; // [FIX-C2]
     async function submitMedicalConsult() {
+        if (_medConsultPending) return;
+        _medConsultPending = true;
+        const _mcBtn = document.querySelector('[onclick="submitMedicalConsult()"]');
+        if (_mcBtn) { _mcBtn.disabled = true; _mcBtn.innerText = 'جاري الإرسال...'; }
+        try { await _submitMedicalConsult_inner(); } finally {
+            _medConsultPending = false;
+            if (_mcBtn) { _mcBtn.disabled = false; _mcBtn.innerText = 'أوافق وأطلب الآن 🚀'; }
+        }
+    }
+    async function _submitMedicalConsult_inner() {
         const ph = pharmacyData.find(p => String(p.id) === String(selectedPharmacyId));
         if (!ph) { showNotify("عذراً، لم يتم العثور على بيانات الصيدلية", "error"); return; }
         
@@ -2485,8 +2494,8 @@
             res_type: 'pharmacy',
             restaurant_note: "طلب استشارة طبية" + (_consultFee > 0 ? ` | رسوم استشارة: ${_consultFee.toLocaleString()} ل.س (${_consultPayByPoints ? 'نقاط شاهين' : 'كاش'})` : ' مجانية'),
             created_at: new Date().toISOString(),
-            lat: userLoc.lat,
-            lng: userLoc.lng,
+            lat: (currentUser && currentUser.lat) ? currentUser.lat : userLoc.lat,
+            lng: (currentUser && currentUser.lng) ? currentUser.lng : userLoc.lng,
             is_consultation: true
         };
 
@@ -2746,7 +2755,7 @@
                             ${extrasHtml}
                             <div class="item-price">${(item.p || 0).toLocaleString()} ل.س</div>
                         </div>
-                        <button class="add-btn" onclick="addToCart('${_currentMenuRes?.id}','${item.n.replace(/'/g,"\\'")}',${item.p || 0},'${item.img||''}')">+</button>
+                        <button class="add-btn" onclick="addToCart('${_currentMenuRes?.id}','${item.n.replace(/'/g, "\\'")}',${item.p || 0})">+</button>
                     `;
                     block.appendChild(card);
                 });
@@ -2801,7 +2810,7 @@
         _customOrderResId = resId;
         _customOrderResName = resName;
         _customOrderResType = resType || 'specialty';
-        console.log('[CLIENT] startStoreConsult - id:', resId, '| name:', resName, '| type:', resType);
+        // [FIX-SEC-2b] console.log محذوف في الإنتاج
         // ===== تحقق إضافي: هل التواصل المباشر مفعّل من الإدارة؟ =====
         const resObj = _currentMenuRes || (typeof data !== 'undefined' ? data.find(r => String(r.id) === String(resId)) : null);
         if (resObj && resObj.is_direct_contact !== true) {
@@ -2827,7 +2836,18 @@
     let _spAgreedAmount = 0;
 
     // submitStoreConsult - مطابق تماماً لـ submitMedicalConsult في نظام الصيدلية
+    let _storeConsultPending = false; // [FIX-C4]
     async function submitStoreConsult() {
+        if (_storeConsultPending) return;
+        _storeConsultPending = true;
+        const _scBtn = document.querySelector('[onclick="submitStoreConsult()"]');
+        if (_scBtn) { _scBtn.disabled = true; _scBtn.innerText = 'جاري الإرسال...'; }
+        try { await _submitStoreConsult_inner(); } finally {
+            _storeConsultPending = false;
+            if (_scBtn) { _scBtn.disabled = false; _scBtn.innerText = 'بدء التواصل 🦅'; }
+        }
+    }
+    async function _submitStoreConsult_inner() {
         if (!currentUser) return showNotify('يرجى تسجيل الدخول أولاً', 'error');
         if (!_customOrderResName) return showNotify('خطأ: لم يتم تحديد المتجر', 'error');
 
@@ -2853,14 +2873,14 @@
             res_type: 'specialty',
             specialty_type: _customOrderResType || 'other',
             created_at: new Date().toISOString(),
-            lat: userLoc.lat,
-            lng: userLoc.lng,
+            lat: (currentUser && currentUser.lat) ? currentUser.lat : userLoc.lat,
+            lng: (currentUser && currentUser.lng) ? currentUser.lng : userLoc.lng,
             is_consultation: true
         };
 
-        console.log('[CLIENT] inserting order:', storeOrderData);
+        // [FIX-SEC-2] تم إزالة console.log في بيئة الإنتاج
         const { error } = await _supabase.from('sh_public_orders').insert([storeOrderData]);
-        if (error) console.error('[CLIENT] insert error:', error);
+        // [FIX-SEC-2] تم إزالة console.error في بيئة الإنتاج
 
         if (!error) {
             // حفظ محلي - نفس نظام الصيدلية
@@ -2946,7 +2966,17 @@
                     document.getElementById('sp-chat-status-bar').innerText = '✅ المتجر رد على طلبك';
 
                 }
-            }).subscribe();
+            }).subscribe((status, err) => {
+                // [FIX-CHAT-3a] إعادة الاتصال عند انقطاع قناة الدردشة
+                if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+                    if (_spChatOrderId) {
+                        setTimeout(() => {
+                            if (_spChatChannel) { try { _supabase.removeChannel(_spChatChannel); } catch(e){} _spChatChannel = null; }
+                            openSpecialtyChat(_spChatOrderId, document.getElementById('sp-chat-title') ? document.getElementById('sp-chat-title').innerText : '', '');
+                        }, 3000);
+                    }
+                }
+            });
 
         // Polling احتياطي كل 3 ثواني
         if (_spPollInterval) clearInterval(_spPollInterval);
@@ -2993,17 +3023,19 @@
                     clearInterval(_spPollInterval);
                 }
             }
-        }, 8000);
+        }, 4000); // [FIX-POLL-4a] تقليل polling من 8 لـ 4 ثواني لاستجابة أسرع
 
         // الاستماع لتغيير حالة الطلب
         listenConsultStatusOnly(orderId);
     }
 
     // إرسال رسالة من العميل
+    let _spMsgPending = false; // [FIX-C6]
     async function sendSpecialtyMsg() {
         const inp = document.getElementById('sp-chat-input');
         const text = inp.value.trim();
-        if (!text || !_spChatOrderId) return;
+        if (!text || !_spChatOrderId || _spMsgPending) return;
+        _spMsgPending = true;
         inp.value = '';
         _appendSpMsg(text, 'out', new Date().toISOString());
         _spScrollBottom();
@@ -3011,6 +3043,7 @@
             order_id: _spChatOrderId, sender: 'client', message: text
         }).select().single();
         if (saved) _spMsgIds.add(saved.id);
+        _spMsgPending = false; // [FIX-C6] reset
     }
 
     // إضافة رسالة للواجهة
@@ -3019,7 +3052,15 @@
         const timeStr = time ? new Date(time).toLocaleTimeString('ar-SA', {hour:'2-digit', minute:'2-digit'}) : '';
         const wrap = document.createElement('div');
         wrap.className = 'sp-msg-wrap ' + dir;
-        wrap.innerHTML = `<div class="sp-msg ${dir}">${text}</div><div class="sp-msg-time">${timeStr}</div>`;
+        // [FIX-XSS-SP] استخدام DOM آمن بدلاً من innerHTML
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'sp-msg ' + dir;
+        msgDiv.textContent = text;
+        const timeDiv = document.createElement('div');
+        timeDiv.className = 'sp-msg-time';
+        timeDiv.textContent = timeStr;
+        wrap.appendChild(msgDiv);
+        wrap.appendChild(timeDiv);
         flow.appendChild(wrap);
     }
 
@@ -3146,7 +3187,8 @@
 
     function addToCart(rid, n, p, img) {
         if(currentResId && currentResId !== rid) return showNotify("طلب من مطعم واحد فقط!", "error");
-        currentResId = rid; cart.push({n, p, img});
+        // [FIX-CART] img لا تُحفظ في cart - غير مطلوبة في الطلب وقد تسبب فشل insert
+        currentResId = rid; cart.push({n, p});
         document.getElementById('badge').innerText = cart.length;
         document.getElementById('badge').style.display = 'block';
         showNotify("تمت الإضافة للسلة ✅");
@@ -3235,7 +3277,18 @@
         renderCart();
     }
 
+    let _confirmOrderPending = false; // [FIX-C1] guard ضد double-submit
     async function confirmOrderStart() {
+        if (_confirmOrderPending) return;
+        _confirmOrderPending = true;
+        const _confirmBtn = document.querySelector('[onclick="confirmOrderStart()"]');
+        if (_confirmBtn) { _confirmBtn.disabled = true; _confirmBtn.innerText = 'جاري الإرسال...'; }
+        try { await _confirmOrderStart_inner(); } finally {
+            _confirmOrderPending = false;
+            if (_confirmBtn) { _confirmBtn.disabled = false; _confirmBtn.innerText = 'تأكيد الطلب 🦅'; }
+        }
+    }
+    async function _confirmOrderStart_inner() {
         const res = data.find(r => r.id === currentResId);
         // ── فحص مزدوج: مقفول أو غير مفعّل → وقف الطلب ──
         if(res && (_resIsLocked(res) || !_resIsActive(res))) {
@@ -3264,19 +3317,52 @@
         const _initialOrderStatus = _isPartnerRes ? 'searching' : 'searching';
         // ===== نهاية تحديد حالة الطلب =====
 
-        const orderData = { id: orderId, customer_name: currentUser.name, phone: currentUser.phone, restaurant_name: res ? res.name : "طلب خارجي", total: total > 0 ? total : 0, status: _initialOrderStatus, date: new Date().toLocaleString('ar-SA'), items: cart, points_earned: earnedPoints, points_spent: pointsDiscountUsed > 0 ? 100 : 0, delivery_price: deliveryPrice, restaurant_id: res ? res.id : null, customer_id: currentUser.uid, verify_code: verificationCode };
+        // [FIX-CART-3] تنظيف cart من أي حقول إضافية قبل إرسالها لقاعدة البيانات
+        const _cleanCart = cart.map(i => ({n: i.n, p: i.p}));
+        const orderData = { id: orderId, customer_name: currentUser.name, phone: currentUser.phone, restaurant_name: res ? res.name : "طلب خارجي", total: total > 0 ? total : 0, status: _initialOrderStatus, date: new Date().toLocaleString('ar-SA'), items: _cleanCart, points_earned: earnedPoints, points_spent: pointsDiscountUsed > 0 ? 100 : 0, delivery_price: deliveryPrice, restaurant_id: res ? res.id : null, customer_id: currentUser.uid, verify_code: verificationCode };
+        // [FIX-SAFE] تنظيف safeOrderData: items → JSON string لضمان التوافق مع جميع أنواع الأعمدة
         const { date: d, phone: ph, ...safeOrderData } = orderData;
+        if (Array.isArray(safeOrderData.items)) {
+            safeOrderData.items = JSON.stringify(safeOrderData.items);
+        }
         try {
-            const { error: err1 } = await _supabase.from('orders').insert([safeOrderData]);
+            // ── جدول orders: الحقول المضمونة ──
+            const _orderInsertPromise = _supabase.from('orders').insert([safeOrderData]);
+            const _orderTimeoutPromise = new Promise((_, rej) => setTimeout(() => rej(new Error('TIMEOUT')), 12000));
+            const { error: err1 } = await Promise.race([_orderInsertPromise, _orderTimeoutPromise]);
             if (err1) throw err1;
-            const publicOrderData = { id: orderId, customer_name: currentUser.name, phone: currentUser.phone, restaurant_name: res ? res.name : "طلب وصيني/خارجي", res_address: res ? (res.address || "عنوان المطعم") : "موقع الاستلام", customer_address: currentUser.address || "عنوان العميل", total: total > 0 ? total : 0, status: _initialOrderStatus, items: JSON.stringify(cart), customer_id: currentUser.uid, delivery_price: deliveryPrice, created_at: new Date().toISOString(), verify_code: verificationCode, discount: (discountAmount + pointsDiscountUsed), lat: userLoc.lat, lng: userLoc.lng,
-            // ===== حقل is_partner_restaurant لتمييز طلبات الشركاء من غير الشركاء =====
-            is_partner_restaurant: _isPartnerRes,
-            auto_username: _autoOrderUsername
-            // ===== نهاية الحقول الإضافية =====
+
+            // ── sh_public_orders: الحقول الأساسية المضمونة فقط ──
+            const _corePublicData = {
+                id:               orderId,
+                customer_name:    currentUser.name,
+                phone:            currentUser.phone,
+                restaurant_name:  res ? res.name : 'طلب خارجي',
+                res_address:      res ? (res.address || 'عنوان المطعم') : 'موقع الاستلام',
+                customer_address: currentUser.address || 'عنوان العميل',
+                total:            total > 0 ? total : 0,
+                status:           _initialOrderStatus,
+                items:            JSON.stringify(_cleanCart),
+                customer_id:      currentUser.uid,
+                delivery_price:   deliveryPrice,
+                created_at:       new Date().toISOString(),
+                verify_code:      verificationCode
             };
-            const { error: err2 = null } = await _supabase.from('sh_public_orders').insert([publicOrderData]);
+            const { error: err2 } = await _supabase.from('sh_public_orders').insert([_corePublicData]);
             if (err2) throw err2;
+
+            // ── حقول اختيارية: update منفصل لا يوقف الطلب عند فشله ──
+            const _extraFields = {};
+            if (discountAmount + pointsDiscountUsed > 0) _extraFields.discount = discountAmount + pointsDiscountUsed;
+            const _orderLat = (currentUser && currentUser.lat) ? currentUser.lat : (userLoc && userLoc.lat ? userLoc.lat : null);
+            const _orderLng = (currentUser && currentUser.lng) ? currentUser.lng : (userLoc && userLoc.lng ? userLoc.lng : null);
+            if (_orderLat) _extraFields.lat = _orderLat;
+            if (_orderLng) _extraFields.lng = _orderLng;
+            _extraFields.is_partner_restaurant = _isPartnerRes;
+            _extraFields.auto_username         = _autoOrderUsername;
+            _supabase.from('sh_public_orders').update(_extraFields).eq('id', orderId).then(() => {}).catch(() => {});
+
+            const publicOrderData = { ..._corePublicData, ..._extraFields };
             let orders = getStorage('orders');
             if(!Array.isArray(orders)) orders = []; 
             orders.push(orderData);
@@ -3288,7 +3374,36 @@
             document.getElementById('badge').style.display = 'none';
             pointsDiscountUsed = 0; discountAmount = 0;
             startSearching();
-        } catch (error) { showNotify("خطأ في الاتصال", "error"); }
+        } catch (error) {
+            // [FIX-ORD-1] retry مرة واحدة عند فشل الإرسال قبل إظهار الخطأ
+            try {
+                await new Promise(r => setTimeout(r, 1500));
+                const { error: retryErr1 } = await _supabase.from('orders').insert([safeOrderData]);
+                if (retryErr1) throw retryErr1;
+                const { error: retryErr2 } = await _supabase.from('sh_public_orders').insert([_corePublicData]);
+                if (retryErr2) throw retryErr2;
+                // [FIX] إعادة حقول الـ update الاختيارية بعد نجاح retry
+                _supabase.from('sh_public_orders').update(_extraFields).eq('id', orderId).then(() => {}).catch(() => {});
+                // نجح الـ retry
+                let orders = getStorage('orders');
+                if(!Array.isArray(orders)) orders = [];
+                orders.push(orderData);
+                setStorage('orders', orders);
+                currentOrderKey = orderId;
+                localStorage.setItem('shahen_active_order_id', orderId);
+                cart = []; currentResId = null;
+                document.getElementById('badge').innerText = 0;
+                document.getElementById('badge').style.display = 'none';
+                pointsDiscountUsed = 0; discountAmount = 0;
+                startSearching();
+            } catch (retryError) {
+                // [FIX-ORD-1] rollback + رسالة واضحة للمستخدم
+                _supabase.from('orders').delete().eq('id', orderId).then(() => {}).catch(() => {});
+                _supabase.from('sh_public_orders').delete().eq('id', orderId).then(() => {}).catch(() => {});
+                // [FIX-ERR] رسالة موحدة + retry نظيف بزر إعادة المحاولة
+                showNotify("فشل إرسال الطلب ❌ اضغط تأكيد الطلب مرة أخرى", "error");
+            }
+        }
     }
 
     // ===== دالة توليد اسم مستخدم تلقائي فريد =====
@@ -3298,6 +3413,42 @@
         return (prefix || 'USR') + '-' + ts + '-' + rand;
     }
     // ===== نهاية دالة توليد اسم المستخدم التلقائي =====
+
+    // ===== FIX-RT-1: Polling سريع للكشف الفوري عن القبول (احتياطي للـ Realtime) =====
+    let _searchPollInterval = null;
+    function _startSearchPoll(orderId) {
+        if (_searchPollInterval) clearInterval(_searchPollInterval);
+        _searchPollInterval = setInterval(async () => {
+            if (!currentOrderKey) { clearInterval(_searchPollInterval); _searchPollInterval = null; return; }
+            const { data: _pollOrd } = await _supabase.from('sh_public_orders')
+                .select('status, driver_name, driver_phone').eq('id', orderId).maybeSingle();
+            if (!_pollOrd) return;
+            const _ps = _pollOrd.status;
+            if (_ps === 'accepted' || _ps === 'preparing' || _ps === 'ready') {
+                clearInterval(_searchPollInterval); _searchPollInterval = null;
+                if (_ps !== lastStatusNotified) {
+                    if(cancelInterval) clearInterval(cancelInterval);
+                    document.getElementById('eagle-searching').style.display = 'none';
+                    document.getElementById('searching-sound').pause();
+                    updateOrderStatus(orderId, _ps);
+                    lastStatusNotified = _ps;
+                    showNotify('تم قبول طلبك من صقر الشاهين 🦅');
+                    checkOrderAction(orderId, _ps);
+                }
+            } else if (_ps === 'cancelled') {
+                clearInterval(_searchPollInterval); _searchPollInterval = null;
+                if(cancelInterval) clearInterval(cancelInterval);
+                document.getElementById('eagle-searching').style.display = 'none';
+                document.getElementById('searching-sound').pause();
+                showNotify('تم إلغاء الطلب ❌', 'error');
+                localStorage.removeItem('shahen_active_order_id'); currentOrderKey = null;
+                updateOrderStatus(orderId, 'cancelled'); nav('p-home');
+            } else if (_ps === 'completed') {
+                clearInterval(_searchPollInterval); _searchPollInterval = null;
+            }
+        }, 3000); // كل 3 ثواني
+    }
+    // ===== نهاية FIX-RT-1 =====
 
     function startSearching() {
         document.getElementById('searching-sound').play();
@@ -3330,7 +3481,9 @@
                 cancelOrder(); 
             }
         }, 1000);
-        simulateAccept(); 
+        simulateAccept();
+        // ===== FIX-RT-1: تشغيل polling احتياطي سريع =====
+        if(currentOrderKey) _startSearchPoll(currentOrderKey);
     }
 
     function isPharmacyConsultOrder(order) {
@@ -3507,8 +3660,16 @@
                     _autoFillInvoiceFromMessage(m.message);
                 }
             })
-            .subscribe((status) => {
-                console.log('[SHAHEN CLIENT] consult channel status:', status);
+            .subscribe((status, err) => {
+                // [FIX-CHAT-3b] إعادة الاتصال عند انقطاع قناة استشارة العميل
+                if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+                    if (currentOrderKey) {
+                        setTimeout(() => {
+                            if (_consultChatChannel) { try { _supabase.removeChannel(_consultChatChannel); } catch(e){} _consultChatChannel = null; }
+                            listenConsultStatusOnly(currentOrderKey);
+                        }, 3000);
+                    }
+                }
             });
 
         // تعديل: polling احتياطي كل 3 ثواني لضمان وصول رسائل الصيدلي حتى لو الـ Realtime لم يشتغل
@@ -3534,7 +3695,7 @@
                 });
                 if (hasNew) chatBox.scrollTop = chatBox.scrollHeight;
             }
-        }, 8000);
+        }, 4000); // [FIX-POLL-4b] تقليل polling من 8 لـ 4 ثواني
 
         // --- مهم: لا نستدعي simulateAccept() هنا أبداً في مرحلة الاستشارة ---
         // --- simulateAccept() يُستدعى فقط من upgradeToDelivery() بعد موافقة العميل ---
@@ -3668,7 +3829,16 @@
                     return;
                 }
             })
-            .subscribe();
+            .subscribe((status, err) => {
+                // [FIX-CHAT-3c] إعادة الاتصال عند انقطاع قناة حالة الاستشارة
+                if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+                    const _retryId = orderId;
+                    setTimeout(() => {
+                        if (_consultStatusChannel) { try { _supabase.removeChannel(_consultStatusChannel); } catch(e){} _consultStatusChannel = null; }
+                        if (currentOrderKey) listenConsultStatusOnly(_retryId);
+                    }, 3000);
+                }
+            });
     }
 
     let _orderChannel = null;
@@ -3688,7 +3858,7 @@
             activeOrder.is_consultation !== false &&
             (activeOrder.res_type === 'pharmacy' || activeOrder.res_type === 'specialty') && 
             (activeOrder.status === 'consulting' || activeOrder.status === 'accepted')) {
-            console.warn('[SHAHEN] simulateAccept blocked: order is still a consultation');
+            // [FIX-SEC-2d] console.warn محذوف في الإنتاج
             return;
         }
 
@@ -3798,8 +3968,19 @@
                     _isConsultChatOpen = false;
                     if (_clientMsgPollInterval) { clearInterval(_clientMsgPollInterval); _clientMsgPollInterval = null; }
                     currentOrderKey = null;
-                    showNotify("تم توصيل طلبك بنجاح! نوفي بعهدكم 🦅");
-                    // تحديث اسم المندوب في نافذة التقييم (يعمل للطلبات العادية والصيدلية معاً)
+                    // ===== FIX-RT-2: إشعار فوري وواضح بالتسليم =====
+                    if (_searchPollInterval) { clearInterval(_searchPollInterval); _searchPollInterval = null; }
+                    showNotify("✅ تم توصيل طلبك بنجاح! نوفي بعهدكم 🦅");
+                    // إظهار إشعار تسليم بصري داخل صفحة الدردشة إذا كانت مفتوحة
+                    const _chatBoxDelivery = document.getElementById('chat-box');
+                    if (_chatBoxDelivery && document.getElementById('p-chat').style.display === 'flex') {
+                        const _delivMsgDiv = document.createElement('div');
+                        _delivMsgDiv.style.cssText = 'background:rgba(46,204,113,0.2);border:2px solid #2ecc71;border-radius:14px;padding:12px;text-align:center;margin:8px 0;';
+                        _delivMsgDiv.innerHTML = '<i class="fas fa-check-circle" style="color:#2ecc71;font-size:20px;margin-bottom:6px;display:block;"></i><b style="color:#2ecc71;font-size:14px;">تم التوصيل بنجاح ✅</b><p style="font-size:11px;color:#ccc;margin:4px 0 0;">نوفي بعهدكم 🦅</p>';
+                        _chatBoxDelivery.appendChild(_delivMsgDiv);
+                        _chatBoxDelivery.scrollTop = _chatBoxDelivery.scrollHeight;
+                    }
+                    // تحديث اسم المندوب في نافذة التقييم
                     const _rateNameEl = document.getElementById('rate-driver-name');
                     if(_rateNameEl && payload.new.driver_name) {
                         _rateNameEl.innerText = payload.new.driver_name;
@@ -3814,7 +3995,16 @@
                 currentOrderKey = null;
                 renderHistory();
             })
-            .subscribe();
+            .subscribe((status, err) => {
+                // [FIX-CHAT-3d] إعادة الاتصال عند انقطاع قناة متابعة الطلب
+                if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+                    const _savedKey = currentOrderKey;
+                    setTimeout(() => {
+                        if (_orderChannel) { try { _supabase.removeChannel(_orderChannel); } catch(e){} _orderChannel = null; }
+                        if (_savedKey) listenForOrderUpdates(_savedKey);
+                    }, 3000);
+                }
+            });
     }
 
     // --- دالة مساعدة: استخراج المبلغ الرقمي من نص رسالة الصيدلي تلقائياً ---
@@ -4498,11 +4688,7 @@
             // ===== إصلاح 3: كود التحقق يبقى ظاهراً دائماً حتى إغلاق الطلب =====
             document.getElementById('client-code-notice').style.display = 'block';
             document.getElementById('reveal-order-code').innerText = verificationCode || '----';
-            // ===== بدء التتبع الحي للمندوب =====
-            if (serverOrder.driver_id) {
-                _startClientLiveTracking(id, serverOrder);
-            }
-            // ===== نهاية التتبع الحي =====
+            // [DEL-TRACK] نظام التتبع الحي محذوف
             // إخفاء منطقة تنبيه المطعم لطلبات الصيدلية (الفاتورة تظهر في بطاقة مستقلة أدناه)
             // الأولوية لـ order_type الثابت في قاعدة البيانات
             const _isPharmacyNotif = serverOrder.order_type === 'pharmacy' || serverOrder.res_type === 'pharmacy_delivery' || serverOrder.res_type === 'pharmacy';
@@ -4759,10 +4945,12 @@
         nav('p-history');
     }
 
+    let _sendMsgPending = false; // [FIX-C5]
     async function sendMsg() {
         const inp = document.getElementById('m-inp');
         const text = inp.value.trim();
-        if (!text) return;
+        if (!text || _sendMsgPending) return;
+        _sendMsgPending = true;
         inp.value = '';
 
         const chatBox = document.getElementById('chat-box');
@@ -4781,14 +4969,14 @@
                 message: text
             }).select().single();
             if (msgErr) {
-                console.error('[SHAHEN sendMsg] فشل إرسال الرسالة:', msgErr);
+                // [FIX-C5] console.error محذوف في الإنتاج
                 showNotify("فشل إرسال الرسالة، حاول مجدداً ❌", "error");
-                // إعادة النص للمربع عند الفشل
                 inp.value = text;
                 chatBox.removeChild(d);
             }
             if (saved) _consultMsgIds.add(saved.id);
         }
+        _sendMsgPending = false; // [FIX-C5] reset guard
     }
 
     function initProfileMap() {
@@ -4817,19 +5005,30 @@
 
     async function saveMapSelection() {
         if(!currentUser) return;
+        // ===== FIX-LOC-2: حفظ الإحداثيات الحقيقية من userLoc =====
+        const _saveLat = currentUser.lat || userLoc.lat;
+        const _saveLng = currentUser.lng || userLoc.lng;
         const { error } = await _supabase.from('customers').update({ 
-            lat: userLoc.lat, 
-            lng: userLoc.lng,
+            lat: _saveLat, 
+            lng: _saveLng,
             address: currentUser.address 
         }).eq('id', currentUser.uid);
         if(!error) { 
+            currentUser.lat = _saveLat;
+            currentUser.lng = _saveLng;
             localStorage.setItem('shahen_user', JSON.stringify(currentUser)); 
             document.getElementById('my-address').innerText = currentUser.address;
-            showNotify("تم تحديث بياناتك بنجاح! 🦅"); 
+            showNotify('تم حفظ موقعك بإحداثيات دقيقة GPS ✅'); 
         }
     }
 
+    let _wassayniPending = false; // [FIX-C3]
     async function submitWassayni() {
+        if (_wassayniPending) return;
+        _wassayniPending = true;
+        try { await _submitWassayni_inner(); } finally { _wassayniPending = false; }
+    }
+    async function _submitWassayni_inner() {
         const task = document.getElementById('wassayni-task').value;
         const addrDetails = document.getElementById('wassayni-addr').value;
         if(!task || pickupLoc.lat === 0 || dropoffLoc.lat === 0) return showNotify("يرجى تحديد المواقع وكتابة تفاصيل الطلب", "error");
@@ -4978,14 +5177,24 @@
         }
     }
 
-    function logout() { localStorage.removeItem('shahen_user'); localStorage.removeItem('shahen_pledge'); location.reload(); }
+    function logout() {
+        // [FIX-C7] تنظيف كل الـ intervals والـ channels عند الخروج
+        if (_orderChannel) { try { _supabase.removeChannel(_orderChannel); } catch(e){} _orderChannel = null; }
+        if (_consultStatusChannel) { try { _supabase.removeChannel(_consultStatusChannel); } catch(e){} _consultStatusChannel = null; }
+        if (_consultChatChannel) { try { _supabase.removeChannel(_consultChatChannel); } catch(e){} _consultChatChannel = null; }
+        if (_spChatChannel) { try { _supabase.removeChannel(_spChatChannel); } catch(e){} _spChatChannel = null; }
+        if (_spPollInterval) { clearInterval(_spPollInterval); _spPollInterval = null; }
+        if (_clientMsgPollInterval) { clearInterval(_clientMsgPollInterval); _clientMsgPollInterval = null; }
+        currentOrderKey = null;
+        _confirmOrderPending = false; _medConsultPending = false; _wassayniPending = false;
+        _storeConsultPending = false; _sendMsgPending = false; _spMsgPending = false; localStorage.removeItem('shahen_user'); localStorage.removeItem('shahen_pledge'); location.reload(); }
     function sendComplaint(context) { window.open(`https://wa.me/966546083283?text=لدي شكوى بخصوص: ${context}`); }
 
     window.onload = () => {
         // ===== Listener رسمي من Supabase: يُفعَّل تلقائياً عند أي تغيير في حالة المصادقة =====
         // يعمل عند: تسجيل الدخول، تفعيل البريد، انتهاء الجلسة، إلخ
         _supabase.auth.onAuthStateChange(async (event, session) => {
-            console.log('[SHAHEN] Auth event:', event);
+            // [FIX-SEC-2e] console.log محذوف في الإنتاج
 
             // ===== عند الضغط على رابط التفعيل من البريد =====
             if (event === 'SIGNED_IN' && session && session.user) {
@@ -5083,213 +5292,75 @@
     };
 
     // ===================================================================
-    // ===== نظام تتبع المندوب الحي للعميل - Live Driver Tracking =====
-    // ===================================================================
+    // [DEL-TRACK] نظام تتبع المندوب الحي - محذوف بالكامل
 
-    let _clientTrackingMap = null;        // خريطة تتبع العميل
-    let _clientDriverMarker = null;       // ماركر المندوب
-    let _clientCustomerMarker = null;     // ماركر العميل
-    let _clientShopMarker = null;         // ماركر المتجر
-    let _clientPathLine = null;           // خط المسار
-    let _clientTrackingChannel = null;    // قناة realtime
-    let _clientActiveOrderId = null;      // رقم الطلب النشط
-    let _clientTrackingInterval = null;   // مؤقت التحديث
-    let _clientFirstLocate = true;        // هل أول مرة نحدد الموقع
-
-    // بدء تتبع المندوب للعميل
-    async function _startClientLiveTracking(orderId, orderData) {
-        if (!orderId) return;
-        _clientActiveOrderId = orderId;
-
-        // إظهار بطاقة التتبع
-        const trackCard = document.getElementById('client-live-tracking-card');
-        if (trackCard) trackCard.style.display = 'block';
-
-        // تهيئة الخريطة إن لم تكن موجودة
-        if (!_clientTrackingMap) {
-            // مركز جدة كموقع افتراضي
-            const defaultLat = orderData && orderData.lat ? orderData.lat : 21.4858;
-            const defaultLng = orderData && orderData.lng ? orderData.lng : 39.1925;
-            _clientTrackingMap = L.map('client-tracking-map', {
-                zoomControl: false,
-                attributionControl: false,
-                dragging: true,
-                tap: true
-            }).setView([defaultLat, defaultLng], 14);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19
-            }).addTo(_clientTrackingMap);
+    // ===== FIX-TG-CLIENT: دالة فتح قناة تيليجرام موثوقة (فتح خارجي دائماً) =====
+    let _tgLinks = { admin: '#', channel: '#' };
+    function _openTelegram(type) {
+        const url = (_tgLinks[type] || '').trim();
+        if (!url || url === '#' || url === '') {
+            showNotify('رابط قناة التيليجرام غير متوفر حالياً', 'error');
+            return;
         }
-        setTimeout(() => { if(_clientTrackingMap) _clientTrackingMap.invalidateSize(); }, 400);
-
-        // إضافة ماركر العميل
-        if (orderData && orderData.lat && orderData.lng && !_clientCustomerMarker) {
-            _clientCustomerMarker = L.marker([parseFloat(orderData.lat), parseFloat(orderData.lng)], {
-                icon: L.divIcon({ className: '', html: '<div style="font-size:24px; text-align:center;">🏠</div><div style="background:#2ecc71;color:#000;padding:2px 6px;border-radius:6px;font-size:9px;font-weight:bold;white-space:nowrap;border:1px solid #fff;">أنت هنا</div>' })
-            }).addTo(_clientTrackingMap);
+        // FIX: window.open مع خيارات صريحة تمنع إعادة تحميل نفس الصفحة
+        const w = window.open(url, '_blank', 'noopener,noreferrer');
+        // fallback إذا منع المتصفح النافذة المنبثقة
+        if (!w || w.closed || typeof w.closed === 'undefined') {
+            window.location.href = url;
         }
-
-        // إضافة ماركر المتجر
-        if (orderData && orderData.pickup_lat && orderData.pickup_lng && !_clientShopMarker) {
-            _clientShopMarker = L.marker([parseFloat(orderData.pickup_lat), parseFloat(orderData.pickup_lng)], {
-                icon: L.divIcon({ className: '', html: '<div style="font-size:20px; text-align:center;">🏪</div><div style="background:#f39c12;color:#000;padding:2px 6px;border-radius:6px;font-size:9px;font-weight:bold;white-space:nowrap;">المتجر</div>' })
-            }).addTo(_clientTrackingMap);
-        }
-
-        // جلب موقع المندوب أول مرة
-        await _updateClientDriverPosition();
-
-        // Realtime channel لتحديث فوري
-        if (_clientTrackingChannel) {
-            try { _supabase.removeChannel(_clientTrackingChannel); } catch(e) {}
-        }
-        _clientTrackingChannel = _supabase
-            .channel('client-driver-track-' + orderId)
-            .on('postgres_changes', {
-                event: 'UPDATE',
-                schema: 'public',
-                table: 'sh_admin_tracking'
-            }, (payload) => {
-                // تحديث فقط إذا كان المندوب له طلب نشط = orderId
-                if (payload.new && payload.new.active_order_id === String(orderId)) {
-                    _handleClientDriverUpdate(payload.new);
-                }
-            })
-            .on('postgres_changes', {
-                event: 'UPDATE',
-                schema: 'public',
-                table: 'sh_public_orders',
-                filter: `id=eq.${orderId}`
-            }, (payload) => {
-                if (payload.new) {
-                    const { driver_eta_min, driver_distance_km, status } = payload.new;
-                    // تحديث ETA من قاعدة البيانات
-                    if (driver_eta_min !== undefined) {
-                        const etaEl = document.getElementById('client-eta-display');
-                        if (etaEl) { etaEl.innerText = driver_eta_min || '---'; }
-                    }
-                    if (driver_distance_km !== undefined) {
-                        const distEl = document.getElementById('client-dist-display');
-                        if (distEl) distEl.innerText = driver_distance_km ? `${driver_distance_km} كم` : '---';
-                    }
-                    // إخفاء التتبع عند الاكتمال
-                    if (['completed','cancelled','failed','rejected'].includes(status)) {
-                        _stopClientLiveTracking();
-                    }
-                }
-            })
-            .subscribe();
-
-        // مؤقت تحديث كل 8 ثواني كاحتياط
-        if (_clientTrackingInterval) clearInterval(_clientTrackingInterval);
-        _clientTrackingInterval = setInterval(_updateClientDriverPosition, 8000);
     }
+    // ===== نهاية FIX-TG-CLIENT =====
 
-    // تحديث موقع المندوب على خريطة العميل
-    async function _updateClientDriverPosition() {
-        if (!_clientActiveOrderId || !_clientTrackingMap) return;
-        try {
-            // جلب بيانات التتبع للمندوب المرتبط بالطلب
-            const { data: trackRows } = await _supabase
-                .from('sh_admin_tracking')
-                .select('lat,lng,speed,heading,is_moving,fake_gps_suspected,name,active_order_id')
-                .eq('active_order_id', String(_clientActiveOrderId));
-
-            if (!trackRows || trackRows.length === 0) return;
-            const trackRow = trackRows[0];
-            if (!trackRow.lat || !trackRow.lng) return;
-            _handleClientDriverUpdate(trackRow);
-
-            // جلب ETA من sh_public_orders
-            const { data: orderETA } = await _supabase
-                .from('sh_public_orders')
-                .select('driver_eta_min, driver_distance_km')
-                .eq('id', _clientActiveOrderId)
-                .single();
-
-            if (orderETA) {
-                const etaEl = document.getElementById('client-eta-display');
-                const distEl = document.getElementById('client-dist-display');
-                if (etaEl && orderETA.driver_eta_min) etaEl.innerText = orderETA.driver_eta_min;
-                if (distEl && orderETA.driver_distance_km) distEl.innerText = `${orderETA.driver_distance_km} كم`;
-            }
-        } catch(e) {}
-    }
-
-    // معالجة تحديث موقع المندوب
-    function _handleClientDriverUpdate(trackRow) {
-        if (!_clientTrackingMap || !trackRow || !trackRow.lat || !trackRow.lng) return;
-        const lat = parseFloat(trackRow.lat);
-        const lng = parseFloat(trackRow.lng);
-        const isMoving = trackRow.is_moving === true;
-        const spd = Math.round((trackRow.speed || 0) * 3.6);
-        const heading = trackRow.heading || 0;
-
-        // تحديث/إنشاء ماركر المندوب
-        const rotateStyle = isMoving && heading ? `transform:rotate(${heading}deg);display:inline-block;` : '';
-        const markerHtml = `
-            <div style="text-align:center;">
-                <div style="${rotateStyle}font-size:${isMoving?'28':'22'}px;filter:drop-shadow(0 0 ${isMoving?'10':'4'}px #3498db);">🦅</div>
-                <div style="background:#3498db;color:#000;padding:2px 8px;border-radius:8px;font-size:9px;font-weight:bold;white-space:nowrap;border:1px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.5);">
-                    ${trackRow.name || 'الصقر'}${isMoving ? ' 🏃' : ' ⏸'}
-                </div>
-            </div>`;
-
-        if (_clientDriverMarker) {
-            _clientDriverMarker.setLatLng([lat, lng]);
-            _clientDriverMarker.setIcon(L.divIcon({ className: '', html: markerHtml }));
-        } else {
-            _clientDriverMarker = L.marker([lat, lng], {
-                icon: L.divIcon({ className: '', html: markerHtml }),
-                zIndexOffset: 1000
-            }).addTo(_clientTrackingMap);
-        }
-
-        // التتبع التلقائي لموقع المندوب
-        if (_clientFirstLocate || isMoving) {
-            _clientTrackingMap.setView([lat, lng], _clientFirstLocate ? 15 : _clientTrackingMap.getZoom());
-            _clientFirstLocate = false;
-        }
-
-        // تحديث معلومات العرض
-        const movingEl = document.getElementById('client-moving-badge');
-        const speedEl = document.getElementById('client-speed-display');
-        const statusEl = document.getElementById('client-driver-status-text');
-
-        if (movingEl) { movingEl.innerText = isMoving ? '🟢 يتحرك' : '⏸ واقف'; movingEl.style.color = isMoving ? '#2ecc71' : '#f39c12'; }
-        if (speedEl) speedEl.innerText = spd > 0 ? `${spd} كم/س` : '0 كم/س';
-        if (statusEl) {
-            const timeStr = new Date().toLocaleTimeString('ar-SA', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
-            statusEl.innerText = `آخر تحديث: ${timeStr} · ${isMoving ? 'الصقر في الطريق 🦅' : 'الصقر متوقف ⏸'}`;
-        }
-
-        // رسم خط من المندوب للعميل
-        if (_clientCustomerMarker) {
-            const custLatLng = _clientCustomerMarker.getLatLng();
-            if (_clientPathLine) {
-                _clientPathLine.setLatLngs([[lat, lng], [custLatLng.lat, custLatLng.lng]]);
-            } else {
-                _clientPathLine = L.polyline([[lat, lng], [custLatLng.lat, custLatLng.lng]], {
-                    color: '#3498db', weight: 3, opacity: 0.6, dashArray: '6,4'
-                }).addTo(_clientTrackingMap);
+    // [FIX-ERR-7] معالج عام للأخطاء غير المعالجة في العميل
+    window.addEventListener('unhandledrejection', function(event) {
+        if (event.reason && event.reason.message) {
+            const msg = event.reason.message;
+            if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('Load failed')) {
+                event.preventDefault(); return;
             }
         }
-    }
+        event.preventDefault();
+    });
 
-    // إيقاف التتبع
-    function _stopClientLiveTracking() {
-        if (_clientTrackingChannel) {
-            try { _supabase.removeChannel(_clientTrackingChannel); } catch(e) {}
-            _clientTrackingChannel = null;
+    // [FIX-ONLINE-7b] مراقبة حالة الاتصال
+    window.addEventListener('offline', function() {
+        showNotify('⚠️ انقطع الاتصال بالإنترنت — سيتم إعادة الاتصال تلقائياً', 'error');
+    });
+    window.addEventListener('online', function() {
+        showNotify('✅ عاد الاتصال بالإنترنت', 'info');
+        // إعادة تشغيل القنوات النشطة
+        if (currentOrderKey) {
+            if (_orderChannel) { try { _supabase.removeChannel(_orderChannel); } catch(e){} _orderChannel = null; }
+            listenForOrderUpdates(currentOrderKey);
+            if (_consultStatusChannel) { try { _supabase.removeChannel(_consultStatusChannel); } catch(e){} _consultStatusChannel = null; }
+            listenConsultStatusOnly(currentOrderKey);
         }
-        if (_clientTrackingInterval) { clearInterval(_clientTrackingInterval); _clientTrackingInterval = null; }
-        _clientActiveOrderId = null;
-        _clientFirstLocate = true;
-        const trackCard = document.getElementById('client-live-tracking-card');
-        if (trackCard) trackCard.style.display = 'none';
-    }
+    });
 
-    // ===== نهاية نظام تتبع المندوب الحي للعميل =====
+        // [FIX-VIS-5] إعادة تشغيل القنوات عند العودة للتبويب بعد غياب
+    document.addEventListener('visibilitychange', function() {
+        if (document.visibilityState === 'visible') {
+            if (currentOrderKey) {
+                if (!_orderChannel || _orderChannel.state === 'closed') {
+                    if (_orderChannel) { try { _supabase.removeChannel(_orderChannel); } catch(e){} _orderChannel = null; }
+                    listenForOrderUpdates(currentOrderKey);
+                }
+                if (!_consultStatusChannel || _consultStatusChannel.state === 'closed') {
+                    if (_consultStatusChannel) { try { _supabase.removeChannel(_consultStatusChannel); } catch(e){} _consultStatusChannel = null; }
+                    listenConsultStatusOnly(currentOrderKey);
+                }
+            }
+            if (_spChatOrderId && (!_spChatChannel || _spChatChannel.state === 'closed')) {
+                if (_spChatChannel) { try { _supabase.removeChannel(_spChatChannel); } catch(e){} _spChatChannel = null; }
+                openSpecialtyChat(_spChatOrderId, '', '');
+            }
+            if (_spChatOrderId && _consultChatChannel && _consultChatChannel.state === 'closed') {
+                try { _supabase.removeChannel(_consultChatChannel); } catch(e){}
+                _consultChatChannel = null;
+            }
+        }
+    });
+
 </script>
 </body>
 </html>
