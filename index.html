@@ -1010,7 +1010,31 @@
         try { return JSON.parse(val) || []; } catch(e) { return []; }
     };
     const setStorage = (key, val) => localStorage.setItem(key, JSON.stringify(val));
+
+    // ===== [SEC-FIX-XSS] دالة تنقية HTML لمنع XSS - مطلوبة قبل أي innerHTML يحتوي بيانات مستخدم =====
+    function escHtml(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#x27;')
+            .replace(/\//g, '&#x2F;');
+    }
+    // ===== نهاية [SEC-FIX-XSS] =====
+
+    // ===== [SEC-FIX-INPUT] دالة التحقق من صحة المبلغ المالي =====
+    function sanitizeAmount(val) {
+        const num = parseFloat(String(val).replace(/,/g, ''));
+        if (isNaN(num) || num < 0 || num > 999999999) return 0;
+        return Math.floor(num);
+    }
+    // ===== نهاية [SEC-FIX-INPUT] =====
     const SB_URL = "https://ricoslplbhphydhtrufe.supabase.co";
+    // [SEC-WARNING] هذا مفتاح publishable (anon key) وليس service_role key.
+    // تأكد من ضبط Row Level Security (RLS) في Supabase لحماية البيانات.
+    // لا تستخدم service_role key في الواجهة الأمامية أبداً.
     const SB_KEY = "sb_publishable_k6LgEuwPLdCsBMCFC12wfQ_BSOJotuw";
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
@@ -1273,6 +1297,11 @@
         }
     }
 
+    // ===== [SEC-FIX-RATELIMIT] حماية من السبام في الدردشة =====
+    let _lastMsgTime = 0;
+    const _MSG_MIN_INTERVAL_MS = 1000; // حد أدنى ثانية بين كل رسالتين
+    // ===== نهاية [SEC-FIX-RATELIMIT] =====
+
     // [SEC-FIX-C5] Brute Force Protection لتسجيل دخول العميل
     let _clientLoginAttempts = 0, _clientLockUntil = 0;
     async function loginUser() {
@@ -1343,21 +1372,6 @@
         document.getElementById('my-phone').innerText = currentUser.phone || "--";
         document.getElementById('my-address').innerText = currentUser.address || "--";
         document.getElementById('shahen-points').innerText = currentUser.points || "0";
-        // ===== FIX-LOGIN-3: إعادة تهيئة كاملة فور تسجيل الدخول =====
-        // إعادة تشغيل القنوات والاشتراكات من الصفر بعد تسجيل الدخول
-        _simulateAcceptLock = false;
-        _lastSimulateAcceptOrderId = null;
-        _updateQueue = [];
-        _updateProcessing = false;
-        // تصفير القنوات القديمة إن وجدت
-        if (_orderChannel) { try { _supabase.removeChannel(_orderChannel); } catch(e){} _orderChannel = null; }
-        if (_consultStatusChannel) { try { _supabase.removeChannel(_consultStatusChannel); } catch(e){} _consultStatusChannel = null; }
-        if (_consultChatChannel) { try { _supabase.removeChannel(_consultChatChannel); } catch(e){} _consultChatChannel = null; }
-        if (_spChatChannel) { try { _supabase.removeChannel(_spChatChannel); } catch(e){} _spChatChannel = null; }
-        if (_clientMsgPollInterval) { clearInterval(_clientMsgPollInterval); _clientMsgPollInterval = null; }
-        if (_spPollInterval) { clearInterval(_spPollInterval); _spPollInterval = null; }
-        if (_searchPollInterval) { clearInterval(_searchPollInterval); _searchPollInterval = null; }
-        // ===== نهاية FIX-LOGIN-3 =====
         // إصلاح المشكلة الرابعة: فحص التعهد فور تسجيل الدخول مباشرة بدون Refresh
         if(!localStorage.getItem('shahen_pledge')) {
             document.getElementById('p-pledge').style.display = 'flex';
@@ -1370,7 +1384,6 @@
             document.getElementById('admin-notif-bell').style.display = 'flex';
             nav('p-home');
             loadUserData();
-            _startAutoRefresh(); // ===== FIX-AUTO-REFRESH-4: بدء التحديث التلقائي بعد تسجيل الدخول =====
         }
     }
 
@@ -1384,7 +1397,6 @@
         renderRes(); nav('p-home');
         // إصلاح المشكلة الرابعة: تحميل بيانات المستخدم بعد قبول التعهد مباشرة
         loadUserData();
-        _startAutoRefresh(); // ===== FIX-AUTO-REFRESH-4: بدء التحديث التلقائي بعد قبول التعهد =====
     }
 
     function updatePromoBar(text) {
@@ -1488,8 +1500,6 @@
         document.getElementById('tab-bar').style.display = 'flex';
         document.getElementById('manual-refresh').style.display = 'flex';
         document.getElementById('admin-notif-bell').style.display = 'flex';
-        // ===== FIX-AUTO-REFRESH-4: تشغيل التحديث التلقائي عند تحميل بيانات المستخدم =====
-        if (typeof _startAutoRefresh === 'function') _startAutoRefresh();
         if(!localStorage.getItem('shahen_pledge')) {
             document.getElementById('p-pledge').style.display = 'flex';
             document.getElementById('tab-bar').style.display = 'none';
@@ -1712,6 +1722,48 @@
     }
     setInterval(manualRefreshData, 20000);
 
+    // ===== [FIX-AUTOREFRESH] شريط التحديث التلقائي الخفيف كل 5 دقائق =====
+    (function _initAutoRefreshBar() {
+        // إنشاء الشريط
+        const bar = document.createElement('div');
+        bar.id = '_auto-refresh-bar';
+        bar.style.cssText = [
+            'position:fixed', 'bottom:0', 'left:50%', 'transform:translateX(-50%)',
+            'width:375px', 'max-width:100vw', 'height:2px',
+            'background:rgba(212,175,55,0.15)', 'z-index:99990',
+            'overflow:hidden', 'pointer-events:none'
+        ].join(';');
+        const fill = document.createElement('div');
+        fill.id = '_auto-refresh-fill';
+        fill.style.cssText = 'height:100%; width:0%; background:rgba(212,175,55,0.55); transition:width linear;';
+        bar.appendChild(fill);
+        document.body.appendChild(bar);
+
+        const INTERVAL_MS = 5 * 60 * 1000; // 5 دقائق
+        let _startTime = Date.now();
+
+        function _updateBar() {
+            const elapsed = Date.now() - _startTime;
+            const pct = Math.min(100, (elapsed / INTERVAL_MS) * 100);
+            fill.style.width = pct + '%';
+        }
+
+        const _barTick = setInterval(_updateBar, 3000);
+
+        setInterval(async () => {
+            // التحديث التلقائي للبيانات فقط — بدون reload الصفحة
+            if (typeof manualRefreshData === 'function') {
+                await manualRefreshData();
+            }
+            // إعادة ضبط الشريط
+            _startTime = Date.now();
+            fill.style.transition = 'none';
+            fill.style.width = '0%';
+            setTimeout(() => { fill.style.transition = 'width linear'; }, 50);
+        }, INTERVAL_MS);
+    })();
+    // ===== نهاية [FIX-AUTOREFRESH] =====
+
     // تعديل دالة فتح/إغلاق المودال
     function toggleAdminModal() {
         const modal = document.getElementById('admin-modal');
@@ -1745,7 +1797,7 @@
             if(readBtn) readBtn.style.display = 'block';
             const htmlContent = messages.map(m => `
                 <div class="admin-msg-item" id="notif-${m.id}">
-                    <b>الإدارة:</b> ${m.message}
+                    <b>الإدارة:</b> ${escHtml(m.message)}
                     <span class="admin-msg-time">${new Date(m.created_at).toLocaleString('ar-SY')}</span>
                     <button class="single-read-btn" onclick="markSingleAsRead(${m.id})">تمت القراءة</button>
                     <div style="clear:both;"></div>
@@ -1940,7 +1992,7 @@
                 // ===== نهاية حماية ترتيب المطاعم =====
             }
         } catch(e) {
-            console.warn('fetchRes:', e.message);
+            // [SEC-FIX-LOG] تم إزالة console.warn في بيئة الإنتاج لمنع تسريب معلومات داخلية
             // ===== عند الخطأ: عرض الكاش المحلي دائماً بدون إخفاء المطاعم =====
             const stored = getStorage('cached_restaurants');
             if(stored && stored.length > 0) { data = stored; _cache.res = stored; }
@@ -1988,7 +2040,7 @@
                 <div class="flex-reverse">
                     <img src="${r.logo||'https://via.placeholder.com/150'}" style="border-radius:10px;border:1px solid var(--gold);object-fit:cover;width:65px;height:65px;" onerror="this.src='https://via.placeholder.com/150'">
                     <div style="flex:1;text-align:right;margin-right:8px;">
-                        <b class="res-name" style="font-size:11px;">${r.name}</b>
+                        <b class="res-name" style="font-size:11px;">${escHtml(r.name)}</b>
                         <br><small style="color:var(--gold);font-size:9px;">${r.delivery_fee||0} ل.س • ${r.open_time||''}</small>
                     </div>
                 </div>
@@ -2229,7 +2281,7 @@
             _cache.oncall = oncallRes.data || [];
 
         } catch(e) {
-            console.warn('fetchPharma:', e.message);
+            // [SEC-FIX-LOG] تم إزالة console.warn في بيئة الإنتاج لمنع تسريب معلومات داخلية
             const stored = getStorage('cached_pharmacies');
             if(stored && !_cache.pharma) { pharmacyData = stored; _cache.pharma = stored; }
             // تأكد oncall لا يبقى null
@@ -2373,7 +2425,7 @@
                          onerror="this.src='https://via.placeholder.com/50'">
                     <div style="flex:1;text-align:right;margin-right:10px;">
                         <b style="font-size:12px;color:${p._isOnCallNow?'#fff':'#3498db'};">
-                            <i class="fas fa-prescription-bottle-alt" style="color:#3498db;"></i> ${p.name}
+                            <i class="fas fa-prescription-bottle-alt" style="color:#3498db;"></i> ${escHtml(p.name)}
                         </b>
                         ${oncallBadge}
                         <div style="margin-top:3px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
@@ -2407,9 +2459,9 @@
             const _pointsCheckEl = document.getElementById('consult-points-check');
             if (_pointsCheckEl) {
                 if (_pointsValueInMoney >= _consultFeeVal) {
-                    _pointsCheckEl.innerHTML = `<span style="color:#2ecc71;"><i class="fas fa-check-circle"></i> رصيد نقاطك كافٍ (${_userPoints} نقطة = ${_pointsValueInMoney.toLocaleString()} ل.س)</span>`;
+                    _pointsCheckEl.innerHTML = `<span style="color:#2ecc71;"><i class="fas fa-check-circle"></i> رصيد نقاطك كافٍ (${escHtml(String(_userPoints))} نقطة = ${escHtml(String(_pointsValueInMoney.toLocaleString()))} ل.س)</span>`;
                 } else {
-                    _pointsCheckEl.innerHTML = `<span style="color:#e74c3c;"><i class="fas fa-times-circle"></i> رصيد نقاطك غير كافٍ (${_userPoints} نقطة = ${_pointsValueInMoney.toLocaleString()} ل.س)</span>`;
+                    _pointsCheckEl.innerHTML = `<span style="color:#e74c3c;"><i class="fas fa-times-circle"></i> رصيد نقاطك غير كافٍ (${escHtml(String(_userPoints))} نقطة = ${escHtml(String(_pointsValueInMoney.toLocaleString()))} ل.س)</span>`;
                 }
             }
         } else {
@@ -2700,7 +2752,7 @@
             const chip = document.createElement('div');
             chip.className = 'menu-cat-chip' + (_currentMenuCatFilter === cat.id ? ' active' : '');
             chip.dataset.catid = cat.id;
-            chip.innerHTML = `<span style="font-size:14px;">${cat.icon||'📂'}</span> ${cat.name}`;
+            chip.innerHTML = `<span style="font-size:14px;">${escHtml(cat.icon||'📂')}</span> ${escHtml(cat.name)}`;
             chip.onclick = () => {
                 _currentMenuCatFilter = cat.id;
                 _applyMenuCatFilter(cats, items, cat.id);
@@ -3054,6 +3106,12 @@
         const inp = document.getElementById('sp-chat-input');
         const text = inp.value.trim();
         if (!text || !_spChatOrderId || _spMsgPending) return;
+        // [SEC-FIX-RATELIMIT] منع إرسال رسائل متتالية بسرعة
+        const _now = Date.now();
+        if (_now - _lastMsgTime < _MSG_MIN_INTERVAL_MS) return;
+        _lastMsgTime = _now;
+        // [SEC-FIX-INPUT] تحديد الحد الأقصى لطول الرسالة
+        if (text.length > 1000) return showNotify('الرسالة طويلة جداً (الحد 1000 حرف)', 'error');
         _spMsgPending = true;
         inp.value = '';
         _appendSpMsg(text, 'out', new Date().toISOString());
@@ -3379,6 +3437,23 @@
             if (_orderLng) _extraFields.lng = _orderLng;
             _extraFields.is_partner_restaurant = _isPartnerRes;
             _extraFields.auto_username         = _autoOrderUsername;
+            // ===== FIX-STORE-LOC: نسخ موقع المتجر من جدول المطاعم إلى الطلب =====
+            try {
+                const _resTable = (res && (res.res_type === 'pharmacy' || res.res_type === 'pharmacy_delivery')) ? 'pharmacies' : 'restaurants';
+                const _resId = res && (res.id || res.restaurant_id);
+                if (_resId) {
+                    const { data: _resLocData } = await _supabase.from(_resTable)
+                        .select('pickup_lat,pickup_lng,res_address,address,maps_url')
+                        .eq('id', _resId).maybeSingle();
+                    if (_resLocData) {
+                        if (_resLocData.pickup_lat)  _extraFields.pickup_lat  = _resLocData.pickup_lat;
+                        if (_resLocData.pickup_lng)  _extraFields.pickup_lng  = _resLocData.pickup_lng;
+                        const _addr = _resLocData.res_address || _resLocData.address || _resLocData.maps_url;
+                        if (_addr) _extraFields.res_address = _addr;
+                    }
+                }
+            } catch(_storeLocErr) { /* لا نوقف الطلب بسبب هذا */ }
+            // ===== نهاية FIX-STORE-LOC =====
             _supabase.from('sh_public_orders').update(_extraFields).eq('id', orderId).then(() => {}).catch(() => {});
 
             const publicOrderData = { ..._corePublicData, ..._extraFields };
@@ -3463,7 +3538,13 @@
                 localStorage.removeItem('shahen_active_order_id'); currentOrderKey = null;
                 updateOrderStatus(orderId, 'cancelled'); nav('p-home');
             } else if (_ps === 'completed') {
+                // [FIX-SYNC-1] إغلاق الطلب عند العميل فوراً عند اكتمال التسليم من Polling
                 clearInterval(_searchPollInterval); _searchPollInterval = null;
+                if (!currentOrderKey) return; // تم معالجته بالفعل
+                showNotify('✅ تم توصيل طلبك بنجاح! نوفي بعهدكم 🦅');
+                localStorage.removeItem('shahen_active_order_id');
+                currentOrderKey = null;
+                document.getElementById('rating-overlay').style.display = 'flex';
             }
         }, 3000); // كل 3 ثواني
     }
@@ -3479,7 +3560,7 @@
                 const noticeDiv = document.createElement('div');
                 noticeDiv.className = 'verify-code-notice';
                 noticeDiv.style.cssText = 'background:rgba(212,175,55,0.15); border:1px dashed var(--gold); border-radius:12px; padding:10px 20px; margin-top:15px; text-align:center;';
-                noticeDiv.innerHTML = `<p style="font-size:10px; color:var(--gold); margin:0 0 5px 0;">كود التحقق الخاص بك 🔑</p><div style="font-size:26px; font-weight:bold; letter-spacing:6px; color:#fff;">${verificationCode}</div>`;
+                noticeDiv.innerHTML = `<p style="font-size:10px; color:var(--gold); margin:0 0 5px 0;">كود التحقق الخاص بك 🔑</p><div style="font-size:26px; font-weight:bold; letter-spacing:6px; color:#fff;">${escHtml(String(verificationCode))}</div>`;
                 document.getElementById('eagle-searching').appendChild(noticeDiv);
             } else {
                 codeNotice.querySelector('div').innerText = verificationCode;
@@ -3862,60 +3943,31 @@
 
     let _orderChannel = null;
 
-    // ===== FIX-MISSING-FUNC: دالة listenForOrderUpdates كانت مستدعاة لكن غير معرّفة (سبب التعطل) =====
+    // ===== [FIX-LISTEN-1] listenForOrderUpdates: الدالة الرسمية للاستماع لتحديثات الطلب =====
+    // كانت تُستدعى في 3 أماكن لكنها لم تكن معرّفة — هذا هو سبب عدم عمل التحديث بعد تسجيل الدخول وعند تعدد الطلبات
     function listenForOrderUpdates(orderId) {
         if (!orderId) return;
-        // إعادة تشغيل simulateAccept مع إعادة تعيين القفل
-        _simulateAcceptLock = false;
-        _lastSimulateAcceptOrderId = null;
-        currentOrderKey = orderId;
+        // تنظيف القناة القديمة قبل إنشاء جديدة لمنع التعارض
+        if (_orderChannel) {
+            try { _supabase.removeChannel(_orderChannel); } catch(e) {}
+            _orderChannel = null;
+        }
+        // تحديث currentOrderKey للتأكد من المزامنة
+        if (currentOrderKey && String(currentOrderKey) !== String(orderId)) {
+            // طلب مختلف عن الحالي — تحديث المفتاح
+        }
+        currentOrderKey = String(orderId);
         simulateAccept();
     }
-    // ===== نهاية FIX-MISSING-FUNC =====
+    // ===== نهاية [FIX-LISTEN-1] =====
 
-    // ===== FIX-FREEZE-2: منع تجمّد الواجهة عند كثرة الطلبات =====
-    // نظام قائمة انتظار للتحديثات لمنع التعارض
-    let _updateQueue = [];
-    let _updateProcessing = false;
-
-    async function _processUpdateQueue() {
-        if (_updateProcessing || _updateQueue.length === 0) return;
-        _updateProcessing = true;
-        const fn = _updateQueue.shift();
-        try { await fn(); } catch(e) { /* نتجاهل الخطأ ونكمل */ }
-        _updateProcessing = false;
-        // معالجة العنصر التالي بعد إطار رسم واحد
-        requestAnimationFrame(() => _processUpdateQueue());
-    }
-
-    function _enqueueUpdate(fn) {
-        // لا نضيف أكثر من 5 تحديثات في القائمة لمنع التراكم
-        if (_updateQueue.length < 5) {
-            _updateQueue.push(fn);
-            _processUpdateQueue();
-        }
-    }
-
-    // حماية من تعدد استدعاءات simulateAccept وإنشاء قنوات متعددة
-    let _simulateAcceptLock = false;
-    let _lastSimulateAcceptOrderId = null;
-    // ===== نهاية FIX-FREEZE-2 =====
-
-
+    // ===== خامساً: منطق القنص - عند قبول مندوب للطلب يُخفى من واجهة المناديب الآخرين =====
     // يتم ذلك عبر حقل claimed_by_driver في sh_public_orders
     // المناديب الآخرون يقرؤون فقط الطلبات بحالة searching وبدون claimed_by_driver
     // عند القنص: status => accepted + claimed_by_driver => driver_id
     // هذا يمنع المناديب الآخرين من رؤيته أو قنصه
 
     function simulateAccept() {
-        // ===== FIX-FREEZE-2b: منع إنشاء قنوات مكررة لنفس الطلب =====
-        if (_simulateAcceptLock && _lastSimulateAcceptOrderId === String(currentOrderKey)) {
-            return; // تجاهل الاستدعاء المكرر لنفس الطلب
-        }
-        _simulateAcceptLock = true;
-        _lastSimulateAcceptOrderId = String(currentOrderKey);
-        setTimeout(() => { _simulateAcceptLock = false; }, 30000);
-        // ===== نهاية FIX-FREEZE-2b =====
         // الحماية: لا نبدأ البحث عن مندوب إذا كان الطلب لا يزال استشارة نشطة
         // الشرط: res_type صيدلية + الحالة consulting أو accepted + is_consultation لم يُلغَ بعد
         const currentOrders = getStorage('orders');
@@ -3927,6 +3979,9 @@
             // [FIX-SEC-2d] console.warn محذوف في الإنتاج
             return;
         }
+
+        // [FIX-RACE-1] تنظيف polling القديم لمنع تعارض الطلبات المتتالية
+        if (_searchPollInterval) { clearInterval(_searchPollInterval); _searchPollInterval = null; }
 
         if (_orderChannel) {
             _supabase.removeChannel(_orderChannel);
@@ -3946,7 +4001,6 @@
                     showNotify("عذراً، تم إلغاء الطلب. ❌", "error");
                     localStorage.removeItem('shahen_active_order_id');
                     _isConsultChatOpen = false;
-                    _simulateAcceptLock = false; // ===== FIX-FREEZE-2c: تحرير القفل عند الإلغاء =====
                     currentOrderKey = null;
                     updateOrderStatus(payload.new.id, 'cancelled');
                     nav('p-home');
@@ -3980,28 +4034,6 @@
                     checkOrderAction(currentOrderKey, s);
                 }
 
-                // ===== FIX-CLOSE-1: إغلاق الطلب عند العميل فور تغيير حالته للمكتمل من المندوب =====
-                if (s === 'delivered' || s === 'تم التسليم' || s === 'تم التوصيل') {
-                    // إضافة: دعم حالة "تم التسليم" التي قد يستخدمها المندوب
-                    const _delivCompletedId = currentOrderKey;
-                    showNotify('✅ تم توصيل طلبك بنجاح! نوفي بعهدكم 🦅');
-                    // تحديث السجل المحلي فوراً
-                    let _delivOrders = getStorage('orders');
-                    _delivOrders = _delivOrders.map(o => String(o.id) === String(_delivCompletedId) ? {...o, status: 'completed', driver_name: payload.new.driver_name || o.driver_name} : o);
-                    setStorage('orders', _delivOrders);
-                    // إظهار نافذة التقييم فوراً
-                    const _rateNameDeliv = document.getElementById('rate-driver-name');
-                    if (_rateNameDeliv && payload.new.driver_name) _rateNameDeliv.innerText = payload.new.driver_name;
-                    document.getElementById('rating-overlay').style.display = 'flex';
-                    // تصفير الطلب النشط
-                    localStorage.removeItem('shahen_active_order_id');
-                    _isConsultChatOpen = false;
-                    currentOrderKey = null;
-                    if (_clientMsgPollInterval) { clearInterval(_clientMsgPollInterval); _clientMsgPollInterval = null; }
-                    if (_searchPollInterval) { clearInterval(_searchPollInterval); _searchPollInterval = null; }
-                    return;
-                }
-                // ===== نهاية FIX-CLOSE-1 =====
                 if (s === 'completed') { 
                     // ===== إصلاح: نحفظ الـ ID قبل تصفير currentOrderKey لضمان حفظ البيانات =====
                     const _completedOrderId = currentOrderKey;
@@ -4158,7 +4190,7 @@
                     }
                 }
             }
-        } catch(e) { console.warn('[SHAHEN] _prefillInvoiceFromHistory error:', e); }
+        } catch(e) { /* [SEC-FIX-LOG] تم إزالة console.warn في بيئة الإنتاج */ }
     }
 
     // دالة مساعدة: مسح الفواتير القديمة وإعادة التعبئة عند تغيير الطلب
@@ -4175,7 +4207,7 @@
         // ===== قراءة مبلغ فاتورة الصيدلية من الخانة (معبأ تلقائياً أو يدوياً) =====
         // ===== مسح أي قيم قديمة أو متعارضة قبل القراءة =====
         const _inputEl = document.getElementById('pharmacy-invoice-input');
-        const pharmacyTotalFromMsg = _inputEl ? (parseFloat(_inputEl.value) || 0) : 0;
+        const pharmacyTotalFromMsg = _inputEl ? (sanitizeAmount(_inputEl.value) || 0) : 0;
         if (pharmacyTotalFromMsg <= 0) {
             // تحقق من نوع الطلب لتخصيص رسالة الخطأ
             const _curOrdList = getStorage('orders');
@@ -4208,7 +4240,7 @@
                 }
             }
         } catch(e) {
-            console.warn('[SHAHEN] Could not fetch pharmacy messages for invoice:', e);
+            /* [SEC-FIX-LOG] تم إزالة console.warn - تسرب معلومات */
         }
 
         // نجلب بيانات الطلب الحالي من السيرفر للحصول على total و items الأصلية
@@ -4262,7 +4294,7 @@
                 if (_phData && _phData.consultation_fee_enabled && _phData.consultation_fee > 0) {
                     _consultationFee = Number(_phData.consultation_fee);
                 }
-            } catch(_phErr) { console.warn('[SHAHEN] could not fetch pharma consultation_fee:', _phErr); }
+            } catch(_phErr) { /* [SEC-FIX-LOG] تم إزالة console.warn */ }
         }
         // المجموع النهائي = فاتورة الأدوية + سعر التوصيل + رسوم الاستشارة
         const _grandTotal = _pharmacyOnlyTotal + _deliveryPrice + _consultationFee;
@@ -4360,7 +4392,7 @@
                     });
                     setStorage('orders', orders);
                 }
-            } catch(e) { console.warn('[SHAHEN] updateOrderStatus: could not fetch missing order', e); }
+            } catch(e) { /* [SEC-FIX-LOG] تم إزالة console.warn */ }
         }
         orders = getStorage('orders');
         orders = orders.map(o => {
@@ -4410,7 +4442,7 @@
                         });
                         setStorage('orders', ordersAfterComplete);
                     }
-                } catch(e) { console.warn('[SHAHEN] Could not fetch completed order details:', e); }
+                } catch(e) { /* [SEC-FIX-LOG] تم إزالة console.warn */ }
                 localStorage.removeItem('shahen_active_order_id');
                 _isConsultChatOpen = false;
                 currentOrderKey = null;
@@ -4618,7 +4650,7 @@
                     <!-- اسم المطعم ونوع الطلب -->
                     <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
                         <div>
-                            <div style="font-size:12px; font-weight:bold; color:#fff;">${typeIcon} ${o.restaurant_name || 'طلب وصيني'}</div>
+                            <div style="font-size:12px; font-weight:bold; color:#fff;">${typeIcon} ${escHtml(o.restaurant_name || 'طلب وصيني')}</div>
                             <div style="font-size:9px; color:${typeColor}; margin-top:2px;">${typeLabel}</div>
                         </div>
                         <div style="text-align:left;">
@@ -4631,7 +4663,7 @@
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px; font-size:9px; color:#888; background:rgba(0,0,0,0.2); border-radius:8px; padding:6px 8px;">
                         ${_delivery > 0 ? `<div>🛵 توصيل: <b style="color:#fff;">${_delivery.toLocaleString()} ل.س</b></div>` : '<div></div>'}
                         ${_sub > 0 && _delivery > 0 ? `<div>🛍️ طلب: <b style="color:#fff;">${_sub.toLocaleString()} ل.س</b></div>` : '<div></div>'}
-                        ${o.driver_name ? `<div>🦅 المندوب: <b style="color:var(--gold);">${o.driver_name}</b></div>` : '<div></div>'}
+                        ${o.driver_name ? `<div>🦅 المندوب: <b style="color:var(--gold);">${escHtml(o.driver_name)}</b></div>` : '<div></div>'}
                         ${o.verify_code && !isArchived ? `<div>🔑 الكود: <b style="color:var(--gold); letter-spacing:2px;">${o.verify_code}</b></div>` : '<div></div>'}
                     </div>
 
@@ -4654,7 +4686,7 @@
 
                     ${o.status === 'cancelled' && o.cancel_reason ? `
                     <div style="margin-top:6px; background:rgba(231,76,60,0.1); border-radius:6px; padding:5px 8px; font-size:9px; color:#e74c3c;">
-                        <i class="fas fa-info-circle"></i> سبب الإلغاء: ${o.cancel_reason}
+                        <i class="fas fa-info-circle"></i> سبب الإلغاء: ${escHtml(o.cancel_reason)}
                     </div>` : ''}
                 </div>
             </div>`;
@@ -4702,8 +4734,8 @@
                 </div>
                 <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:12px;font-size:11px;line-height:2;">
                     <div style="display:flex;justify-content:space-between;"><span style="color:#aaa;">الحالة:</span><b style="color:${order.status==='completed'?'#2ecc71':'#e74c3c'};">${_statusText}</b></div>
-                    <div style="display:flex;justify-content:space-between;"><span style="color:#aaa;">المطعم/المتجر:</span><b style="color:#fff;">${order.restaurant_name || '---'}</b></div>
-                    ${order.driver_name ? `<div style="display:flex;justify-content:space-between;"><span style="color:#aaa;">المندوب:</span><b style="color:var(--gold);">🦅 ${order.driver_name}</b></div>` : ''}
+                    <div style="display:flex;justify-content:space-between;"><span style="color:#aaa;">المطعم/المتجر:</span><b style="color:#fff;">${escHtml(order.restaurant_name || '---')}</b></div>
+                    ${order.driver_name ? `<div style="display:flex;justify-content:space-between;"><span style="color:#aaa;">المندوب:</span><b style="color:var(--gold);">🦅 ${escHtml(order.driver_name)}</b></div>` : ''}
                     <div style="display:flex;justify-content:space-between;"><span style="color:#aaa;">${_invLbl}:</span><b style="color:#fff;">${_subtotal.toLocaleString()} ل.س</b></div>
                     <div style="display:flex;justify-content:space-between;"><span style="color:#aaa;">🛵 التوصيل:</span><b style="color:#fff;">${_delivery.toLocaleString()} ل.س</b></div>
                     ${_consultFee > 0 ? `<div style="display:flex;justify-content:space-between;"><span style="color:#f39c12;">🩺 رسوم الاستشارة:</span><b style="color:#f39c12;">${_consultFee.toLocaleString()} ل.س</b></div>` : ''}
@@ -4766,7 +4798,7 @@
 
         // إذا كان الطلب مقبولاً، نفتح صفحة الدردشة والكود فوراً
         if (['accepted', 'preparing', 'ready'].includes(serverOrder.status)) {
-            const driverWA = serverOrder.driver_phone || '966546083283';
+            const driverWA = /^[0-9+]{7,15}$/.test(serverOrder.driver_phone||'') ? serverOrder.driver_phone : '966546083283'; // [SEC-FIX-REDIRECT] التحقق من صحة رقم الجوال
             const driverName = serverOrder.driver_name || "صقر الشاهين 🦅";
             document.getElementById('driver-chat-name').innerText = driverName;
             document.getElementById('driver-chat-phone').innerText = driverWA;
@@ -4932,6 +4964,31 @@
                 }
             }, 8000);
 
+            // [FIX-SYNC-2] polling إضافي للكشف عن إغلاق الطلب (completed) من جهة المندوب
+            // يعمل جنباً إلى جنب مع الـ Realtime channel كاحتياطي
+            const _driverCompletePollId = id;
+            const _driverCompletePoll = setInterval(async () => {
+                if (!currentOrderKey || String(currentOrderKey) !== String(_driverCompletePollId)) {
+                    clearInterval(_driverCompletePoll); return;
+                }
+                const { data: _dcp } = await _supabase.from('sh_public_orders')
+                    .select('status, driver_name').eq('id', _driverCompletePollId).maybeSingle();
+                if (_dcp && _dcp.status === 'completed') {
+                    clearInterval(_driverCompletePoll);
+                    if (currentOrderKey) { // لم يُعالَج بعد
+                        showNotify('✅ تم توصيل طلبك بنجاح! نوفي بعهدكم 🦅');
+                        const _rateNameEl = document.getElementById('rate-driver-name');
+                        if (_rateNameEl && _dcp.driver_name) _rateNameEl.innerText = _dcp.driver_name;
+                        // إغلاق الطلب وعرض التقييم
+                        localStorage.removeItem('shahen_active_order_id');
+                        _isConsultChatOpen = false;
+                        if (_clientMsgPollInterval) { clearInterval(_clientMsgPollInterval); _clientMsgPollInterval = null; }
+                        currentOrderKey = null;
+                        document.getElementById('rating-overlay').style.display = 'flex';
+                    }
+                }
+            }, 6000);
+
             simulateAccept();
             return;
         }
@@ -5039,6 +5096,12 @@
         const inp = document.getElementById('m-inp');
         const text = inp.value.trim();
         if (!text || _sendMsgPending) return;
+        // [SEC-FIX-RATELIMIT] منع السبام في الدردشة
+        const _nowMsg = Date.now();
+        if (_nowMsg - _lastMsgTime < _MSG_MIN_INTERVAL_MS) return;
+        _lastMsgTime = _nowMsg;
+        // [SEC-FIX-INPUT] تحديد الحد الأقصى لطول الرسالة
+        if (text.length > 1000) return showNotify('الرسالة طويلة جداً (الحد 1000 حرف)', 'error');
         _sendMsgPending = true;
         inp.value = '';
 
@@ -5277,114 +5340,9 @@
         currentOrderKey = null;
         _confirmOrderPending = false; _medConsultPending = false; _wassayniPending = false;
         _storeConsultPending = false; _sendMsgPending = false; _spMsgPending = false; localStorage.removeItem('shahen_user'); localStorage.removeItem('shahen_pledge'); location.reload(); }
-    function sendComplaint(context) { window.open(`https://wa.me/966546083283?text=لدي شكوى بخصوص: ${context}`); }
+    function sendComplaint(context) { window.open(`https://wa.me/966546083283?text=لدي شكوى بخصوص: ${encodeURIComponent(context||'')}`); }
 
-    // ===== FIX-AUTO-REFRESH-4: تحديث تلقائي خفيف كل 5 دقائق =====
-    let _autoRefreshInterval = null;
-    let _autoRefreshBar = null;
-    let _autoRefreshCountdown = 300; // 5 دقائق بالثواني
-
-    function _createAutoRefreshBar() {
-        if (document.getElementById('_auto-refresh-bar')) return;
-        const bar = document.createElement('div');
-        bar.id = '_auto-refresh-bar';
-        bar.style.cssText = [
-            'position:fixed', 'bottom:75px', 'left:50%', 'transform:translateX(-50%)',
-            'width:auto', 'max-width:200px', 'padding:3px 10px', 'border-radius:20px',
-            'background:rgba(212,175,55,0.08)', 'border:1px solid rgba(212,175,55,0.2)',
-            'color:rgba(212,175,55,0.5)', 'font-size:9px', 'text-align:center',
-            'z-index:50', 'pointer-events:none', 'transition:opacity 0.5s',
-            'opacity:0', 'white-space:nowrap'
-        ].join(';');
-        bar.innerHTML = '<span id="_ar-text">🔄</span>';
-        // نضيفه داخل app-shell إن وجد، وإلا داخل body
-        const shell = document.getElementById('main-app-shell');
-        if (shell) shell.appendChild(bar);
-        else document.body.appendChild(bar);
-        _autoRefreshBar = bar;
-    }
-
-    function _showAutoRefreshBar(text, durationMs) {
-        if (!_autoRefreshBar) _createAutoRefreshBar();
-        const textEl = document.getElementById('_ar-text');
-        if (textEl) textEl.innerText = text;
-        _autoRefreshBar.style.opacity = '0.6';
-        if (durationMs) {
-            setTimeout(() => {
-                if (_autoRefreshBar) _autoRefreshBar.style.opacity = '0';
-            }, durationMs);
-        }
-    }
-
-    async function _silentAutoRefresh() {
-        if (!currentUser) return;
-        try {
-            _showAutoRefreshBar('🔄 تحديث...', 2000);
-            // تحديث بيانات المستخدم (النقاط)
-            const { data: dbUser } = await _supabase.from('customers').select('points,address').eq('id', currentUser.uid).single();
-            if (dbUser) {
-                currentUser.points = dbUser.points;
-                const ptEl = document.getElementById('shahen-points');
-                if (ptEl) ptEl.innerText = dbUser.points;
-                if (dbUser.address && dbUser.address !== currentUser.address) {
-                    currentUser.address = dbUser.address;
-                    const addrEl = document.getElementById('my-address');
-                    if (addrEl) addrEl.innerText = dbUser.address;
-                }
-                localStorage.setItem('shahen_user', JSON.stringify(currentUser));
-            }
-            // تحديث الطلب النشط إن وجد
-            if (currentOrderKey) {
-                const { data: activeOrd } = await _supabase.from('sh_public_orders').select('status,verify_code,driver_name,total,delivery_price').eq('id', currentOrderKey).maybeSingle();
-                if (activeOrd) {
-                    if (activeOrd.status === 'completed' && String(currentOrderKey)) {
-                        // الطلب اكتمل — نحدّث العميل فوراً
-                        showNotify('✅ تم توصيل طلبك! نوفي بعهدكم 🦅');
-                        const rateEl = document.getElementById('rating-overlay');
-                        if (rateEl) rateEl.style.display = 'flex';
-                        localStorage.removeItem('shahen_active_order_id');
-                        _isConsultChatOpen = false;
-                        _simulateAcceptLock = false;
-                        currentOrderKey = null;
-                    } else if (['cancelled','failed','rejected'].includes(activeOrd.status)) {
-                        showNotify('❌ تم إلغاء طلبك', 'error');
-                        localStorage.removeItem('shahen_active_order_id');
-                        currentOrderKey = null;
-                        _simulateAcceptLock = false;
-                    }
-                }
-            }
-            // تحديث قائمة الطلبات في الخلفية إذا كانت الصفحة مفتوحة
-            if (document.getElementById('p-history') && document.getElementById('p-history').style.display === 'flex') {
-                renderHistory();
-            }
-        } catch(e) { /* صمت تام عند الخطأ */ }
-    }
-
-    function _startAutoRefresh() {
-        if (_autoRefreshInterval) clearInterval(_autoRefreshInterval);
-        _createAutoRefreshBar();
-        _autoRefreshCountdown = 300;
-        _autoRefreshInterval = setInterval(async () => {
-            _autoRefreshCountdown--;
-            // نظهر الشريط قبل 10 ثواني من التحديث بشكل خفيف جداً
-            if (_autoRefreshCountdown <= 10 && _autoRefreshCountdown > 0) {
-                _showAutoRefreshBar('🔄 ' + _autoRefreshCountdown + 's');
-            }
-            if (_autoRefreshCountdown <= 0) {
-                _autoRefreshCountdown = 300;
-                await _silentAutoRefresh();
-            }
-        }, 1000);
-    }
-
-    function _stopAutoRefresh() {
-        if (_autoRefreshInterval) { clearInterval(_autoRefreshInterval); _autoRefreshInterval = null; }
-        if (_autoRefreshBar) _autoRefreshBar.style.opacity = '0';
-    }
-    // ===== نهاية FIX-AUTO-REFRESH-4 =====
-
-
+    window.onload = () => {
         // ===== Listener رسمي من Supabase: يُفعَّل تلقائياً عند أي تغيير في حالة المصادقة =====
         // يعمل عند: تسجيل الدخول، تفعيل البريد، انتهاء الجلسة، إلخ
         _supabase.auth.onAuthStateChange(async (event, session) => {
@@ -5423,14 +5381,26 @@
 
                 showNotify("أهلاً بك يا شاهين 🦅 تم تسجيل دخولك");
                 loadUserData();
-                _startAutoRefresh(); // ===== FIX-AUTO-REFRESH-4: بدء التحديث التلقائي بعد تفعيل البريد =====
+                // [FIX-LOGIN-RT] إعادة تشغيل channels الطلب النشط فوراً بعد تسجيل الدخول
+                setTimeout(async () => {
+                    const _loginActiveId = localStorage.getItem('shahen_active_order_id');
+                    if (_loginActiveId && currentUser) {
+                        const { data: _loginOrder } = await _supabase.from('sh_public_orders')
+                            .select('status').eq('id', _loginActiveId).maybeSingle();
+                        if (_loginOrder && !['completed','cancelled','failed','rejected','inactive'].includes(_loginOrder.status)) {
+                            if (!_orderChannel) {
+                                currentOrderKey = _loginActiveId;
+                                listenForOrderUpdates(_loginActiveId);
+                            }
+                        }
+                    }
+                }, 1500);
                 return;
             }
 
             // ===== عند تسجيل الخروج: إعادة لصفحة الدخول =====
             if (event === 'SIGNED_OUT') {
                 currentUser = null;
-                _stopAutoRefresh(); // ===== FIX-AUTO-REFRESH-4: إيقاف التحديث التلقائي =====
                 nav('p-login');
                 document.getElementById('tab-bar').style.display = 'none';
                 return;
