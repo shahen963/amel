@@ -899,13 +899,13 @@
 
         <h3 style="color:var(--gold); font-size: 13px; margin-top: 15px;">تواصل مع الإدارة 🦅</h3>
         <div class="card" style="display: flex; flex-direction: row; justify-content: space-around; gap: 10px; padding: 12px;">
-            <a href="https://wa.me/966546083283" target="_blank" style="text-decoration: none;">
+            <a id="admin-whatsapp-link-1" href="https://wa.me/966546083283" target="_blank" style="text-decoration: none;">
                 <i class="fab fa-whatsapp" style="color: #25d366; font-size: 30px;"></i>
             </a>
-            <a href="#" target="_blank" style="text-decoration: none;">
+            <a id="admin-facebook-link" href="#" target="_blank" style="text-decoration: none;">
                 <i class="fab fa-facebook" style="color: #1877f2; font-size: 30px;"></i>
             </a>
-            <a href="https://www.instagram.com/shahe_enexpress?igsh=MWNhYjZqam8wOHEzMg%3D%3D&utm_source=qr" target="_blank" style="text-decoration: none;">
+            <a id="admin-instagram-link" href="https://www.instagram.com/shahe_enexpress?igsh=MWNhYjZqam8wOHEzMg%3D%3D&utm_source=qr" target="_blank" style="text-decoration: none;">
                 <i class="fab fa-instagram" style="color: #e4405f; font-size: 30px;"></i>
             </a>
             <!-- ===== FIX-TG-CLIENT-2: أيقونة التواصل مع الإدارة عبر تيليجرام ===== -->
@@ -917,6 +917,14 @@
             </div>
             <!-- ===== نهاية FIX-TG-CLIENT-2 ===== -->
         </div>
+        <!-- ===== زر قناة واتساب المناديب/العملاء (يظهر فقط إذا أعدّته الإدارة) ===== -->
+        <div id="admin-whatsapp-channel-wrap" style="display:none; margin-bottom:8px;">
+            <a id="admin-whatsapp-channel-link" href="#" target="_blank" rel="noopener noreferrer"
+               style="display:flex; align-items:center; justify-content:center; gap:8px; background:linear-gradient(135deg,#075e54,#25d366); color:#fff; padding:10px; border-radius:12px; text-decoration:none; font-size:12px; font-weight:bold;">
+                <i class="fab fa-whatsapp" style="font-size:16px;"></i> قناة واتساب الشاهين 📢
+            </a>
+        </div>
+        <!-- ===== نهاية زر قناة واتساب ===== -->
         
         <h3 style="color:var(--gold); font-size: 13px; margin-top: 8px;">تحديد موقعي الدقيق 📍</h3>
         <div id="profile-map-view" style="width: 100%; height: 160px; border-radius: 12px; border: 2px solid var(--gold); margin-bottom: 12px;" onclick="openFullMap('profile')"></div>
@@ -1449,6 +1457,26 @@
                 }
             }
             // ===== نهاية تحميل رابط تيليجرام =====
+            // ===== [CONTACT-SYNC] تحميل روابط التواصل الاجتماعي من قاعدة البيانات =====
+            if (config.contact_whatsapp1) {
+                const _waLink1 = document.getElementById('admin-whatsapp-link-1');
+                if (_waLink1) _waLink1.href = 'https://wa.me/' + config.contact_whatsapp1.replace(/[^0-9]/g,'');
+            }
+            if (config.contact_facebook && config.contact_facebook.trim() !== '') {
+                const _fbLink = document.getElementById('admin-facebook-link');
+                if (_fbLink) _fbLink.href = config.contact_facebook;
+            }
+            if (config.contact_instagram && config.contact_instagram.trim() !== '') {
+                const _igLink = document.getElementById('admin-instagram-link');
+                if (_igLink) _igLink.href = config.contact_instagram;
+            }
+            if (config.driver_whatsapp_channel && config.driver_whatsapp_channel.trim() !== '') {
+                const _waChLink = document.getElementById('admin-whatsapp-channel-link');
+                const _waChWrap = document.getElementById('admin-whatsapp-channel-wrap');
+                if (_waChLink) _waChLink.href = config.driver_whatsapp_channel;
+                if (_waChWrap) _waChWrap.style.display = 'block';
+            }
+            // ===== [END-CONTACT-SYNC] =====
         }
         
         _supabase.channel('config_updates')
@@ -1468,6 +1496,26 @@
                 // [FIX-TG-6b] تحديث الروابط فور تغييرها من الإدارة
             }
             // ===== نهاية تحديث تيليجرام =====
+            // ===== [CONTACT-SYNC-RT] تحديث روابط التواصل لحظياً =====
+            if (payload.new.contact_whatsapp1) {
+                const _rWa1 = document.getElementById('admin-whatsapp-link-1');
+                if (_rWa1) _rWa1.href = 'https://wa.me/' + payload.new.contact_whatsapp1.replace(/[^0-9]/g,'');
+            }
+            if (payload.new.contact_facebook && payload.new.contact_facebook.trim() !== '') {
+                const _rFb = document.getElementById('admin-facebook-link');
+                if (_rFb) _rFb.href = payload.new.contact_facebook;
+            }
+            if (payload.new.contact_instagram && payload.new.contact_instagram.trim() !== '') {
+                const _rIg = document.getElementById('admin-instagram-link');
+                if (_rIg) _rIg.href = payload.new.contact_instagram;
+            }
+            if (payload.new.driver_whatsapp_channel && payload.new.driver_whatsapp_channel.trim() !== '') {
+                const _rWaCh = document.getElementById('admin-whatsapp-channel-link');
+                const _rWaWrap = document.getElementById('admin-whatsapp-channel-wrap');
+                if (_rWaCh) _rWaCh.href = payload.new.driver_whatsapp_channel;
+                if (_rWaWrap) _rWaWrap.style.display = 'block';
+            }
+            // ===== [END-CONTACT-SYNC-RT] =====
         }).subscribe();
 
         if(!currentUser) return;
@@ -4885,7 +4933,58 @@
                 </div>`;
             }
             
-            document.getElementById('chat-box').innerHTML = pharmacyInvoiceCardHTML + `<div class="card" style="text-align:center; background:rgba(212,175,55,0.1); border:1px solid var(--gold); border-radius:20px; padding:15px;">
+            // ===== [GENERAL-INVOICE] بناء فاتورة عامة لجميع أنواع الطلبات غير الصيدلية =====
+            let generalInvoiceCardHTML = '';
+            if (!isPharmacyDeliveryOrder) {
+                const _gTotal     = Number(serverOrder.total || 0);
+                const _gDelivery  = Number(serverOrder.delivery_price || 0);
+                const _gItemsVal  = Math.max(0, _gTotal - _gDelivery);
+                const _gResName   = serverOrder.restaurant_name || serverOrder.res || 'المتجر';
+                // استخراج الأصناف من حقل items
+                let _gItemsRows = '';
+                try {
+                    const _gItems = typeof serverOrder.items === 'string' ? JSON.parse(serverOrder.items || '[]') : (serverOrder.items || []);
+                    if (_gItems && _gItems.length > 0) {
+                        _gItemsRows = _gItems.map(it => {
+                            const _iName = it.n || it.name || 'صنف';
+                            const _iPrice = Number(it.p || it.price || 0).toLocaleString();
+                            const _iQty   = it.q || it.qty || it.quantity || 1;
+                            return `<div style="display:flex; justify-content:space-between; font-size:11px; padding:3px 0; border-bottom:1px solid rgba(255,255,255,0.06); color:#ddd;">
+                                <span>${_iName}${_iQty > 1 ? ' × ' + _iQty : ''}</span>
+                                <b style="color:#fff;">${_iPrice} ل.س</b>
+                            </div>`;
+                        }).join('');
+                    }
+                } catch(_e) {}
+                generalInvoiceCardHTML = `
+                <div style="background:rgba(30,10,30,0.95); border:1px solid var(--gold); border-radius:14px; padding:12px; margin-bottom:10px;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <i class="fas fa-receipt" style="color:var(--gold); font-size:14px;"></i>
+                            <b style="color:var(--gold); font-size:12px;">فاتورة طلبك — ${_gResName}</b>
+                        </div>
+                        <button id="gen-inv-toggle-btn" onclick="(function(){var b=document.getElementById('gen-inv-body');var btn=document.getElementById('gen-inv-toggle-btn');if(b.style.display==='none'){b.style.display='block';btn.innerText='إخفاء ▲';}else{b.style.display='none';btn.innerText='استعراض ▼';}})()" style="background:rgba(212,175,55,0.15); color:var(--gold); border:1px solid var(--gold); border-radius:8px; padding:4px 10px; font-size:10px; cursor:pointer; font-weight:bold;">استعراض ▼</button>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; font-size:13px; padding:6px 0;">
+                        <span style="color:var(--gold); font-weight:bold;">💰 الإجمالي الكامل</span>
+                        <b style="color:var(--gold); font-size:15px;">${_gTotal.toLocaleString()} ل.س</b>
+                    </div>
+                    <div id="gen-inv-body" style="display:none; margin-top:8px; border-top:1px solid rgba(212,175,55,0.2); padding-top:8px;">
+                        ${_gItemsRows ? `<div style="margin-bottom:8px;">${_gItemsRows}</div>` : ''}
+                        <div style="display:flex; justify-content:space-between; font-size:11px; padding:4px 0; border-bottom:1px solid rgba(212,175,55,0.1);">
+                            <span style="color:#aaa;">🛵 سعر التوصيل</span>
+                            <b style="color:#fff;">${_gDelivery.toLocaleString()} ل.س</b>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; font-size:12px; padding:6px 0; font-weight:bold;">
+                            <span style="color:var(--gold);">🧾 الإجمالي</span>
+                            <b style="color:var(--gold);">${_gTotal.toLocaleString()} ل.س</b>
+                        </div>
+                    </div>
+                </div>`;
+            }
+            // ===== [END-GENERAL-INVOICE] =====
+            
+            document.getElementById('chat-box').innerHTML = pharmacyInvoiceCardHTML + generalInvoiceCardHTML + `<div class="card" style="text-align:center; background:rgba(212,175,55,0.1); border:1px solid var(--gold); border-radius:20px; padding:15px;">
                 <i class="fas fa-motorcycle fa-2x" style="color:var(--gold); margin-bottom:12px;"></i>
                 <h3 style="color:#fff; font-size:15px;">الصقر في الطريق إليك!</h3>
                 <p style="font-size:11px; color:#ccc; margin-bottom:12px;">كود التحقق (سيطلبه المندوب):</p>
@@ -5515,6 +5614,44 @@
                     if (_consultStatusChannel) { try { _supabase.removeChannel(_consultStatusChannel); } catch(e){} _consultStatusChannel = null; }
                     listenConsultStatusOnly(currentOrderKey);
                 }
+                // [FIX-STUCK] إعادة مزامنة حالة الطلب عند العودة لمنع التعليق — بدون تحديث للمتصفح
+                setTimeout(async () => {
+                    try {
+                        const _savedKey = localStorage.getItem('shahen_active_order_id');
+                        if (!_savedKey) return;
+                        const { data: _freshOrd } = await _supabase.from('sh_public_orders')
+                            .select('status, verify_code, driver_name, driver_phone, total, delivery_price, items, restaurant_name, res_type, order_type, is_consultation, driver_id')
+                            .eq('id', _savedKey).maybeSingle();
+                        if (!_freshOrd) return;
+                        // تحديث الكود إذا تغيّر
+                        if (_freshOrd.verify_code && _freshOrd.verify_code !== verificationCode) {
+                            verificationCode = _freshOrd.verify_code;
+                            const _rcEl = document.getElementById('reveal-order-code');
+                            if (_rcEl) _rcEl.innerText = verificationCode;
+                            const _ccEl = document.getElementById('client-reveal-code');
+                            if (_ccEl) _ccEl.innerText = verificationCode;
+                        }
+                        // إذا تغيّرت الحالة لـ accepted/completed/cancelled نُعيد تهيئة الواجهة
+                        const _liveStatus = _freshOrd.status;
+                        if (_liveStatus === 'cancelled') {
+                            localStorage.removeItem('shahen_active_order_id');
+                            currentOrderKey = null;
+                            showNotify('تم إلغاء طلبك ❌', 'error');
+                            if (typeof renderHistory === 'function') renderHistory();
+                        } else if (_liveStatus === 'completed') {
+                            localStorage.removeItem('shahen_active_order_id');
+                            currentOrderKey = null;
+                            if (typeof renderHistory === 'function') renderHistory();
+                        } else if ((_liveStatus === 'accepted' || _liveStatus === 'preparing' || _liveStatus === 'ready') && _freshOrd.driver_id) {
+                            // إذا كان المندوب موجوداً ولم تظهر صفحة الكود — نفتحها
+                            const _chatPage = document.getElementById('p-chat');
+                            if (_chatPage && _chatPage.style.display === 'none') {
+                                if (typeof checkOrderAction === 'function') checkOrderAction(_savedKey, _liveStatus);
+                            }
+                        }
+                    } catch(_visErr) { /* تجاهل أخطاء إعادة المزامنة */ }
+                }, 1000);
+                // [END-FIX-STUCK]
             }
             if (_spChatOrderId && (!_spChatChannel || _spChatChannel.state === 'closed')) {
                 if (_spChatChannel) { try { _supabase.removeChannel(_spChatChannel); } catch(e){} _spChatChannel = null; }
