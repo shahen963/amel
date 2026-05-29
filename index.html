@@ -6063,7 +6063,7 @@
         var _bgLeaveTime = 0;
         var _reloadBtnTimer = null;
         var _reloadBtnAutoHide = null;
-        var _BG_THRESHOLD_MS = 3000;
+        var _BG_THRESHOLD_MS = 3000; // 3 ثواني غياب قبل إظهار الزر
 
         var _reloadBtn = document.createElement('div');
         _reloadBtn.id = '_force-reload-btn';
@@ -6073,7 +6073,7 @@
 
         function _showReloadBtn() {
             _reloadBtn.style.bottom = '85px';
-            var _cd = 10;
+            var _cd = 5;
             var _cdEl = document.getElementById('_reload-countdown');
             if (_cdEl) _cdEl.innerText = _cd;
             if (_reloadBtnAutoHide) clearInterval(_reloadBtnAutoHide);
@@ -6090,9 +6090,6 @@
         }
 
         _reloadBtn.addEventListener('click', function() {
-            var _iconEl = document.getElementById('_reload-spin-icon');
-            if (_iconEl) _iconEl.style.animation = 'rotate 0.8s linear infinite';
-            _hideReloadBtn();
             window.location.reload(true);
         });
 
