@@ -1806,6 +1806,12 @@
 
     async function manualRefreshData() {
         if(!currentUser) return;
+        // [ORDER-LOCK-FIX] لا تُشغّل التحديث التلقائي أثناء إرسال طلب جديد
+        if (_confirmOrderPending || _medConsultPending || _storeConsultPending || _wassayniPending) return;
+        // [REFRESH-LOCK-FIX] منع تشغيل متزامن لنسختين من manualRefreshData
+        if (window._manualRefreshRunning) return;
+        window._manualRefreshRunning = true;
+        try {
         // تحديث صامت للنقاط والبيانات فقط دون تغيير الصفحة
         const { data: dbUser } = await _supabase.from('customers').select('*').eq('id', currentUser.uid).single();
         if(dbUser) { currentUser.points = dbUser.points; document.getElementById('shahen-points').innerText = dbUser.points; }
@@ -1859,8 +1865,11 @@
            }
         }
         renderHistory(); // تحديث قائمة الطلبات في الخلفية
+        } catch(_mrErr) { /* تجاهل أخطاء التحديث التلقائي */ } finally {
+            window._manualRefreshRunning = false;
+        }
     }
-    setInterval(manualRefreshData, 20000);
+    _manualRefreshInterval = setInterval(manualRefreshData, 20000);
 
     // ===== [FIX-AUTOREFRESH] شريط التحديث التلقائي الخفيف كل 5 دقائق =====
     (function _initAutoRefreshBar() {
@@ -3503,6 +3512,8 @@
     async function confirmOrderStart() {
         if (_confirmOrderPending) return;
         _confirmOrderPending = true;
+        // [ORDER-LOCK-FIX] إيقاف التحديث التلقائي مؤقتاً أثناء إرسال الطلب لمنع التعارض
+        if (_manualRefreshInterval) { clearInterval(_manualRefreshInterval); _manualRefreshInterval = null; }
         const _confirmBtn = document.querySelector('[onclick="confirmOrderStart()"]');
         if (_confirmBtn) { _confirmBtn.disabled = true; _confirmBtn.innerText = 'جاري الإرسال...'; }
         try {
@@ -3512,24 +3523,30 @@
         } finally {
             _confirmOrderPending = false;
             if (_confirmBtn) { _confirmBtn.disabled = false; _confirmBtn.innerText = 'تأكيد الطلب 🦅'; }
+            // [ORDER-LOCK-FIX] إعادة تشغيل التحديث التلقائي بعد انتهاء الإرسال
+            if (!_manualRefreshInterval) { _manualRefreshInterval = setInterval(manualRefreshData, 20000); }
         }
     }
 
     // [BG-ORDER-FIX] دالة ضمان الاتصال قبل إرسال أي طلب
     async function _ensureConnectionBeforeOrder() {
-        // اختبار سريع للاتصال بـ Supabase
+        // اختبار سريع بـ fetch مباشر — أسرع وأكثر موثوقية من Supabase client
         try {
-            const _testCtrl = new AbortController();
-            const _testTimer = setTimeout(() => _testCtrl.abort(), 3000);
-            const _testRes = await _supabase.from('app_config').select('id').eq('id', 1).limit(1).abortSignal(_testCtrl.signal);
-            clearTimeout(_testTimer);
-            // الاتصال يعمل — لا نحتاج شيء
+            const _ctrl = new AbortController();
+            const _timer = setTimeout(() => _ctrl.abort(), 4000);
+            await fetch('https://ricoslplbhphydhtrufe.supabase.co/rest/v1/app_config?select=id&id=eq.1&limit=1', {
+                signal: _ctrl.signal,
+                headers: { 'apikey': 'sb_publishable_k6LgEuwPLdCsBMCFC12wfQ_BSOJotuw', 'Accept': 'application/json' }
+            });
+            clearTimeout(_timer);
         } catch (_connErr) {
-            // الاتصال ضعيف أو منقطع — أعد تهيئة القنوات وانتظر قليلاً
-            try { initRealtimeNotifications(); } catch(_e) {}
-            await new Promise(r => setTimeout(r, 800));
+            // الاتصال بطيء — انتظر ثانية للتعافي
+            await new Promise(r => setTimeout(r, 1000));
         }
     }
+    // متغير لتتبع حالة الـ interval أثناء إرسال الطلب
+    let _manualRefreshInterval = null;
+
     async function _confirmOrderStart_inner() {
         const res = data.find(r => r.id === currentResId);
         // ── فحص مزدوج: مقفول أو غير مفعّل → وقف الطلب ──
