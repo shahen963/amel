@@ -1985,6 +1985,11 @@
 
     function initRealtimeNotifications() {
         if(!currentUser) return;
+        // [CANCEL-FIX] تنظيف القناة القديمة قبل إنشاء جديدة لمنع التكديس عند إعادة الاستدعاء
+        try {
+            const _oldNotifCh = _supabase.channel('custom-filter-channel');
+            if (_oldNotifCh) _supabase.removeChannel(_oldNotifCh);
+        } catch(_e) {}
         _supabase.channel('custom-filter-channel')
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${currentUser.uid}` }, payload => {
             fetchAdminMessages();
@@ -3953,12 +3958,20 @@
             orders = orders.map(o => String(o.id) === String(currentOrderKey) ? {...o, status: 'cancelled'} : o);
             setStorage('orders', orders);
             localStorage.removeItem('shahen_active_order_id');
-            // إيقاف الـ channels
-            if (_consultChatChannel) _supabase.removeChannel(_consultChatChannel);
-            if (_consultStatusChannel) _supabase.removeChannel(_consultStatusChannel);
+            // [CANCEL-FIX] إغلاق جميع القنوات وتنظيف شامل
+            if (_consultChatChannel) { try { _supabase.removeChannel(_consultChatChannel); } catch(e){} _consultChatChannel = null; }
+            if (_consultStatusChannel) { try { _supabase.removeChannel(_consultStatusChannel); } catch(e){} _consultStatusChannel = null; }
+            if (_orderChannel) { try { _supabase.removeChannel(_orderChannel); } catch(e){} _orderChannel = null; }
+            if (_spChatChannel) { try { _supabase.removeChannel(_spChatChannel); } catch(e){} _spChatChannel = null; }
             if (_clientMsgPollInterval) { clearInterval(_clientMsgPollInterval); _clientMsgPollInterval = null; }
+            if (_searchPollInterval) { clearInterval(_searchPollInterval); _searchPollInterval = null; }
+            if (_spPollInterval) { clearInterval(_spPollInterval); _spPollInterval = null; }
             _isConsultChatOpen = false;
             currentOrderKey = null;
+            // [CANCEL-FIX] إعادة تهيئة قناة الإشعارات لضمان استمرار الاتصال بعد الإلغاء
+            setTimeout(() => {
+                try { initRealtimeNotifications(); } catch(_e) {}
+            }, 500);
             showNotify("تم إلغاء الاستشارة ❌", "error");
             nav('p-home');
         } else {
@@ -4605,6 +4618,20 @@
         document.getElementById('eagle-searching').style.display = 'none';
         document.getElementById('eagle-consulting').style.display = 'none';
         document.getElementById('searching-sound').pause();
+        // [CANCEL-FIX] إغلاق جميع القنوات المرتبطة بالطلب الملغى ثم إعادة تهيئة النظام
+        if (_orderChannel) { try { _supabase.removeChannel(_orderChannel); } catch(e){} _orderChannel = null; }
+        if (_consultStatusChannel) { try { _supabase.removeChannel(_consultStatusChannel); } catch(e){} _consultStatusChannel = null; }
+        if (_consultChatChannel) { try { _supabase.removeChannel(_consultChatChannel); } catch(e){} _consultChatChannel = null; }
+        if (_spChatChannel) { try { _supabase.removeChannel(_spChatChannel); } catch(e){} _spChatChannel = null; }
+        if (_searchPollInterval) { clearInterval(_searchPollInterval); _searchPollInterval = null; }
+        if (_clientMsgPollInterval) { clearInterval(_clientMsgPollInterval); _clientMsgPollInterval = null; }
+        if (_spPollInterval) { clearInterval(_spPollInterval); _spPollInterval = null; }
+        _isConsultChatOpen = false;
+        currentOrderKey = null;
+        // [CANCEL-FIX] إعادة تهيئة قناة الإشعارات لضمان استمرار الاتصال بعد الإلغاء
+        setTimeout(() => {
+            try { initRealtimeNotifications(); } catch(_e) {}
+        }, 500);
         showNotify("تم الإلغاء", "error");
         nav('p-home');
     }
@@ -5702,7 +5729,19 @@
     // [WATCHDOG-CLIENT] فحص دوري كل 20 ثانية لضمان بقاء القنوات حية
     // ================================================================
     setInterval(function() {
-        if (!currentUser || !currentOrderKey) return;
+        if (!currentUser) return;
+        // [CANCEL-FIX] فحص قناة الإشعارات دائماً — حتى بعد إلغاء الطلب أو بدون طلب نشط
+        try {
+            const _notifChCheck = _supabase.channel('custom-filter-channel');
+            if (!_notifChCheck || _notifChCheck.state === 'errored' || _notifChCheck.state === 'closed' || _notifChCheck.state === 'leaving') {
+                try { if (_notifChCheck) _supabase.removeChannel(_notifChCheck); } catch(_e2) {}
+                initRealtimeNotifications();
+            }
+        } catch(_ne) {
+            try { initRealtimeNotifications(); } catch(_e2) {}
+        }
+        // فحص قنوات الطلب النشط فقط إذا كان هناك طلب
+        if (!currentOrderKey) return;
         let _dead = false;
         try {
             if (!_orderChannel) _dead = true;
@@ -5725,6 +5764,8 @@
         if (!currentUser) return;
         if (e.persisted) {
             // صفحة جاءت من bfcache = كانت في الخلفية فترة طويلة
+            // [CANCEL-FIX] أعد تشغيل الإشعارات دائماً بغض النظر عن وجود طلب نشط
+            try { initRealtimeNotifications(); } catch(_e) {}
             if (currentOrderKey) {
                 if (_orderChannel) { try { _supabase.removeChannel(_orderChannel); } catch(e){} _orderChannel = null; }
                 if (_consultStatusChannel) { try { _supabase.removeChannel(_consultStatusChannel); } catch(e){} _consultStatusChannel = null; }
@@ -5736,8 +5777,17 @@
 
     // [FOCUS-CLIENT] بعض WebView تُطلق focus بدلاً من visibilitychange
     window.addEventListener('focus', function() {
-        if (!currentUser || !currentOrderKey) return;
+        if (!currentUser) return;
         setTimeout(function() {
+            // [CANCEL-FIX] أعد تشغيل الإشعارات دائماً بغض النظر عن وجود طلب نشط
+            try {
+                const _notifFocusCh = _supabase.channel('custom-filter-channel');
+                if (!_notifFocusCh || _notifFocusCh.state === 'errored' || _notifFocusCh.state === 'closed') {
+                    try { if (_notifFocusCh) _supabase.removeChannel(_notifFocusCh); } catch(_e2) {}
+                    initRealtimeNotifications();
+                }
+            } catch(_fe2) { try { initRealtimeNotifications(); } catch(_e3) {} }
+            if (!currentOrderKey) return;
             try {
                 const _chState = _orderChannel ? _orderChannel.state : 'null';
                 if (!_orderChannel || _chState === 'errored' || _chState === 'closed') {
@@ -5759,6 +5809,17 @@
         // [FIX-VIS-5] إعادة تشغيل القنوات عند العودة للتبويب بعد غياب
     document.addEventListener('visibilitychange', function() {
         if (document.visibilityState === 'visible') {
+            // [CANCEL-FIX] أعد تشغيل قناة الإشعارات دائماً عند العودة — حتى بدون طلب نشط
+            setTimeout(function() {
+                if (!currentUser) return;
+                try {
+                    const _visNotifCh = _supabase.channel('custom-filter-channel');
+                    if (!_visNotifCh || _visNotifCh.state === 'errored' || _visNotifCh.state === 'closed' || _visNotifCh.state === 'leaving') {
+                        try { if (_visNotifCh) _supabase.removeChannel(_visNotifCh); } catch(_e2) {}
+                        initRealtimeNotifications();
+                    }
+                } catch(_vne) { try { initRealtimeNotifications(); } catch(_e2) {} }
+            }, 300);
             if (currentOrderKey) {
                 // [BG-RECONNECT] أعد تشغيل القنوات دائماً عند العودة — لا تنتظر حالة closed فقط
                 if (_orderChannel) { try { _supabase.removeChannel(_orderChannel); } catch(e){} _orderChannel = null; }
