@@ -968,14 +968,7 @@
             <a id="admin-instagram-link" href="https://www.instagram.com/shahe_enexpress?igsh=MWNhYjZqam8wOHEzMg%3D%3D&utm_source=qr" target="_blank" style="text-decoration: none;">
                 <i class="fab fa-instagram" style="color: #e4405f; font-size: 30px;"></i>
             </a>
-            <!-- ===== FIX-TG-CLIENT-2: أيقونة التواصل مع الإدارة عبر تيليجرام ===== -->
-            <div id="admin-telegram-social-btn"
-                onclick="_openTelegram('admin')"
-                style="text-decoration:none; display:flex; flex-direction:column; align-items:center; gap:3px; cursor:pointer;">
-                <i class="fab fa-telegram" style="color:#2ca5e0; font-size:30px;"></i>
-                <span style="font-size:8px; color:#2ca5e0;">التواصل مع الإدارة</span>
-            </div>
-            <!-- ===== نهاية FIX-TG-CLIENT-2 ===== -->
+            <!-- ===== FIX-TG-CLIENT-2: تم حذف أيقونة تيليجرام من واجهة العميل ===== -->
         </div>
         <!-- ===== زر قناة واتساب المناديب/العملاء (يظهر فقط إذا أعدّته الإدارة) ===== -->
         <div id="admin-whatsapp-channel-wrap" style="display:none; margin-bottom:8px;">
