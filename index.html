@@ -2061,7 +2061,7 @@
 
         // ── تحميل البيانات حسب الصفحة مع الكاش ──
         if (id === 'p-home')    { _navHome(); }
-        if (id === 'p-cart')    { renderCart(); }
+        if (id === 'p-cart')    { renderCart(); _ensureConnectionBeforeOrder && _ensureConnectionBeforeOrder().catch(()=>{}); }
         if (id === 'p-history') { renderHistory(); }
         if (id === 'p-profile') { initProfileMap(); }
         if (id !== 'p-chat' && _clientMsgPollInterval) { clearInterval(_clientMsgPollInterval); _clientMsgPollInterval = null; }
@@ -3505,9 +3505,29 @@
         _confirmOrderPending = true;
         const _confirmBtn = document.querySelector('[onclick="confirmOrderStart()"]');
         if (_confirmBtn) { _confirmBtn.disabled = true; _confirmBtn.innerText = 'جاري الإرسال...'; }
-        try { await _confirmOrderStart_inner(); } finally {
+        try {
+            // [BG-ORDER-FIX] التحقق من الاتصال قبل الإرسال — يمنع التجمد بعد العودة من الخلفية
+            await _ensureConnectionBeforeOrder();
+            await _confirmOrderStart_inner();
+        } finally {
             _confirmOrderPending = false;
             if (_confirmBtn) { _confirmBtn.disabled = false; _confirmBtn.innerText = 'تأكيد الطلب 🦅'; }
+        }
+    }
+
+    // [BG-ORDER-FIX] دالة ضمان الاتصال قبل إرسال أي طلب
+    async function _ensureConnectionBeforeOrder() {
+        // اختبار سريع للاتصال بـ Supabase
+        try {
+            const _testCtrl = new AbortController();
+            const _testTimer = setTimeout(() => _testCtrl.abort(), 3000);
+            const _testRes = await _supabase.from('app_config').select('id').eq('id', 1).limit(1).abortSignal(_testCtrl.signal);
+            clearTimeout(_testTimer);
+            // الاتصال يعمل — لا نحتاج شيء
+        } catch (_connErr) {
+            // الاتصال ضعيف أو منقطع — أعد تهيئة القنوات وانتظر قليلاً
+            try { initRealtimeNotifications(); } catch(_e) {}
+            await new Promise(r => setTimeout(r, 800));
         }
     }
     async function _confirmOrderStart_inner() {
@@ -3550,7 +3570,7 @@
         try {
             // ── جدول orders: الحقول المضمونة ──
             const _orderInsertPromise = _supabase.from('orders').insert([safeOrderData]);
-            const _orderTimeoutPromise = new Promise((_, rej) => setTimeout(() => rej(new Error('TIMEOUT')), 12000));
+            const _orderTimeoutPromise = new Promise((_, rej) => setTimeout(() => rej(new Error('TIMEOUT')), 20000));
             const { error: err1 } = await Promise.race([_orderInsertPromise, _orderTimeoutPromise]);
             if (err1) throw err1;
 
@@ -3614,9 +3634,15 @@
             pointsDiscountUsed = 0; discountAmount = 0;
             startSearching();
         } catch (error) {
-            // [FIX-ORD-1] retry مرة واحدة عند فشل الإرسال قبل إظهار الخطأ
+            // [BG-ORDER-FIX] عند التجمد بعد الخلفية — أعد الاتصال أولاً ثم retry
             try {
-                await new Promise(r => setTimeout(r, 1500));
+                // إذا كان الخطأ Timeout — احتمال كبير أن السبب انقطاع الاتصال عند العودة من الخلفية
+                if (error.message === 'TIMEOUT' || error.message === 'Failed to fetch' || error.message === 'NetworkError') {
+                    try { initRealtimeNotifications(); } catch(_re) {}
+                    await new Promise(r => setTimeout(r, 2000));
+                } else {
+                    await new Promise(r => setTimeout(r, 1500));
+                }
                 const { error: retryErr1 } = await _supabase.from('orders').insert([safeOrderData]);
                 if (retryErr1) throw retryErr1;
                 const { error: retryErr2 } = await _supabase.from('sh_public_orders').insert([_corePublicData]);
@@ -3640,7 +3666,7 @@
                 _supabase.from('orders').delete().eq('id', orderId).then(() => {}).catch(() => {});
                 _supabase.from('sh_public_orders').delete().eq('id', orderId).then(() => {}).catch(() => {});
                 // [FIX-ERR] رسالة موحدة + retry نظيف بزر إعادة المحاولة
-                showNotify("فشل إرسال الطلب ❌ اضغط تأكيد الطلب مرة أخرى", "error");
+                showNotify("تعذّر إرسال الطلب — تحقق من الاتصال وأعد المحاولة ❌", "error");
             }
         }
     }
