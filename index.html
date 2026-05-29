@@ -1804,6 +1804,9 @@
         }, 1000);
     }
 
+    // [ORDER-LOCK-FIX] متغير الـ interval — مُعرَّف هنا قبل أي استخدام
+    let _manualRefreshInterval = null;
+
     async function manualRefreshData() {
         if(!currentUser) return;
         // [ORDER-LOCK-FIX] لا تُشغّل التحديث التلقائي أثناء إرسال طلب جديد
@@ -3544,8 +3547,6 @@
             await new Promise(r => setTimeout(r, 1000));
         }
     }
-    // متغير لتتبع حالة الـ interval أثناء إرسال الطلب
-    let _manualRefreshInterval = null;
 
     async function _confirmOrderStart_inner() {
         const res = data.find(r => r.id === currentResId);
