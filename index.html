@@ -2014,10 +2014,20 @@
             const _oldNotifCh = _supabase.channel('custom-filter-channel');
             if (_oldNotifCh) _supabase.removeChannel(_oldNotifCh);
         } catch(_e) {}
-        _supabase.channel('custom-filter-channel')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${currentUser.uid}` }, payload => {
-            fetchAdminMessages();
-        }).subscribe();
+        // [NOTIF-FIX] انتظر قصير قبل إنشاء القناة الجديدة لضمان إتمام التنظيف الكامل
+        setTimeout(function() {
+            try {
+                _supabase.channel('custom-filter-channel')
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${currentUser.uid}` }, payload => {
+                    fetchAdminMessages();
+                }).subscribe((status) => {
+                    // [NOTIF-FIX-RETRY] إعادة المحاولة تلقائياً عند فشل القناة
+                    if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+                        setTimeout(function() { try { initRealtimeNotifications(); } catch(_re) {} }, 5000);
+                    }
+                });
+            } catch(_initErr) {}
+        }, 100);
     }
 
     // ============================================================
@@ -4684,9 +4694,29 @@
         if (_spPollInterval) { clearInterval(_spPollInterval); _spPollInterval = null; }
         _isConsultChatOpen = false;
         currentOrderKey = null;
+        // [CANCEL-FIX-GUARDS] تصفير جميع حواجز الإرسال لضمان إمكانية إرسال طلب جديد فوراً بعد الإلغاء
+        _confirmOrderPending = false;
+        _medConsultPending = false;
+        _storeConsultPending = false;
+        _wassayniPending = false;
+        // [CANCEL-FIX-BTNS] إعادة تفعيل جميع أزرار التأكيد التي قد تكون تعطلت
+        try {
+            const _confirmBtn = document.querySelector('[onclick="confirmOrderStart()"]');
+            if (_confirmBtn) { _confirmBtn.disabled = false; _confirmBtn.innerText = 'تأكيد الطلب 🦅'; _confirmBtn.style.opacity = ''; _confirmBtn.style.pointerEvents = ''; }
+            const _medBtn = document.querySelector('[onclick="submitMedicalConsult()"]');
+            if (_medBtn) { _medBtn.disabled = false; _medBtn.innerText = 'أوافق وأطلب الآن 🚀'; _medBtn.style.opacity = ''; _medBtn.style.pointerEvents = ''; }
+            const _scBtn = document.querySelector('[onclick="submitStoreConsult()"]');
+            if (_scBtn) { _scBtn.disabled = false; _scBtn.innerText = 'بدء التواصل 🦅'; _scBtn.style.opacity = ''; _scBtn.style.pointerEvents = ''; }
+        } catch(_btnErr) {}
         // [CANCEL-FIX] إعادة تهيئة قناة الإشعارات لضمان استمرار الاتصال بعد الإلغاء
         setTimeout(() => {
             try { initRealtimeNotifications(); } catch(_e) {}
+            // [CANCEL-FIX-CONN] إعادة الاتصال بـ Supabase Realtime بشكل كامل بعد الإلغاء
+            try {
+                if (currentUser && _supabase.realtime && typeof _supabase.realtime.connect === 'function') {
+                    _supabase.realtime.connect();
+                }
+            } catch(_rtErr) {}
         }, 500);
         showNotify("تم الإلغاء", "error");
         nav('p-home');
@@ -5772,7 +5802,13 @@
     });
     window.addEventListener('online', function() {
         showNotify('✅ عاد الاتصال بالإنترنت', 'info');
+        // [ONLINE-FIX-KEY] استعادة currentOrderKey من localStorage عند عودة الإنترنت
+        if (!currentOrderKey) {
+            const _onlineSavedKey = localStorage.getItem('shahen_active_order_id');
+            if (_onlineSavedKey) currentOrderKey = _onlineSavedKey;
+        }
         // إعادة تشغيل القنوات النشطة
+        try { initRealtimeNotifications(); } catch(_e) {}
         if (currentOrderKey) {
             if (_orderChannel) { try { _supabase.removeChannel(_orderChannel); } catch(e){} _orderChannel = null; }
             listenForOrderUpdates(currentOrderKey);
@@ -5795,6 +5831,11 @@
             }
         } catch(_ne) {
             try { initRealtimeNotifications(); } catch(_e2) {}
+        }
+        // [BG-FIX-KEY] استعادة currentOrderKey من localStorage في حالة فُقد من الذاكرة
+        if (!currentOrderKey) {
+            const _wdSavedKey = localStorage.getItem('shahen_active_order_id');
+            if (_wdSavedKey) currentOrderKey = _wdSavedKey;
         }
         // فحص قنوات الطلب النشط فقط إذا كان هناك طلب
         if (!currentOrderKey) return;
@@ -5822,6 +5863,11 @@
             // صفحة جاءت من bfcache = كانت في الخلفية فترة طويلة
             // [CANCEL-FIX] أعد تشغيل الإشعارات دائماً بغض النظر عن وجود طلب نشط
             try { initRealtimeNotifications(); } catch(_e) {}
+            // [BG-FIX-KEY] استعادة currentOrderKey من localStorage عند العودة من bfcache
+            if (!currentOrderKey) {
+                const _pgSavedKey = localStorage.getItem('shahen_active_order_id');
+                if (_pgSavedKey) currentOrderKey = _pgSavedKey;
+            }
             if (currentOrderKey) {
                 if (_orderChannel) { try { _supabase.removeChannel(_orderChannel); } catch(e){} _orderChannel = null; }
                 if (_consultStatusChannel) { try { _supabase.removeChannel(_consultStatusChannel); } catch(e){} _consultStatusChannel = null; }
@@ -5843,6 +5889,11 @@
                     initRealtimeNotifications();
                 }
             } catch(_fe2) { try { initRealtimeNotifications(); } catch(_e3) {} }
+            // [BG-FIX-KEY] استعادة currentOrderKey من localStorage عند العودة عبر focus
+            if (!currentOrderKey) {
+                const _focusSavedKey = localStorage.getItem('shahen_active_order_id');
+                if (_focusSavedKey) currentOrderKey = _focusSavedKey;
+            }
             if (!currentOrderKey) return;
             try {
                 const _chState = _orderChannel ? _orderChannel.state : 'null';
@@ -5862,6 +5913,61 @@
     // [END-WATCHDOG-CLIENT]
     // ================================================================
 
+    // ================================================================
+    // [HEARTBEAT-CLIENT] فحص صحة الاتصال كل 45 ثانية — يكشف انقطاع WebSocket الصامت
+    // يحدث عند: التنقل بين التطبيقات، قفل الشاشة، الخلفية على iOS/Android
+    // ================================================================
+    let _lastHeartbeatOk = Date.now();
+    setInterval(async function() {
+        if (!currentUser) return;
+        try {
+            // اختبار سريع بـ HTTP مباشر — أخف من Supabase client
+            const _hbCtrl = new AbortController();
+            const _hbTimer = setTimeout(() => _hbCtrl.abort(), 5000);
+            const _hbResp = await fetch('https://ricoslplbhphydhtrufe.supabase.co/rest/v1/app_config?select=id&id=eq.1&limit=1', {
+                signal: _hbCtrl.signal,
+                headers: { 'apikey': SB_KEY, 'Accept': 'application/json' }
+            });
+            clearTimeout(_hbTimer);
+            if (_hbResp.ok) {
+                _lastHeartbeatOk = Date.now();
+            }
+        } catch(_hbErr) {
+            // فشل الـ heartbeat — الاتصال منقطع أو بطيء جداً
+            // لا نفعل شيئاً هنا، الـ online/offline handler سيتولى الأمر
+            return;
+        }
+        // إذا نجح الـ heartbeat، تحقق من حالة القنوات وأعد تشغيل المتوقفة
+        if (!currentOrderKey) {
+            const _hbSavedKey = localStorage.getItem('shahen_active_order_id');
+            if (_hbSavedKey) currentOrderKey = _hbSavedKey;
+        }
+        // فحص قناة الإشعارات
+        try {
+            const _hbNotifCh = _supabase.channel('custom-filter-channel');
+            if (!_hbNotifCh || _hbNotifCh.state === 'errored' || _hbNotifCh.state === 'closed') {
+                try { if (_hbNotifCh) _supabase.removeChannel(_hbNotifCh); } catch(_e2) {}
+                try { initRealtimeNotifications(); } catch(_e3) {}
+            }
+        } catch(_hbNe) {}
+        // فحص قنوات الطلب
+        if (currentOrderKey) {
+            const _hbOrderDead = !_orderChannel || _orderChannel.state === 'errored' || _orderChannel.state === 'closed' || _orderChannel.state === 'leaving';
+            const _hbCsDead = !_consultStatusChannel || _consultStatusChannel.state === 'errored' || _consultStatusChannel.state === 'closed' || _consultStatusChannel.state === 'leaving';
+            if (_hbOrderDead) {
+                if (_orderChannel) { try { _supabase.removeChannel(_orderChannel); } catch(e){} _orderChannel = null; }
+                try { listenForOrderUpdates(currentOrderKey); } catch(_e4) {}
+            }
+            if (_hbCsDead) {
+                if (_consultStatusChannel) { try { _supabase.removeChannel(_consultStatusChannel); } catch(e){} _consultStatusChannel = null; }
+                try { listenConsultStatusOnly(currentOrderKey); } catch(_e5) {}
+            }
+        }
+    }, 45000);
+    // ================================================================
+    // [END-HEARTBEAT-CLIENT]
+    // ================================================================
+
         // [FIX-VIS-5] إعادة تشغيل القنوات عند العودة للتبويب بعد غياب
     document.addEventListener('visibilitychange', function() {
         if (document.visibilityState === 'visible') {
@@ -5876,6 +5982,16 @@
                     }
                 } catch(_vne) { try { initRealtimeNotifications(); } catch(_e2) {} }
             }, 300);
+
+            // [BG-FIX-KEY] استعادة currentOrderKey من localStorage عند العودة من الخلفية
+            // يحل مشكلة: currentOrderKey يصبح null بعد إلغاء الطلب ثم إنشاء طلب جديد
+            if (!currentOrderKey) {
+                const _bgSavedKey = localStorage.getItem('shahen_active_order_id');
+                if (_bgSavedKey) {
+                    currentOrderKey = _bgSavedKey;
+                }
+            }
+
             if (currentOrderKey) {
                 // [BG-RECONNECT] أعد تشغيل القنوات دائماً عند العودة — لا تنتظر حالة closed فقط
                 if (_orderChannel) { try { _supabase.removeChannel(_orderChannel); } catch(e){} _orderChannel = null; }
@@ -5887,10 +6003,17 @@
                     try {
                         const _savedKey = localStorage.getItem('shahen_active_order_id');
                         if (!_savedKey) return;
+                        // [BG-FIX-KEY] تأكيد تزامن currentOrderKey مع localStorage
+                        if (!currentOrderKey) currentOrderKey = _savedKey;
                         const { data: _freshOrd } = await _supabase.from('sh_public_orders')
                             .select('status, verify_code, driver_name, driver_phone, total, delivery_price, items, restaurant_name, res_type, order_type, is_consultation, driver_id')
                             .eq('id', _savedKey).maybeSingle();
-                        if (!_freshOrd) return;
+                        if (!_freshOrd) {
+                            // الطلب لم يعد موجوداً في السيرفر — صفّر الكاش المحلي
+                            localStorage.removeItem('shahen_active_order_id');
+                            currentOrderKey = null;
+                            return;
+                        }
                         // تحديث الكود إذا تغيّر
                         if (_freshOrd.verify_code && _freshOrd.verify_code !== verificationCode) {
                             verificationCode = _freshOrd.verify_code;
