@@ -1151,6 +1151,10 @@
         localStorage.setItem('shahen_display_size', size);
         // تطبيق المقاس فوراً
         resizeApp(size);
+        // [SCREEN-SIZE-DB-FIX] حفظ في قاعدة البيانات إذا كان المستخدم مسجل دخول
+        if (currentUser && currentUser.uid) {
+            _supabase.from('customers').update({ display_size: size }).eq('id', currentUser.uid).catch(() => {});
+        }
         // إخفاء المودال
         const _overlay = document.getElementById('screen-size-overlay');
         if (_overlay) _overlay.style.display = 'none';
@@ -1511,9 +1515,17 @@
                 const { data: _custData } = await _supabase.from('customers')
                     .select('display_size').eq('id', currentUser.uid).single();
                 if (_custData && _custData.display_size) {
-                    // حفظ في localStorage وتطبيق فوري
-                    localStorage.setItem('shahen_display_size', _custData.display_size);
-                    resizeApp(_custData.display_size);
+                    // [SCREEN-SIZE-FIX] الأولوية للـ localStorage (اختيار المستخدم الأخير)
+                    // إذا لم يكن في localStorage نأخذ من DB
+                    const _localSize = localStorage.getItem('shahen_display_size');
+                    if (!_localSize) {
+                        localStorage.setItem('shahen_display_size', _custData.display_size);
+                        resizeApp(_custData.display_size);
+                    }
+                    // إذا كان في localStorage نطبقه ونحدّث DB ليطابقه
+                    else if (_localSize !== _custData.display_size) {
+                        _supabase.from('customers').update({ display_size: _localSize }).eq('id', currentUser.uid).catch(() => {});
+                    }
                 }
             } catch(_dsErr) { /* تجاهل خطأ تحميل المقاس */ }
         }
@@ -1804,7 +1816,7 @@
         }, 1000);
     }
 
-    // [ORDER-LOCK-FIX] متغير الـ interval — مُعرَّف هنا قبل أي استخدام
+    // [ORDER-LOCK-FIX] تعريف متغير الـ interval هنا قبل أي استخدام له لمنع Temporal Dead Zone
     let _manualRefreshInterval = null;
 
     async function manualRefreshData() {
