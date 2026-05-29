@@ -97,8 +97,6 @@
 
         /* نافذة التعهد الشرعي */
         #p-pledge { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--purple); z-index: 10005; display: none; align-items: center; justify-content: center; padding: 30px; text-align: center; }
-        /* [PLEDGE-FIX] عند إظهار التعهد يجب أن يكون flex دائماً */
-        #p-pledge.show-pledge { display: flex !important; }
         .pledge-card { background: var(--glass); border: 2px solid var(--gold); border-radius: 30px; padding: 25px; box-shadow: 0 0 30px var(--gold); position: relative; z-index: 10; }
 
         /* نافذة التقييم الإجباري */
@@ -997,7 +995,7 @@
         </div>
         
         <button class="btn-gold" style="background:#e74c3c; color:white; margin-top:auto; font-size: 12px;" onclick="logout()">تسجيل خروج من طلبات الشاهين</button>
-        <!-- ===== زر قناة التليجرام للمندوبين - تم إزالته من واجهة العميل ===== -->
+        <!-- ===== زر قناة التليجرام للمندوبين — تم حذفه من واجهة العميل ===== -->
     </div>
 
     <!-- ===== شاشة دردشة الطلب المخصص (بنفسجي) ===== -->
@@ -1460,13 +1458,15 @@
         document.getElementById('shahen-points').innerText = currentUser.points || "0";
         // إصلاح المشكلة الرابعة: فحص التعهد فور تسجيل الدخول مباشرة بدون Refresh
         if(!localStorage.getItem('shahen_pledge')) {
-            // [PLEDGE-FIX] استخدام كلاهما style.display وclass لضمان الظهور الفوري
-            const _pledgeEl = document.getElementById('p-pledge');
-            _pledgeEl.style.display = 'flex';
-            _pledgeEl.classList.add('show-pledge');
+            // [PLEDGE-FIX] إخفاء صفحة الدخول أولاً ثم إظهار التعهد فوراً
+            document.getElementById('p-login').style.display = 'none';
+            document.getElementById('p-pledge').style.display = 'flex';
             document.getElementById('tab-bar').style.display = 'none';
             document.getElementById('manual-refresh').style.display = 'none';
             document.getElementById('admin-notif-bell').style.display = 'none';
+            // [PLEDGE-FIX] تشغيل loadUserData في الخلفية حتى لو لم يقبل التعهد بعد
+            // هذا يُهيئ البيانات والـ subscriptions مسبقاً قبل قبول التعهد
+            loadUserData();
         } else {
             document.getElementById('tab-bar').style.display = 'flex';
             document.getElementById('manual-refresh').style.display = 'flex';
@@ -1479,10 +1479,9 @@
     function acceptPledge() {
         if(!document.getElementById('pledge-check').checked) return showNotify("يجب الموافقة على التعهد للمتابعة", "error");
         localStorage.setItem('shahen_pledge', 'accepted');
-        // [PLEDGE-FIX] إزالة كلا الـ class والـ style لإخفاء التعهد
-        const _pledgeEl = document.getElementById('p-pledge');
-        _pledgeEl.style.display = 'none';
-        _pledgeEl.classList.remove('show-pledge');
+        // [PLEDGE-FIX] إعادة ضبط style الـ pledge بالكامل ثم إخفاؤه
+        const _pledgeDivAccept = document.getElementById('p-pledge');
+        _pledgeDivAccept.style.cssText = 'display:none;';
         document.getElementById('tab-bar').style.display = 'flex';
         document.getElementById('manual-refresh').style.display = 'flex';
         document.getElementById('admin-notif-bell').style.display = 'flex';
@@ -1647,10 +1646,9 @@
         document.getElementById('manual-refresh').style.display = 'flex';
         document.getElementById('admin-notif-bell').style.display = 'flex';
         if(!localStorage.getItem('shahen_pledge')) {
-            // [PLEDGE-FIX] إظهار التعهد فوراً بدون انتظار async
-            const _pledgeEl2 = document.getElementById('p-pledge');
-            _pledgeEl2.style.display = 'flex';
-            _pledgeEl2.classList.add('show-pledge');
+            // [PLEDGE-FIX] إظهار التعهد بشكل مضمون مع إخفاء tab-bar
+            const _pledgeDiv = document.getElementById('p-pledge');
+            _pledgeDiv.style.cssText = 'display:flex !important; position:absolute; top:0; left:0; width:100%; height:100%; background:var(--purple); z-index:10005; align-items:center; justify-content:center; padding:30px; text-align:center;';
             document.getElementById('tab-bar').style.display = 'none';
         } else {
             document.getElementById('tab-bar').style.display = 'flex';
@@ -3915,9 +3913,7 @@
                     if (currentOrderKey) {
                         setTimeout(() => {
                             if (_consultChatChannel) { try { _supabase.removeChannel(_consultChatChannel); } catch(e){} _consultChatChannel = null; }
-                            // [BG-FIX] استخدام _clientWakeUpAll لإعادة الاتصال الكاملة
-                            _clientWakeupThrottle = 0;
-                            _clientWakeUpAll();
+                            listenConsultStatusOnly(currentOrderKey);
                         }, 3000);
                     }
                 }
@@ -4086,9 +4082,7 @@
                     const _retryId = orderId;
                     setTimeout(() => {
                         if (_consultStatusChannel) { try { _supabase.removeChannel(_consultStatusChannel); } catch(e){} _consultStatusChannel = null; }
-                        // [BG-FIX] استخدام _clientWakeUpAll لإعادة الاتصال الكاملة
-                        _clientWakeupThrottle = 0;
-                        _clientWakeUpAll();
+                        if (currentOrderKey) listenConsultStatusOnly(_retryId);
                     }, 3000);
                 }
             });
@@ -5653,13 +5647,11 @@
             document.addEventListener(evt, resetInactivityTimer, { passive: true });
         });
 
-        // [BG-FIX] إزالة إلغاء الطلب عند إخفاء الصفحة — الطلب يبقى حياً في الخلفية دائماً
-        // الكود القديم كان يُلغي الطلب عند الذهاب للخلفية وهو سبب التجمد الرئيسي
-        // تم استبداله بتسجيل وقت الخروج فقط لإعادة المزامنة عند العودة
+        // [BG-FIX] لا نلغي الطلب عند الخروج للخلفية — نحفظ وقت الخروج فقط لمزامنة لاحقة
+        // الكود القديم كان يلغي الطلب ويمسح active_order_id عند كل تحويل للخلفية وهو سبب التجمد
         let _bgHiddenAt = 0;
-        document.addEventListener('visibilitychange', async () => {
+        document.addEventListener('visibilitychange', function() {
             if (document.hidden) {
-                // [BG-FIX] سجّل وقت الخروج فقط — لا إلغاء للطلب أبداً
                 _bgHiddenAt = Date.now();
             }
         });
@@ -5714,164 +5706,119 @@
     });
 
     // ================================================================
-    // [CLIENT-WAKE-SYSTEM] نظام إعادة الاتصال الشامل للعميل
-    // يحل مشكلة: التجمد بعد الخلفية أو انقطاع الاتصال
+    // [WATCHDOG-CLIENT] فحص دوري كل 20 ثانية لضمان بقاء القنوات حية
     // ================================================================
-    let _clientWakeupThrottle = 0;
-
-    async function _clientWakeUpAll() {
-        if (!currentUser) return;
-        // منع الاستدعاء المتكرر خلال أقل من 2 ثانية
-        const _now = Date.now();
-        if (_now - _clientWakeupThrottle < 2000) return;
-        _clientWakeupThrottle = _now;
-
-        // 1. إزالة جميع القنوات المتوقفة وإعادة الاشتراك
-        try { await _supabase.removeAllChannels(); } catch(_e) {
-            try { _supabase.removeChannel(_supabase.channel('config_updates')); } catch(_e2) {}
-            try { if (_orderChannel) _supabase.removeChannel(_orderChannel); } catch(_e2) {}
-            try { if (_consultStatusChannel) _supabase.removeChannel(_consultStatusChannel); } catch(_e2) {}
-            try { if (_consultChatChannel) _supabase.removeChannel(_consultChatChannel); } catch(_e2) {}
-            try { if (_spChatChannel) _supabase.removeChannel(_spChatChannel); } catch(_e2) {}
-        }
-        _orderChannel = null;
-        _consultStatusChannel = null;
-        _consultChatChannel = null;
-        _spChatChannel = null;
-
-        // انتظار قصير لضمان إغلاق القنوات القديمة
-        await new Promise(r => setTimeout(r, 150));
-
-        // 2. إعادة تشغيل قناة الإشعارات
-        if (currentUser) {
-            initRealtimeNotifications();
-        }
-
-        // 3. إعادة الاتصال بالطلب النشط
-        const _wakeActiveId = localStorage.getItem('shahen_active_order_id');
-        if (_wakeActiveId) {
-            currentOrderKey = _wakeActiveId;
-            // جلب حالة الطلب الحالية من السيرفر
-            try {
-                const { data: _wakeOrd } = await _supabase.from('sh_public_orders')
-                    .select('status, verify_code, driver_name, driver_phone, total, delivery_price, items, restaurant_name, res_type, order_type, is_consultation, driver_id')
-                    .eq('id', _wakeActiveId).maybeSingle();
-
-                if (!_wakeOrd || ['completed','cancelled','failed','rejected','inactive'].includes(_wakeOrd.status)) {
-                    // الطلب منتهٍ — تنظيف
-                    if (_wakeOrd && _wakeOrd.status === 'completed') {
-                        showNotify('✅ تم توصيل طلبك بنجاح!');
-                    } else if (_wakeOrd && _wakeOrd.status === 'cancelled') {
-                        showNotify('تم إلغاء طلبك ❌', 'error');
-                    }
-                    localStorage.removeItem('shahen_active_order_id');
-                    currentOrderKey = null;
-                    if (typeof renderHistory === 'function') renderHistory();
-                } else {
-                    // الطلب لا يزال نشطاً — إعادة تشغيل القنوات
-                    // تحديث كود التحقق إذا تغيّر
-                    if (_wakeOrd.verify_code && _wakeOrd.verify_code !== verificationCode) {
-                        verificationCode = _wakeOrd.verify_code;
-                        const _rcEl = document.getElementById('reveal-order-code');
-                        if (_rcEl) _rcEl.innerText = verificationCode;
-                        const _ccEl = document.getElementById('client-reveal-code');
-                        if (_ccEl) _ccEl.innerText = verificationCode;
-                    }
-
-                    listenForOrderUpdates(_wakeActiveId);
-                    listenConsultStatusOnly(_wakeActiveId);
-
-                    // إذا كان المندوب موجوداً ولم تظهر صفحة التتبع
-                    const _liveS = _wakeOrd.status;
-                    if ((_liveS === 'accepted' || _liveS === 'preparing' || _liveS === 'ready') && _wakeOrd.driver_id) {
-                        const _chatPage = document.getElementById('p-chat');
-                        if (_chatPage && _chatPage.style.display !== 'flex') {
-                            if (typeof checkOrderAction === 'function') checkOrderAction(_wakeActiveId, _liveS);
-                        }
-                    }
-                }
-            } catch(_wakeErr) {
-                // عند خطأ الشبكة — أعد الاتصال بدون فحص الحالة
-                listenForOrderUpdates(_wakeActiveId);
-                listenConsultStatusOnly(_wakeActiveId);
-            }
-        }
-
-        // 4. إعادة فتح دردشة المتجر إن كانت مفتوحة
-        if (_spChatOrderId) {
-            try { openSpecialtyChat(_spChatOrderId, '', ''); } catch(_e) {}
-        }
-
-        // 5. تحديث بيانات المستخدم بصمت
-        if (currentUser) {
-            try {
-                const { data: _freshUser } = await _supabase.from('customers').select('points, balance').eq('id', currentUser.uid).maybeSingle();
-                if (_freshUser) {
-                    currentUser.points = _freshUser.points || currentUser.points;
-                    currentUser.balance = _freshUser.balance || currentUser.balance;
-                    localStorage.setItem('shahen_user', JSON.stringify(currentUser));
-                    const _ptEl = document.getElementById('shahen-points');
-                    if (_ptEl) _ptEl.innerText = currentUser.points || '0';
-                }
-            } catch(_e) {}
-        }
-    }
-    // ================================================================
-    // [END-CLIENT-WAKE-SYSTEM]
-    // ================================================================
-
-    // [CLIENT-WATCHDOG] فحص دوري كل 15 ثانية لضمان بقاء الـ Realtime حياً
-    setInterval(() => {
-        if (!currentUser) return;
-        let _needsWakeup = false;
-        // فحص قناة الطلب النشط
-        if (currentOrderKey) {
-            try {
-                if (!_orderChannel || _orderChannel.state === 'errored' || _orderChannel.state === 'closed') _needsWakeup = true;
-                if (!_consultStatusChannel || _consultStatusChannel.state === 'errored' || _consultStatusChannel.state === 'closed') _needsWakeup = true;
-            } catch(_e) { _needsWakeup = true; }
-        }
-        // فحص قناة الإشعارات
+    setInterval(function() {
+        if (!currentUser || !currentOrderKey) return;
+        let _dead = false;
         try {
-            const _notifCh = _supabase.channel('custom-filter-channel');
-            if (_notifCh && (_notifCh.state === 'errored' || _notifCh.state === 'closed')) _needsWakeup = true;
-        } catch(_e) { _needsWakeup = true; }
-        if (_needsWakeup) {
-            _clientWakeupThrottle = 0;
-            _clientWakeUpAll();
+            if (!_orderChannel) _dead = true;
+            else if (_orderChannel.state === 'errored' || _orderChannel.state === 'closed' || _orderChannel.state === 'leaving') _dead = true;
+        } catch(_e) { _dead = true; }
+        try {
+            if (!_consultStatusChannel) _dead = true;
+            else if (_consultStatusChannel.state === 'errored' || _consultStatusChannel.state === 'closed' || _consultStatusChannel.state === 'leaving') _dead = true;
+        } catch(_e) { _dead = true; }
+        if (_dead) {
+            if (_orderChannel) { try { _supabase.removeChannel(_orderChannel); } catch(e){} _orderChannel = null; }
+            if (_consultStatusChannel) { try { _supabase.removeChannel(_consultStatusChannel); } catch(e){} _consultStatusChannel = null; }
+            listenForOrderUpdates(currentOrderKey);
+            listenConsultStatusOnly(currentOrderKey);
         }
-    }, 15000);
+    }, 20000);
 
-    // [CLIENT-KEEPALIVE] KeepAlive دوري كل 30 ثانية لمنع انقطاع WebSocket
-    setInterval(() => {
-        if (!currentUser) return;
-        if (currentOrderKey && (!_orderChannel || _orderChannel.state === 'errored' || _orderChannel.state === 'closed')) {
-            _clientWakeupThrottle = 0;
-            _clientWakeUpAll();
-        }
-    }, 30000);
-
-    // [CLIENT-PAGESHOW] استعادة من bfcache (Android WebView / iPhone Safari)
+    // [PAGESHOW-CLIENT] استعادة من bfcache — شائع في Android WebView وiPhone Safari
     window.addEventListener('pageshow', function(e) {
         if (!currentUser) return;
         if (e.persisted) {
-            // استعادة من bfcache = خلفية طويلة → أعد الاتصال الكامل
-            _clientWakeupThrottle = 0;
-            _clientWakeUpAll();
+            // صفحة جاءت من bfcache = كانت في الخلفية فترة طويلة
+            if (currentOrderKey) {
+                if (_orderChannel) { try { _supabase.removeChannel(_orderChannel); } catch(e){} _orderChannel = null; }
+                if (_consultStatusChannel) { try { _supabase.removeChannel(_consultStatusChannel); } catch(e){} _consultStatusChannel = null; }
+                listenForOrderUpdates(currentOrderKey);
+                listenConsultStatusOnly(currentOrderKey);
+            }
         }
     });
 
-    // [CLIENT-FOCUS] بعض أدوات WebView تستخدم focus بدلاً من visibilitychange
+    // [FOCUS-CLIENT] بعض WebView تُطلق focus بدلاً من visibilitychange
     window.addEventListener('focus', function() {
-        if (currentUser) setTimeout(() => { _clientWakeUpAll(); }, 500);
+        if (!currentUser || !currentOrderKey) return;
+        setTimeout(function() {
+            try {
+                const _chState = _orderChannel ? _orderChannel.state : 'null';
+                if (!_orderChannel || _chState === 'errored' || _chState === 'closed') {
+                    if (_orderChannel) { try { _supabase.removeChannel(_orderChannel); } catch(e){} _orderChannel = null; }
+                    listenForOrderUpdates(currentOrderKey);
+                }
+                const _csState = _consultStatusChannel ? _consultStatusChannel.state : 'null';
+                if (!_consultStatusChannel || _csState === 'errored' || _csState === 'closed') {
+                    if (_consultStatusChannel) { try { _supabase.removeChannel(_consultStatusChannel); } catch(e){} _consultStatusChannel = null; }
+                    listenConsultStatusOnly(currentOrderKey);
+                }
+            } catch(_fe) {}
+        }, 500);
     });
+    // ================================================================
+    // [END-WATCHDOG-CLIENT]
+    // ================================================================
 
         // [FIX-VIS-5] إعادة تشغيل القنوات عند العودة للتبويب بعد غياب
     document.addEventListener('visibilitychange', function() {
         if (document.visibilityState === 'visible') {
-            // [BG-RECONNECT-FIX] إعادة ضبط throttle لضمان تنفيذ إعادة الاتصال الكاملة
-            _clientWakeupThrottle = 0;
-            _clientWakeUpAll();
+            if (currentOrderKey) {
+                // [BG-RECONNECT] أعد تشغيل القنوات دائماً عند العودة — لا تنتظر حالة closed فقط
+                if (_orderChannel) { try { _supabase.removeChannel(_orderChannel); } catch(e){} _orderChannel = null; }
+                listenForOrderUpdates(currentOrderKey);
+                if (_consultStatusChannel) { try { _supabase.removeChannel(_consultStatusChannel); } catch(e){} _consultStatusChannel = null; }
+                listenConsultStatusOnly(currentOrderKey);
+                // [FIX-STUCK] إعادة مزامنة حالة الطلب عند العودة لمنع التعليق — بدون تحديث للمتصفح
+                setTimeout(async () => {
+                    try {
+                        const _savedKey = localStorage.getItem('shahen_active_order_id');
+                        if (!_savedKey) return;
+                        const { data: _freshOrd } = await _supabase.from('sh_public_orders')
+                            .select('status, verify_code, driver_name, driver_phone, total, delivery_price, items, restaurant_name, res_type, order_type, is_consultation, driver_id')
+                            .eq('id', _savedKey).maybeSingle();
+                        if (!_freshOrd) return;
+                        // تحديث الكود إذا تغيّر
+                        if (_freshOrd.verify_code && _freshOrd.verify_code !== verificationCode) {
+                            verificationCode = _freshOrd.verify_code;
+                            const _rcEl = document.getElementById('reveal-order-code');
+                            if (_rcEl) _rcEl.innerText = verificationCode;
+                            const _ccEl = document.getElementById('client-reveal-code');
+                            if (_ccEl) _ccEl.innerText = verificationCode;
+                        }
+                        // إذا تغيّرت الحالة لـ accepted/completed/cancelled نُعيد تهيئة الواجهة
+                        const _liveStatus = _freshOrd.status;
+                        if (_liveStatus === 'cancelled') {
+                            localStorage.removeItem('shahen_active_order_id');
+                            currentOrderKey = null;
+                            showNotify('تم إلغاء طلبك ❌', 'error');
+                            if (typeof renderHistory === 'function') renderHistory();
+                        } else if (_liveStatus === 'completed') {
+                            localStorage.removeItem('shahen_active_order_id');
+                            currentOrderKey = null;
+                            if (typeof renderHistory === 'function') renderHistory();
+                        } else if ((_liveStatus === 'accepted' || _liveStatus === 'preparing' || _liveStatus === 'ready') && _freshOrd.driver_id) {
+                            // إذا كان المندوب موجوداً ولم تظهر صفحة الكود — نفتحها
+                            const _chatPage = document.getElementById('p-chat');
+                            if (_chatPage && _chatPage.style.display === 'none') {
+                                if (typeof checkOrderAction === 'function') checkOrderAction(_savedKey, _liveStatus);
+                            }
+                        }
+                    } catch(_visErr) { /* تجاهل أخطاء إعادة المزامنة */ }
+                }, 800);
+                // [END-FIX-STUCK]
+            }
+            if (_spChatOrderId && (!_spChatChannel || _spChatChannel.state === 'closed')) {
+                if (_spChatChannel) { try { _supabase.removeChannel(_spChatChannel); } catch(e){} _spChatChannel = null; }
+                openSpecialtyChat(_spChatOrderId, '', '');
+            }
+            if (_spChatOrderId && _consultChatChannel && _consultChatChannel.state === 'closed') {
+                try { _supabase.removeChannel(_consultChatChannel); } catch(e){}
+                _consultChatChannel = null;
+            }
         }
     });
 
