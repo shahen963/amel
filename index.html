@@ -4,6 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>شاهين إكسبريس | النسخة الكاملة 🦅</title>
+
+    <!-- ===== [PWA-IPHONE] إعدادات PWA لآيفون وسفاري ===== -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="شاهين إكسبريس">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#1a051a">
+    <meta name="application-name" content="شاهين إكسبريس">
+    <!-- أيقونات Apple Touch بجميع الأحجام المطلوبة -->
+    <link rel="apple-touch-icon" href="https://i.postimg.cc/QxzPkmPf/Whats-App-Image-2026-04-10-at-6-22-30-PM-t7edrz.jpg">
+    <link rel="apple-touch-icon" sizes="120x120" href="https://i.postimg.cc/QxzPkmPf/Whats-App-Image-2026-04-10-at-6-22-30-PM-t7edrz.jpg">
+    <link rel="apple-touch-icon" sizes="152x152" href="https://i.postimg.cc/QxzPkmPf/Whats-App-Image-2026-04-10-at-6-22-30-PM-t7edrz.jpg">
+    <link rel="apple-touch-icon" sizes="167x167" href="https://i.postimg.cc/QxzPkmPf/Whats-App-Image-2026-04-10-at-6-22-30-PM-t7edrz.jpg">
+    <link rel="apple-touch-icon" sizes="180x180" href="https://i.postimg.cc/QxzPkmPf/Whats-App-Image-2026-04-10-at-6-22-30-PM-t7edrz.jpg">
+    <link rel="shortcut icon" href="https://i.postimg.cc/QxzPkmPf/Whats-App-Image-2026-04-10-at-6-22-30-PM-t7edrz.jpg">
+    <!-- PWA Manifest مدمج -->
+    <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22%D8%B4%D8%A7%D9%87%D9%8A%D9%86%20%D8%A5%D9%83%D8%B3%D8%A8%D8%B1%D9%8A%D8%B3%22%2C%22short_name%22%3A%22%D8%B4%D8%A7%D9%87%D9%8A%D9%86%22%2C%22theme_color%22%3A%22%231a051a%22%2C%22background_color%22%3A%22%23000000%22%2C%22display%22%3A%22standalone%22%2C%22orientation%22%3A%22portrait%22%2C%22start_url%22%3A%22%2F%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22https%3A%2F%2Fi.postimg.cc%2FQxzPkmPf%2FWhats-App-Image-2026-04-10-at-6-22-30-PM-t7edrz.jpg%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fjpeg%22%7D%2C%7B%22src%22%3A%22https%3A%2F%2Fi.postimg.cc%2FQxzPkmPf%2FWhats-App-Image-2026-04-10-at-6-22-30-PM-t7edrz.jpg%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fjpeg%22%7D%5D%7D">
+    <!-- منع التخزين المؤقت -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <!-- ===== نهاية PWA-IPHONE ===== -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -618,6 +638,46 @@
         </div>
     </div>
 
+    <!-- ===== [SCREEN-SIZE-MODAL] مودال اختيار مقاس الشاشة قبل تسجيل الدخول ===== -->
+    <div id="screen-size-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:99999; flex-direction:column; align-items:center; justify-content:center; padding:20px;">
+        <div style="background:linear-gradient(135deg,#1a051a,#0a010a); border:2px solid var(--gold); border-radius:24px; padding:28px 20px; max-width:340px; width:100%; text-align:center;">
+            <img src="https://i.postimg.cc/QxzPkmPf/Whats-App-Image-2026-04-10-at-6-22-30-PM-t7edrz.jpg" style="width:70px; border-radius:20px; border:2px solid var(--gold); margin-bottom:14px;">
+            <h2 style="color:var(--gold); font-size:16px; margin:0 0 6px;">مرحباً في شاهين إكسبريس 🦅</h2>
+            <p style="color:#aaa; font-size:12px; margin:0 0 20px;">اختر حجم العرض المناسب لجهازك — سيُحفظ مع حسابك</p>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                <button onclick="_selectScreenSize('mobile')" style="background:rgba(212,175,55,0.1); border:1px solid var(--gold); color:#fff; padding:14px; border-radius:14px; font-size:13px; cursor:pointer; display:flex; align-items:center; gap:10px; font-family:inherit; width:100%;">
+                    <i class="fas fa-mobile-alt" style="color:var(--gold); font-size:18px; width:24px;"></i>
+                    <div style="text-align:right; flex:1;">
+                        <b style="display:block;">📱 وضع الجوال</b>
+                        <small style="color:#888; font-size:10px;">مناسب للهواتف الذكية</small>
+                    </div>
+                </button>
+                <button onclick="_selectScreenSize('tablet')" style="background:rgba(212,175,55,0.1); border:1px solid var(--gold); color:#fff; padding:14px; border-radius:14px; font-size:13px; cursor:pointer; display:flex; align-items:center; gap:10px; font-family:inherit; width:100%;">
+                    <i class="fas fa-tablet-alt" style="color:var(--gold); font-size:18px; width:24px;"></i>
+                    <div style="text-align:right; flex:1;">
+                        <b style="display:block;">🖥️ وضع الآيباد</b>
+                        <small style="color:#888; font-size:10px;">مناسب للأجهزة اللوحية</small>
+                    </div>
+                </button>
+                <button onclick="_selectScreenSize('desktop')" style="background:rgba(212,175,55,0.1); border:1px solid var(--gold); color:#fff; padding:14px; border-radius:14px; font-size:13px; cursor:pointer; display:flex; align-items:center; gap:10px; font-family:inherit; width:100%;">
+                    <i class="fas fa-laptop" style="color:var(--gold); font-size:18px; width:24px;"></i>
+                    <div style="text-align:right; flex:1;">
+                        <b style="display:block;">💻 وضع اللابتوب</b>
+                        <small style="color:#888; font-size:10px;">مناسب للحاسبات المحمولة</small>
+                    </div>
+                </button>
+                <button onclick="_selectScreenSize('full')" style="background:rgba(212,175,55,0.1); border:1px solid var(--gold); color:#fff; padding:14px; border-radius:14px; font-size:13px; cursor:pointer; display:flex; align-items:center; gap:10px; font-family:inherit; width:100%;">
+                    <i class="fas fa-desktop" style="color:var(--gold); font-size:18px; width:24px;"></i>
+                    <div style="text-align:right; flex:1;">
+                        <b style="display:block;">🖥️ شاشة كاملة</b>
+                        <small style="color:#888; font-size:10px;">عرض حر بدون حدود</small>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- ===== نهاية SCREEN-SIZE-MODAL ===== -->
+
     <div id="p-login" class="page active" style="justify-content:center; text-align:center;">
         <div style="display: flex; justify-content: center; width: 100%; margin-bottom: 20px;">
             <img src="https://i.postimg.cc/QxzPkmPf/Whats-App-Image-2026-04-10-at-6-22-30-PM-t7edrz.jpg" width="100" style="border-radius:25px; border:2px solid var(--gold);">
@@ -1091,8 +1151,25 @@
     function resizeAppUI(size) {
         resizeApp(size);
         document.getElementById('size-dropdown-menu').style.display = 'none';
+        // حفظ الاختيار الجديد في localStorage وفي حساب المستخدم
+        localStorage.setItem('shahen_display_size', size);
+        if (currentUser) {
+            _supabase.from('customers').update({ display_size: size }).eq('id', currentUser.uid).catch(() => {});
+        }
         showNotify("تم تغيير حجم العرض بنجاح ✅", "info");
     }
+
+    // ===== [SCREEN-SIZE-FUNC] دالة اختيار المقاس من مودال ما قبل الدخول =====
+    function _selectScreenSize(size) {
+        // حفظ في localStorage
+        localStorage.setItem('shahen_display_size', size);
+        // تطبيق المقاس فوراً
+        resizeApp(size);
+        // إخفاء المودال
+        const _overlay = document.getElementById('screen-size-overlay');
+        if (_overlay) _overlay.style.display = 'none';
+    }
+    // ===== نهاية SCREEN-SIZE-FUNC =====
 
     function resizeApp(size) {
         const shell = document.getElementById('main-app-shell');
@@ -1364,6 +1441,12 @@
             currentUser = { uid: fallbackUser.id, ...fallbackUser };
         } else {
             currentUser = { uid: dbCust.id, name: dbCust.name, email: dbCust.email, phone: dbCust.phone, address: dbCust.address, points: dbCust.points, balance: dbCust.balance };
+            // ===== [SCREEN-SIZE-SAVE] حفظ مقاس الشاشة في حساب المستخدم عند الدخول =====
+            const _loginSize = localStorage.getItem('shahen_display_size');
+            if (_loginSize) {
+                _supabase.from('customers').update({ display_size: _loginSize }).eq('id', dbCust.id).catch(() => {});
+            }
+            // ===== نهاية SCREEN-SIZE-SAVE =====
             // ===== توليد اسم مستخدم تلقائي إذا لم يكن موجوداً =====
             if (!dbCust.auto_username) {
                 const _existingAutoUser = _generateAutoUsername('CUS');
@@ -1428,6 +1511,20 @@
         const savedTheme = localStorage.getItem('shahen_theme');
         if(savedTheme === 'light') toggleTheme('light');
         else toggleTheme('dark');
+
+        // ===== [SCREEN-SIZE-LOAD] تحميل مقاس الشاشة المحفوظ في حساب المستخدم =====
+        if (currentUser) {
+            try {
+                const { data: _custData } = await _supabase.from('customers')
+                    .select('display_size').eq('id', currentUser.uid).single();
+                if (_custData && _custData.display_size) {
+                    // حفظ في localStorage وتطبيق فوري
+                    localStorage.setItem('shahen_display_size', _custData.display_size);
+                    resizeApp(_custData.display_size);
+                }
+            } catch(_dsErr) { /* تجاهل خطأ تحميل المقاس */ }
+        }
+        // ===== نهاية SCREEN-SIZE-LOAD =====
 
         const { data: config } = await _supabase.from('app_config').select('*').eq('id', 1).single();
         if(config) {
@@ -5442,6 +5539,17 @@
     function sendComplaint(context) { window.open(`https://wa.me/966546083283?text=لدي شكوى بخصوص: ${encodeURIComponent(context||'')}`); }
 
     window.onload = () => {
+        // ===== [SCREEN-SIZE-INIT] إظهار مودال اختيار المقاس قبل تسجيل الدخول =====
+        const _savedSize = localStorage.getItem('shahen_display_size');
+        if (_savedSize) {
+            // إذا كان المقاس محفوظاً — طبّقه مباشرة بدون مودال
+            resizeApp(_savedSize);
+        } else {
+            // أول مرة — أظهر المودال
+            const _overlay = document.getElementById('screen-size-overlay');
+            if (_overlay) _overlay.style.display = 'flex';
+        }
+        // ===== نهاية SCREEN-SIZE-INIT =====
         // ===== Listener رسمي من Supabase: يُفعَّل تلقائياً عند أي تغيير في حالة المصادقة =====
         // يعمل عند: تسجيل الدخول، تفعيل البريد، انتهاء الجلسة، إلخ
         _supabase.auth.onAuthStateChange(async (event, session) => {
