@@ -6055,6 +6055,85 @@
         }
     });
 
+    // ================================================================
+    // [FORCE-RELOAD-BTN] زر التحديث الإجباري عند العودة من الخلفية بعد 3 ثواني
+    // يظهر تلقائياً عند أسفل الشاشة ويختفي بعد 10 ثواني إذا لم يُضغط
+    // ================================================================
+    (function() {
+        var _bgLeaveTime = 0;
+        var _reloadBtnTimer = null;
+        var _reloadBtnAutoHide = null;
+        var _BG_THRESHOLD_MS = 3000;
+
+        var _reloadBtn = document.createElement('div');
+        _reloadBtn.id = '_force-reload-btn';
+        _reloadBtn.innerHTML = '<div style="display:flex;align-items:center;gap:10px;"><i class="fas fa-sync-alt" id="_reload-spin-icon" style="font-size:18px;color:#000;"></i><div><div style="font-weight:bold;font-size:13px;color:#000;">تحديث التطبيق</div><div style="font-size:10px;color:#333;">اضغط لضمان عمل التطبيق بشكل صحيح</div></div><div id="_reload-countdown" style="background:rgba(0,0,0,0.15);border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:bold;color:#000;flex-shrink:0;">10</div></div>';
+        _reloadBtn.style.cssText = 'position:fixed;bottom:-120px;left:50%;transform:translateX(-50%);background:#d4af37;color:#000;padding:12px 20px;border-radius:20px;cursor:pointer;z-index:999999;box-shadow:0 -4px 25px rgba(0,0,0,0.5);transition:bottom 0.4s cubic-bezier(0.175,0.885,0.32,1.275);min-width:260px;max-width:90vw;border:2px solid rgba(0,0,0,0.2);';
+        document.body.appendChild(_reloadBtn);
+
+        function _showReloadBtn() {
+            _reloadBtn.style.bottom = '85px';
+            var _cd = 10;
+            var _cdEl = document.getElementById('_reload-countdown');
+            if (_cdEl) _cdEl.innerText = _cd;
+            if (_reloadBtnAutoHide) clearInterval(_reloadBtnAutoHide);
+            _reloadBtnAutoHide = setInterval(function() {
+                _cd--;
+                if (_cdEl) _cdEl.innerText = _cd;
+                if (_cd <= 0) { clearInterval(_reloadBtnAutoHide); _hideReloadBtn(); }
+            }, 1000);
+        }
+
+        function _hideReloadBtn() {
+            _reloadBtn.style.bottom = '-120px';
+            if (_reloadBtnAutoHide) { clearInterval(_reloadBtnAutoHide); _reloadBtnAutoHide = null; }
+        }
+
+        _reloadBtn.addEventListener('click', function() {
+            var _iconEl = document.getElementById('_reload-spin-icon');
+            if (_iconEl) _iconEl.style.animation = 'rotate 0.8s linear infinite';
+            _hideReloadBtn();
+            window.location.reload(true);
+        });
+
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'hidden') {
+                _bgLeaveTime = Date.now();
+                if (_reloadBtnTimer) { clearTimeout(_reloadBtnTimer); _reloadBtnTimer = null; }
+            } else if (document.visibilityState === 'visible') {
+                var _away = Date.now() - _bgLeaveTime;
+                if (_bgLeaveTime > 0 && _away >= _BG_THRESHOLD_MS) {
+                    if (_reloadBtnTimer) clearTimeout(_reloadBtnTimer);
+                    _reloadBtnTimer = setTimeout(_showReloadBtn, 400);
+                }
+                _bgLeaveTime = 0;
+            }
+        });
+
+        window.addEventListener('pageshow', function(e) {
+            if (e.persisted) {
+                if (_reloadBtnTimer) clearTimeout(_reloadBtnTimer);
+                _reloadBtnTimer = setTimeout(_showReloadBtn, 400);
+            }
+        });
+
+        var _focusBlurTime = 0;
+        window.addEventListener('blur', function() { _focusBlurTime = Date.now(); });
+        window.addEventListener('focus', function() {
+            setTimeout(function() {
+                var _away = Date.now() - _focusBlurTime;
+                if (_focusBlurTime > 0 && _away >= _BG_THRESHOLD_MS) {
+                    if (_reloadBtnTimer) clearTimeout(_reloadBtnTimer);
+                    _reloadBtnTimer = setTimeout(_showReloadBtn, 400);
+                }
+                _focusBlurTime = 0;
+            }, 200);
+        });
+    })();
+    // ================================================================
+    // [END-FORCE-RELOAD-BTN]
+    // ================================================================
+
 </script>
 </body>
 </html>
