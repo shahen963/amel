@@ -152,7 +152,7 @@
         .pay-option.active { border-color: var(--gold); background: rgba(212,175,55,0.1); color: var(--gold); }
 
         /* تعديلات الأقسام العلوية - رفع المستوى وتثبيت مطلق لضمان عدم الاختفاء */
-        .main-category-tabs { display: none; background: var(--purple); padding: 10px 6px; border-radius: 0; border-bottom: 2px solid var(--gold); overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; gap: 6px; position: sticky; top: 0px; z-index: 8000 !important; box-shadow: 0 10px 25px rgba(0,0,0,0.8); width: 100%; margin-bottom: 15px; flex-shrink: 0; }
+        .main-category-tabs { display: none; background: var(--purple); padding: 10px 6px; border-radius: 0; border-bottom: 2px solid var(--gold); overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; gap: 6px; position: sticky; top: -1px; z-index: 8000 !important; box-shadow: 0 10px 25px rgba(0,0,0,0.8); width: 100%; margin-bottom: 15px; }
         .main-category-tabs::-webkit-scrollbar { display: none; }
         .m-tab { flex: 0 0 auto; padding: 6px 15px; text-align: center; font-size: 11px; color: #aaa; cursor: pointer; border-radius: 10px; transition: 0.3s; white-space: nowrap; background: rgba(212,175,55,0.1); border: 1px solid rgba(212,175,55,0.1); }
         .m-tab.active { background: var(--gold); color: #000; font-weight: bold; box-shadow: 0 0 10px var(--gold); border-color: #fff; transform: scale(1.02); }
@@ -347,7 +347,7 @@
             padding: 10px 12px;
             gap: 8px;
             position: sticky;
-            top: 108px;
+            top: 0px; /* [FIX] داخل p-menu مستقلة */
             z-index: 190;
             box-shadow: 0 6px 20px rgba(0,0,0,0.7);
             -webkit-overflow-scrolling: touch;
@@ -390,7 +390,7 @@
             margin-bottom: 8px;
             border-bottom: 2px solid rgba(212,175,55,0.2);
             position: sticky;
-            top: 166px;          /* header(108) + cats-bar(58) */
+            top: 58px;           /* [FIX] cats-bar فقط */
             z-index: 100;
             background: var(--purple);
         }
@@ -3017,6 +3017,27 @@
             container.innerHTML = '<p style="text-align:center; color:#666; font-size:12px; padding:30px;">لا توجد أصناف</p>';
         }
     }
+
+    // ===== [FIX-SEARCH] دالة البحث عن مطعم في الصفحة الرئيسية =====
+    function searchRes() {
+        const q = (document.getElementById('resSearch')?.value || '').trim().toLowerCase();
+        const listDiv = document.getElementById('res-list');
+        if (!listDiv) return;
+        if (!q) {
+            // إذا البحث فارغ عرض كل المطاعم
+            if (_cache.res && _cache.res.length > 0) _renderResFromData(_cache.res);
+            return;
+        }
+        const filtered = (_cache.res || data || []).filter(r =>
+            (r.name || '').toLowerCase().includes(q)
+        );
+        if (filtered.length === 0) {
+            listDiv.innerHTML = "<p style='text-align:center;font-size:12px;color:#888;padding:20px;'>لا توجد نتائج للبحث عن "" + q + ""</p>";
+        } else {
+            _renderResFromData(filtered);
+        }
+    }
+    // ===== نهاية [FIX-SEARCH] =====
 
     function searchMenu() {
         const q = (document.getElementById('menuSearch')?.value || '').trim().toLowerCase();
@@ -6063,7 +6084,7 @@
         var _bgLeaveTime = 0;
         var _reloadBtnTimer = null;
         var _reloadBtnAutoHide = null;
-        var _BG_THRESHOLD_MS = 1000; // [FIX] ثانية واحدة غياب تكفي لإظهار الزر
+        var _BG_THRESHOLD_MS = 3000; // 3 ثواني غياب قبل إظهار الزر
 
         var _reloadBtn = document.createElement('div');
         _reloadBtn.id = '_force-reload-btn';
