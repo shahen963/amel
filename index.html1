@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- [SEC-PATCH-15] رؤوس أمان إضافية -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta name="referrer" content="no-referrer">
     <title>شاهين إكسبريس | النسخة الكاملة 🦅</title>
 
     <!-- ===== [PWA-IPHONE] إعدادات PWA لآيفون وسفاري ===== -->
@@ -43,7 +46,9 @@
         .light-mode .res-name { color: #000; }
         .light-mode #my-name, .light-mode #my-phone { color: #000; }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; transition: 0.3s; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        /* [PERF-PATCH-1] إزالة transition:0.3s من * — كانت تُطبَّق على كل عنصر وتُبطئ الـ scroll وترهق المعالج */
+        a, button, .m-tab, .card, .tab-item, .btn-gold, .category-chip, .sub-cat-card, .screen-size-option { transition: 0.3s; }
         body, html { margin: 0; padding: 0; min-height: 100vh; background: var(--bg-body); color: var(--text-main); font-family: -apple-system, sans-serif; display: flex; justify-content: center; align-items: center; flex-direction: column; }
         
         /* شريط الإعلانات - تعديل لضمان التكرار اللانهائي وسرعة هادئة */
@@ -1250,7 +1255,13 @@
             const resp = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${val}&countrycodes=sy,sa&limit=5`);
             const res = await resp.json();
             if (res.length > 0) {
-                box.innerHTML = res.map(item => `<div class="suggestion-item" onclick="selectSuggestion('${item.display_name}', ${item.lat}, ${item.lon})">${item.display_name}</div>`).join('');
+                // [SEC-PATCH-7] escHtml applied to display_name and lat/lon to prevent XSS from Nominatim
+                box.innerHTML = res.map(item => {
+                    const safeName = escHtml(String(item.display_name || ''));
+                    const safeLat = parseFloat(item.lat) || 0;
+                    const safeLon = parseFloat(item.lon) || 0;
+                    return `<div class="suggestion-item" onclick="selectSuggestion('${safeName.replace(/'/g,"\\'")}', ${safeLat}, ${safeLon})">${safeName}</div>`;
+                }).join('');
                 box.style.display = 'block';
             }
         } catch(e) {}
@@ -2982,7 +2993,7 @@
                 menuDiv.innerHTML = `
                     <div style="text-align:center;padding:30px 20px;">
                         <i class="fas fa-comments" style="font-size:40px;color:var(--gold);display:block;margin-bottom:12px;"></i>
-                        <b style="color:var(--gold);font-size:14px;display:block;margin-bottom:8px;">تواصل مع ${res.name||'المحل'}</b>
+                        <b style="color:var(--gold);font-size:14px;display:block;margin-bottom:8px;">تواصل مع ${escHtml(res.name||'المحل')}</b>
                         <p style="font-size:12px;color:#aaa;">اضغط على زر التواصل أدناه لتنسيق طلبك مباشرة</p>
                     </div>`;
             } else {
@@ -3119,7 +3130,8 @@
         const src = (_cache.res && _cache.res.length > 0) ? _cache.res : (data || []);
         const filtered = src.filter(r => (r.name || '').toLowerCase().includes(q));
         if (filtered.length === 0) {
-            listDiv.innerHTML = "<p style='text-align:center;font-size:12px;color:#888;padding:20px;'>لا توجد نتائج للبحث عن \"" + q + "\"</p>";
+            // [SEC-PATCH-8] escHtml applied to search query to prevent XSS
+            listDiv.innerHTML = "<p style='text-align:center;font-size:12px;color:#888;padding:20px;'>لا توجد نتائج للبحث عن \"" + escHtml(q) + "\"</p>";
         } else {
             _renderResFromData(filtered);
         }
