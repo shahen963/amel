@@ -775,6 +775,21 @@
                 <p style="font-size:10px; color:#ccc; margin-top:3px;">اطلب أي غرض وسنتكفل بالباقي!</p>
             </div>
 
+            <!-- [LOC-CHOICE] خيار تفعيل أو عدم تفعيل الموقع -->
+            <div class="card" style="margin-bottom:10px; border:1px solid var(--gold); padding:10px;">
+                <small style="color:var(--gold); font-weight:bold; font-size:11px; display:block; margin-bottom:8px;">📍 هل تريد تحديد الموقع؟</small>
+                <div style="display:flex; gap:8px;">
+                    <div id="loc-btn-yes" onclick="setWassayniLocChoice(true)" style="flex:1; border:2px solid var(--gold); border-radius:10px; padding:8px; text-align:center; cursor:pointer; background:var(--gold); color:#000; font-weight:bold; font-size:12px;">
+                        <i class="fas fa-map-marker-alt"></i> تفعيل الموقع
+                    </div>
+                    <div id="loc-btn-no" onclick="setWassayniLocChoice(false)" style="flex:1; border:2px solid #555; border-radius:10px; padding:8px; text-align:center; cursor:pointer; background:transparent; color:#aaa; font-size:12px;">
+                        <i class="fas fa-times-circle"></i> بدون موقع
+                    </div>
+                </div>
+            </div>
+            <!-- [END-LOC-CHOICE] -->
+
+            <div id="wassayni-map-section">
             <div class="wassayni-step">
                 <div class="step-icon">1</div>
                 <div class="step-content">
@@ -796,9 +811,10 @@
                     </button>
                 </div>
             </div>
+            </div><!-- end wassayni-map-section -->
 
             <div class="wassayni-step">
-                <div class="step-icon" style="background:#3498db;">3</div>
+                <div class="step-icon" style="background:#3498db;" id="wassayni-step3-icon">3</div>
                 <div class="step-content">
                     <small style="color:#3498db; font-weight:bold; font-size:10px;">📝 تفاصيل طلبك</small>
                     <textarea id="wassayni-task" placeholder="مثلاً: اذهب لمحل الورد واستلم باقة باسم محمد.." style="width:100%; background:rgba(0,0,0,0.3); color:#fff; border:1px solid #444; border-radius:10px; padding:8px; height:70px; resize: none; font-size: 12px;"></textarea>
@@ -4961,6 +4977,11 @@
                     <div style="margin-top:6px; background:rgba(231,76,60,0.1); border-radius:6px; padding:5px 8px; font-size:9px; color:#e74c3c;">
                         <i class="fas fa-info-circle"></i> سبب الإلغاء: ${escHtml(o.cancel_reason)}
                     </div>` : ''}
+                    ${o.order_details && o.res_type === 'wassayni' ? `
+                    <div style="margin-top:6px; background:rgba(52,152,219,0.1); border:1px solid rgba(52,152,219,0.3); border-radius:6px; padding:6px 8px; font-size:10px; color:#ddd; line-height:1.5;">
+                        <b style="color:#3498db; display:block; margin-bottom:3px;"><i class="fas fa-file-alt"></i> تفاصيل الطلب:</b>
+                        ${escHtml(o.order_details)}
+                    </div>` : ''}
                 </div>
             </div>`;
         }).join('');
@@ -5009,6 +5030,7 @@
                     <div style="display:flex;justify-content:space-between;"><span style="color:#aaa;">الحالة:</span><b style="color:${order.status==='completed'?'#2ecc71':'#e74c3c'};">${_statusText}</b></div>
                     <div style="display:flex;justify-content:space-between;"><span style="color:#aaa;">المطعم/المتجر:</span><b style="color:#fff;">${escHtml(order.restaurant_name || '---')}</b></div>
                     ${order.driver_name ? `<div style="display:flex;justify-content:space-between;"><span style="color:#aaa;">المندوب:</span><b style="color:var(--gold);">🦅 ${escHtml(order.driver_name)}</b></div>` : ''}
+                    ${order.order_details ? `<div style="margin-top:6px; background:rgba(52,152,219,0.1); border:1px solid rgba(52,152,219,0.3); border-radius:8px; padding:8px;"><b style="color:#3498db; display:block; font-size:10px; margin-bottom:4px;"><i class="fas fa-file-alt"></i> تفاصيل الطلب:</b><div style="font-size:10px; color:#ddd; line-height:1.6; white-space:pre-wrap;">${escHtml(order.order_details)}</div></div>` : ''}
                     <div style="display:flex;justify-content:space-between;"><span style="color:#aaa;">${_invLbl}:</span><b style="color:#fff;">${_subtotal.toLocaleString()} ل.س</b></div>
                     <div style="display:flex;justify-content:space-between;"><span style="color:#aaa;">🛵 التوصيل:</span><b style="color:#fff;">${_delivery.toLocaleString()} ل.س</b></div>
                     ${_consultFee > 0 ? `<div style="display:flex;justify-content:space-between;"><span style="color:#f39c12;">🩺 رسوم الاستشارة:</span><b style="color:#f39c12;">${_consultFee.toLocaleString()} ل.س</b></div>` : ''}
@@ -5209,7 +5231,9 @@
             }
             // ===== [END-GENERAL-INVOICE] =====
             
-            document.getElementById('chat-box').innerHTML = pharmacyInvoiceCardHTML + generalInvoiceCardHTML + `<div class="card" style="text-align:center; background:rgba(212,175,55,0.1); border:1px solid var(--gold); border-radius:20px; padding:15px;">
+            document.getElementById('chat-box').innerHTML = pharmacyInvoiceCardHTML + generalInvoiceCardHTML + `
+                ${serverOrder.order_details && serverOrder.res_type === 'wassayni' ? `<div style="background:rgba(52,152,219,0.1); border:1px solid rgba(52,152,219,0.3); border-radius:14px; padding:12px; margin-bottom:10px; direction:rtl; text-align:right;"><b style="color:#3498db; display:block; font-size:12px; margin-bottom:6px;"><i class='fas fa-file-alt'></i> تفاصيل الطلب:</b><div style="font-size:12px; color:#ddd; line-height:1.7; white-space:pre-wrap;">${escHtml(serverOrder.order_details)}</div></div>` : ''}
+                <div class="card" style="text-align:center; background:rgba(212,175,55,0.1); border:1px solid var(--gold); border-radius:20px; padding:15px;">
                 <i class="fas fa-motorcycle fa-2x" style="color:var(--gold); margin-bottom:12px;"></i>
                 <h3 style="color:#fff; font-size:15px;">الصقر في الطريق إليك!</h3>
                 <p style="font-size:11px; color:#ccc; margin-bottom:12px;">كود التحقق (سيطلبه المندوب):</p>
@@ -5499,6 +5523,27 @@
     }
 
     let _wassayniPending = false; // [FIX-C3]
+    // [LOC-CHOICE] متغير اختيار الموقع في وصيني
+    window._wassayniLocEnabled = true; // افتراضي: الموقع مفعّل
+    function setWassayniLocChoice(enabled) {
+        window._wassayniLocEnabled = enabled;
+        const mapSection = document.getElementById('wassayni-map-section');
+        const btnYes = document.getElementById('loc-btn-yes');
+        const btnNo = document.getElementById('loc-btn-no');
+        const step3Icon = document.getElementById('wassayni-step3-icon');
+        if (enabled) {
+            if (mapSection) mapSection.style.display = 'block';
+            if (btnYes) { btnYes.style.background = 'var(--gold)'; btnYes.style.color = '#000'; btnYes.style.borderColor = 'var(--gold)'; }
+            if (btnNo) { btnNo.style.background = 'transparent'; btnNo.style.color = '#aaa'; btnNo.style.borderColor = '#555'; }
+            if (step3Icon) step3Icon.innerText = '3';
+        } else {
+            if (mapSection) mapSection.style.display = 'none';
+            if (btnNo) { btnNo.style.background = '#3498db'; btnNo.style.color = '#fff'; btnNo.style.borderColor = '#3498db'; }
+            if (btnYes) { btnYes.style.background = 'transparent'; btnYes.style.color = '#aaa'; btnYes.style.borderColor = '#555'; }
+            if (step3Icon) step3Icon.innerText = '1';
+        }
+    }
+    // [END-LOC-CHOICE]
     async function submitWassayni() {
         if (_wassayniPending) return;
         _wassayniPending = true;
@@ -5507,7 +5552,11 @@
     async function _submitWassayni_inner() {
         const task = document.getElementById('wassayni-task').value;
         const addrDetails = document.getElementById('wassayni-addr').value;
-        if(!task || pickupLoc.lat === 0 || dropoffLoc.lat === 0) return showNotify("يرجى تحديد المواقع وكتابة تفاصيل الطلب", "error");
+        // [LOC-CHOICE] التحقق من اختيار الموقع
+        const _locEnabled = (window._wassayniLocEnabled !== false); // افتراضي: مفعّل
+        if (_locEnabled && (pickupLoc.lat === 0 || dropoffLoc.lat === 0)) return showNotify("يرجى تحديد المواقع وكتابة تفاصيل الطلب", "error");
+        if(!task) return showNotify("يرجى كتابة تفاصيل الطلب", "error");
+        // [END-LOC-CHOICE]
         
         document.getElementById('eagle-searching').style.display = 'flex';
         document.getElementById('searching-text').innerText = "جاري إرسال المهمة لصقور الشاهين... 🚀";
@@ -5530,8 +5579,9 @@
             verify_code: verificationCode,
             res_type: 'wassayni',
             created_at: new Date().toISOString(),
-            lat: dropoffLoc.lat,
-            lng: dropoffLoc.lng
+            lat: _locEnabled ? dropoffLoc.lat : ((currentUser && currentUser.lat) ? currentUser.lat : userLoc.lat),
+            lng: _locEnabled ? dropoffLoc.lng : ((currentUser && currentUser.lng) ? currentUser.lng : userLoc.lng),
+            order_details: task
         };
         
         const { error } = await _supabase.from('sh_public_orders').insert([wassayniOrder]);
@@ -5539,7 +5589,7 @@
             currentOrderKey = orderId;
             localStorage.setItem('shahen_active_order_id', orderId);
             
-            let localWassayni = { id: orderId, restaurant_name: "خدمة وصيني 🦅", total: 0, status: 'searching', date: new Date().toLocaleString('ar-SA'), items: [{n: "مهمة وصيني", p: 0}], points_earned: 0, points_spent: 0, delivery_price: 0, restaurant_id: null, customer_id: currentUser.uid, verify_code: verificationCode, res_type: 'wassayni' };
+            let localWassayni = { id: orderId, restaurant_name: "خدمة وصيني 🦅", total: 0, status: 'searching', date: new Date().toLocaleString('ar-SA'), items: [{n: "مهمة وصيني", p: 0}], points_earned: 0, points_spent: 0, delivery_price: 0, restaurant_id: null, customer_id: currentUser.uid, verify_code: verificationCode, res_type: 'wassayni', order_details: task };
             let orders = getStorage('orders');
             orders.push(localWassayni);
             setStorage('orders', orders);
