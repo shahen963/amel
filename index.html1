@@ -152,7 +152,7 @@
         .pay-option.active { border-color: var(--gold); background: rgba(212,175,55,0.1); color: var(--gold); }
 
         /* تعديلات الأقسام العلوية - رفع المستوى وتثبيت مطلق لضمان عدم الاختفاء */
-        .main-category-tabs { display: none; background: var(--purple); padding: 10px 6px; border-radius: 0; border-bottom: 2px solid var(--gold); overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; gap: 6px; position: sticky; top: -1px; z-index: 8000 !important; box-shadow: 0 10px 25px rgba(0,0,0,0.8); width: 100%; margin-bottom: 15px; }
+        .main-category-tabs { display: none; background: var(--purple); padding: 10px 6px; border-radius: 0; border-bottom: 2px solid var(--gold); overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; gap: 6px; position: sticky; top: 0px; z-index: 8000 !important; box-shadow: 0 10px 25px rgba(0,0,0,0.8); width: 100%; margin-bottom: 15px; flex-shrink: 0; }
         .main-category-tabs::-webkit-scrollbar { display: none; }
         .m-tab { flex: 0 0 auto; padding: 6px 15px; text-align: center; font-size: 11px; color: #aaa; cursor: pointer; border-radius: 10px; transition: 0.3s; white-space: nowrap; background: rgba(212,175,55,0.1); border: 1px solid rgba(212,175,55,0.1); }
         .m-tab.active { background: var(--gold); color: #000; font-weight: bold; box-shadow: 0 0 10px var(--gold); border-color: #fff; transform: scale(1.02); }
@@ -991,6 +991,14 @@
             <button class="btn-gold" style="flex:1; font-size: 11px; padding: 10px;" onclick="saveMapSelection()">تحديث العنوان والبيانات ✅</button>
         </div>
         
+        <!-- ===== [FCM-PUSH] زر تفعيل الإشعارات ===== -->
+        <div id="fcm-notif-section" style="margin-bottom:12px;">
+            <button id="fcm-enable-btn" class="btn-gold" style="font-size:12px; background:rgba(39,174,96,0.15); color:#2ecc71; border:1px solid #2ecc71;" onclick="enableNotifications()">
+                🔔 تفعيل إشعارات الطلبات
+            </button>
+            <p id="fcm-status-text" style="font-size:10px; color:#888; text-align:center; margin:5px 0 0 0;"></p>
+        </div>
+        <!-- ===== نهاية [FCM-PUSH] ===== -->
         <button class="btn-gold" style="background:#e74c3c; color:white; margin-top:auto; font-size: 12px;" onclick="logout()">تسجيل خروج من طلبات الشاهين</button>
         <!-- ===== زر قناة التليجرام للمندوبين — تم حذفه من واجهة العميل ===== -->
     </div>
@@ -2157,7 +2165,7 @@
         if (id === 'p-home')    { _navHome(); }
         if (id === 'p-cart')    { renderCart(); _ensureConnectionBeforeOrder && _ensureConnectionBeforeOrder().catch(()=>{}); }
         if (id === 'p-history') { renderHistory(); }
-        if (id === 'p-profile') { initProfileMap(); }
+        if (id === 'p-profile') { initProfileMap(); _updateFcmBtnState && _updateFcmBtnState(); }
         if (id !== 'p-chat' && _clientMsgPollInterval) { clearInterval(_clientMsgPollInterval); _clientMsgPollInterval = null; }
     }
 
@@ -5703,6 +5711,57 @@
             }
         }
     }
+
+    // ===== [FCM-PUSH] دالة تفعيل الإشعارات يدوياً من الإعدادات =====
+    async function enableNotifications() {
+        const btn = document.getElementById('fcm-enable-btn');
+        const statusEl = document.getElementById('fcm-status-text');
+        if (btn) { btn.disabled = true; btn.innerText = '⏳ جاري التفعيل...'; }
+        try {
+            const permission = await Notification.requestPermission();
+            if (permission === 'granted') {
+                await initFCM();
+                if (_fcmToken) {
+                    if (btn) { btn.innerText = '✅ الإشعارات مفعّلة'; btn.style.color = '#2ecc71'; btn.style.borderColor = '#2ecc71'; }
+                    if (statusEl) statusEl.innerText = 'ستصلك إشعارات عند تحديث حالة طلبك';
+                    showNotify('✅ تم تفعيل الإشعارات بنجاح 🔔');
+                } else {
+                    if (btn) { btn.disabled = false; btn.innerText = '🔔 تفعيل إشعارات الطلبات'; }
+                    if (statusEl) statusEl.innerText = 'تعذّر الحصول على token — حاول مرة ثانية';
+                }
+            } else if (permission === 'denied') {
+                if (btn) { btn.innerText = '🚫 الإشعارات محظورة'; btn.style.color = '#e74c3c'; btn.style.borderColor = '#e74c3c'; }
+                if (statusEl) statusEl.innerText = 'يرجى السماح بالإشعارات من إعدادات المتصفح';
+            } else {
+                if (btn) { btn.disabled = false; btn.innerText = '🔔 تفعيل إشعارات الطلبات'; }
+            }
+        } catch(e) {
+            if (btn) { btn.disabled = false; btn.innerText = '🔔 تفعيل إشعارات الطلبات'; }
+            if (statusEl) statusEl.innerText = 'خطأ: ' + e.message;
+        }
+    }
+
+    // تحديث حالة زر الإشعارات عند فتح صفحة الحساب
+    function _updateFcmBtnState() {
+        const btn = document.getElementById('fcm-enable-btn');
+        const statusEl = document.getElementById('fcm-status-text');
+        if (!btn) return;
+        if (Notification.permission === 'granted' && _fcmToken) {
+            btn.innerText = '✅ الإشعارات مفعّلة';
+            btn.style.background = 'rgba(39,174,96,0.15)';
+            btn.disabled = false;
+            if (statusEl) statusEl.innerText = 'ستصلك إشعارات عند تحديث حالة طلبك';
+        } else if (Notification.permission === 'denied') {
+            btn.innerText = '🚫 الإشعارات محظورة من المتصفح';
+            btn.style.color = '#e74c3c';
+            btn.style.borderColor = '#e74c3c';
+            if (statusEl) statusEl.innerText = 'افتح إعدادات المتصفح وسمح بالإشعارات';
+        } else {
+            btn.innerText = '🔔 تفعيل إشعارات الطلبات';
+            btn.disabled = false;
+        }
+    }
+    // ===== نهاية [FCM-PUSH] دالة تفعيل الإشعارات =====
 
     function logout() {
         // [FIX-C7] تنظيف كل الـ intervals والـ channels عند الخروج
