@@ -1113,7 +1113,7 @@
         messagingSenderId: "8978921835",
         appId:             "1:8978921835:web:398e60e58dd4edf94df42e"
     };
-    const _FCM_VAPID_KEY = "BM4Tc11aEqLH9Q9nOD7gmRZDoZFbnaawIlnY4zvqOJfxNyBnYeS4VQxc4EL9S8tAmDb3UNFYkgvhkxzZ6zbdXos";
+    const _FCM_VAPID_KEY = "ioV2OjV4zITXrJ3WpwIHR-WYJYXVjZMvx15OzGUi2VE";
     const _NOTIFY_FUNCTION_URL = "https://ricoslplbhphydhtrufe.supabase.co/functions/v1/notify-customer";
 
     let _fcmApp = null, _fcmMessaging = null, _fcmToken = null;
