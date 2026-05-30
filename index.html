@@ -152,7 +152,7 @@
         .pay-option.active { border-color: var(--gold); background: rgba(212,175,55,0.1); color: var(--gold); }
 
         /* تعديلات الأقسام العلوية - رفع المستوى وتثبيت مطلق لضمان عدم الاختفاء */
-        .main-category-tabs { display: none; background: var(--purple); padding: 10px 6px; border-radius: 0; border-bottom: 2px solid var(--gold); overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; gap: 6px; position: sticky; top: -1px; z-index: 8000 !important; box-shadow: 0 10px 25px rgba(0,0,0,0.8); width: 100%; margin-bottom: 15px; }
+        .main-category-tabs { display: none; background: var(--purple); padding: 10px 6px; border-radius: 0; border-bottom: 2px solid var(--gold); overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; gap: 6px; position: sticky; top: 0px; z-index: 8000 !important; box-shadow: 0 10px 25px rgba(0,0,0,0.8); width: 100%; margin-bottom: 15px; flex-shrink: 0; }
         .main-category-tabs::-webkit-scrollbar { display: none; }
         .m-tab { flex: 0 0 auto; padding: 6px 15px; text-align: center; font-size: 11px; color: #aaa; cursor: pointer; border-radius: 10px; transition: 0.3s; white-space: nowrap; background: rgba(212,175,55,0.1); border: 1px solid rgba(212,175,55,0.1); }
         .m-tab.active { background: var(--gold); color: #000; font-weight: bold; box-shadow: 0 0 10px var(--gold); border-color: #fff; transform: scale(1.02); }
@@ -6063,7 +6063,7 @@
         var _bgLeaveTime = 0;
         var _reloadBtnTimer = null;
         var _reloadBtnAutoHide = null;
-        var _BG_THRESHOLD_MS = 3000; // 3 ثواني غياب قبل إظهار الزر
+        var _BG_THRESHOLD_MS = 1000; // [FIX] ثانية واحدة غياب تكفي لإظهار الزر
 
         var _reloadBtn = document.createElement('div');
         _reloadBtn.id = '_force-reload-btn';
