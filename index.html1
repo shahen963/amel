@@ -213,6 +213,13 @@
         .step-icon { width: 28px; height: 28px; border-radius: 50%; background: var(--gold); color: #000; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; box-shadow: 0 0 8px var(--gold); font-weight: bold; }
         .step-content { flex: 1; }
         .wassayni-map-small { width: 100%; height: 100px; border-radius: 10px; border: 1px solid rgba(212,175,55,0.3); margin: 5px 0; }
+        /* [WASSAYNI-LOCATIONS] أنماط المكانات المتعددة في وصيني */
+        .wassayni-location-item { background: rgba(0,0,0,0.3); border: 1px solid rgba(212,175,55,0.3); border-radius: 10px; padding: 10px; margin-bottom: 8px; position: relative; }
+        .wassayni-location-item .remove-loc-btn { position: absolute; top: 6px; left: 6px; background: #e74c3c; color: #fff; border: none; border-radius: 6px; padding: 3px 8px; font-size: 10px; cursor: pointer; }
+        .wassayni-price-box { background: linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.05)); border: 2px solid var(--gold); border-radius: 12px; padding: 12px; margin: 10px 0; text-align: center; }
+        .wassayni-price-box .price-label { color: #ccc; font-size: 11px; margin-bottom: 4px; display: block; }
+        .wassayni-price-box .price-value { color: var(--gold); font-size: 22px; font-weight: bold; }
+        .wassayni-price-box .price-details { color: #aaa; font-size: 10px; margin-top: 4px; }
         
         /* إضافة بادينج علوي لكل عرض لمنع التداخل مع الأقسام */
         .category-view { display: none; padding-top: 10px; }
@@ -729,6 +736,20 @@
                 <div class="shahen-loader-text">جاري جلب صيدليات الشاهين... 🦅</div>
             </div>
             <h2 style="color:var(--gold); font-size: 16px; margin-bottom: 10px;">الصيدليات المناوبة 🏥</h2>
+            <!-- [PHARMACY-WASSAYNI] خيار طلب توصيل من صيدلية عبر وصيني -->
+            <div class="card" style="margin-bottom:12px; border:2px solid var(--gold); background:linear-gradient(135deg,rgba(212,175,55,0.15),transparent); cursor:pointer;" onclick="orderPharmacyViaWassayni()">
+                <div style="display:flex; align-items:center; gap:12px; padding:4px 0;">
+                    <div style="width:40px; height:40px; background:var(--gold); border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                        <i class="fas fa-paper-plane" style="color:#000; font-size:18px;"></i>
+                    </div>
+                    <div>
+                        <b style="color:var(--gold); font-size:13px; display:block;">طلب من صيدلية 🦅</b>
+                        <small style="color:#ccc; font-size:11px;">أرسل المندوب لأي صيدلية تختارها — خدمة وصيني</small>
+                    </div>
+                    <i class="fas fa-chevron-left" style="color:var(--gold); margin-right:auto; font-size:14px;"></i>
+                </div>
+            </div>
+            <!-- [END-PHARMACY-WASSAYNI] -->
             <div class="pharmacy-filters">
                 <div class="filter-chip active" id="ph-all-btn" onclick="setPhFilter('all')">الكل</div>
                 <div class="filter-chip" id="ph-oncall-btn" onclick="setPhFilter('oncall')">المناوبة الآن 🌙</div>
@@ -812,6 +833,30 @@
                 </div>
             </div>
             </div><!-- end wassayni-map-section -->
+
+            <!-- [WASSAYNI-MULTI-LOC] قسم المكانات المتعددة -->
+            <div class="card" style="margin-bottom:10px; border:1px solid rgba(212,175,55,0.4); padding:10px;">
+                <small style="color:var(--gold); font-weight:bold; font-size:11px; display:block; margin-bottom:8px;">🗺️ المكانات التي سيزورها المندوب</small>
+                <div id="wassayni-locations-list">
+                    <!-- المكان الأول دائماً موجود -->
+                    <div class="wassayni-location-item" id="wassayni-loc-0">
+                        <small style="color:var(--gold); font-size:10px; font-weight:bold;">📍 المكان الأول (مشمول بالسعر الأساسي)</small>
+                        <input type="text" id="wassayni-loc-name-0" placeholder="اسم المكان / المحل (مثال: محل الورد)" style="font-size:11px; margin-top:6px; background:rgba(0,0,0,0.3); border:1px solid #444;">
+                    </div>
+                </div>
+                <button onclick="addWassayniLocation()" style="width:100%; background:rgba(212,175,55,0.1); border:1px dashed var(--gold); color:var(--gold); padding:8px; border-radius:10px; font-size:12px; cursor:pointer; margin-top:6px;">
+                    <i class="fas fa-plus-circle"></i> إضافة مكان آخر (+10,000 ل.س)
+                </button>
+            </div>
+            <!-- [END-WASSAYNI-MULTI-LOC] -->
+
+            <!-- [WASSAYNI-PRICE-DISPLAY] عرض سعر التوصيل المحسوب -->
+            <div class="wassayni-price-box" id="wassayni-price-box">
+                <span class="price-label">💰 سعر التوصيل الإجمالي</span>
+                <div class="price-value" id="wassayni-price-display">25,000 ل.س</div>
+                <div class="price-details" id="wassayni-price-details">مكان واحد — السعر الأساسي</div>
+            </div>
+            <!-- [END-WASSAYNI-PRICE-DISPLAY] -->
 
             <div class="wassayni-step">
                 <div class="step-icon" style="background:#3498db;" id="wassayni-step3-icon">3</div>
@@ -1555,6 +1600,13 @@
                 minOrderForBonus: config.min_order_for_bonus || 99000, 
                 bonusPoints: config.bonus_points || 5 
             };
+            // ===== [WASSAYNI-PRICE] تحميل سعر خدمة وصيني من الإعدادات =====
+            if (config.wassayni_base_price) {
+                window._wassayniBasePrice = config.wassayni_base_price;
+            }
+            if (config.wassayni_extra_price) {
+                window._wassayniExtraPriceFromAdmin = config.wassayni_extra_price;
+            }
             document.getElementById('points-config-display').innerText = `كل طلب يمنحك ${config.points_per_order} نقطة (1 نقطة = ${config.money_per_point} ل.س)`;
             updatePromoBar(config.news_text);
             // ===== تحميل رابط قناة تيليجرام المناديب من الإعدادات =====
@@ -1605,6 +1657,10 @@
             if(payload.new.points_per_order) pointsConfig.pointsPerOrder = payload.new.points_per_order;
             if(payload.new.min_order_for_bonus) pointsConfig.minOrderForBonus = payload.new.min_order_for_bonus;
             if(payload.new.bonus_points) pointsConfig.bonusPoints = payload.new.bonus_points;
+            // ===== [WASSAYNI-PRICE-RT] تحديث سعر وصيني لحظياً =====
+            if(payload.new.wassayni_base_price) { window._wassayniBasePrice = payload.new.wassayni_base_price; }
+            if(payload.new.wassayni_extra_price) { window._wassayniExtraPriceFromAdmin = payload.new.wassayni_extra_price; }
+            // ===== [END-WASSAYNI-PRICE-RT] =====
             // ===== تحديث رابط تيليجرام المناديب لحظياً =====
             if(payload.new.driver_telegram_channel) {
                 _tgLinks.admin   = payload.new.driver_telegram_channel;
@@ -2265,7 +2321,7 @@
             if(!_cacheValid(_cache.pharmaTs)) renderPharmacies();
         }
         if(cat === 'flowers')   { document.querySelectorAll('.m-tab')[2].classList.add('active'); document.getElementById('view-flowers').classList.add('active'); }
-        if(cat === 'wassayni')  { document.querySelectorAll('.m-tab')[3].classList.add('active'); document.getElementById('view-wassayni').classList.add('active'); initWassayniMaps(); }
+        if(cat === 'wassayni')  { document.querySelectorAll('.m-tab')[3].classList.add('active'); document.getElementById('view-wassayni').classList.add('active'); initWassayniMaps(); calcWassayniPrice(); }
     }
 
     function initWassayniMaps() {
@@ -2634,6 +2690,22 @@
             </div>`;
         }).join('');
     }
+
+    // [PHARMACY-WASSAYNI] تحويل طلب الصيدلية لخدمة وصيني
+    function orderPharmacyViaWassayni() {
+        // التبديل لتبويب وصيني
+        switchCategory('wassayni');
+        // وضع نص توضيحي في حقل تفاصيل الطلب
+        setTimeout(function() {
+            const taskEl = document.getElementById('wassayni-task');
+            if (taskEl && !taskEl.value) {
+                taskEl.value = 'طلب من صيدلية: ';
+                taskEl.focus();
+            }
+        }, 400);
+        showNotify('تم التحويل لخدمة وصيني 🦅 — اكتب اسم الصيدلية وما تحتاجه', 'info');
+    }
+    // [END-PHARMACY-WASSAYNI]
 
     function orderFromPharmacy(id) { 
         selectedPharmacyId = id;
@@ -5525,6 +5597,69 @@
     let _wassayniPending = false; // [FIX-C3]
     // [LOC-CHOICE] متغير اختيار الموقع في وصيني
     window._wassayniLocEnabled = true; // افتراضي: الموقع مفعّل
+    // [WASSAYNI-PRICE] السعر الأساسي لخدمة وصيني (يُحدَّث من إعدادات الإدارة)
+    window._wassayniBasePrice = 25000; // القيمة الافتراضية 25,000 ل.س
+    // [WASSAYNI-EXTRA-PRICE] سعر كل مكان إضافي
+    const _WASSAYNI_EXTRA_PER_LOC = 10000;
+    // [WASSAYNI-LOC-COUNT] عدد المكانات الحالية
+    let _wassayniLocCount = 1;
+
+    // [WASSAYNI-PRICE-CALC] حساب وعرض سعر التوصيل
+    function calcWassayniPrice() {
+        const base = window._wassayniBasePrice || 25000;
+        const extraPerLoc = window._wassayniExtraPriceFromAdmin || _WASSAYNI_EXTRA_PER_LOC;
+        const extra = (_wassayniLocCount - 1) * extraPerLoc;
+        const total = base + extra;
+        const priceEl = document.getElementById('wassayni-price-display');
+        const detailsEl = document.getElementById('wassayni-price-details');
+        if (priceEl) priceEl.innerText = total.toLocaleString() + ' ل.س';
+        if (detailsEl) {
+            if (_wassayniLocCount === 1) {
+                detailsEl.innerText = 'مكان واحد — السعر الأساسي';
+            } else {
+                detailsEl.innerText = _wassayniLocCount + ' أماكن — ' + base.toLocaleString() + ' + ' + extra.toLocaleString() + ' ل.س';
+            }
+        }
+        return total;
+    }
+
+    // [WASSAYNI-ADD-LOC] إضافة مكان جديد
+    function addWassayniLocation() {
+        _wassayniLocCount++;
+        const list = document.getElementById('wassayni-locations-list');
+        if (!list) return;
+        const idx = _wassayniLocCount - 1;
+        const div = document.createElement('div');
+        div.className = 'wassayni-location-item';
+        div.id = 'wassayni-loc-' + idx;
+        div.innerHTML = `<button class="remove-loc-btn" onclick="removeWassayniLocation(${idx})"><i class="fas fa-times"></i> حذف</button><small style="color:var(--gold); font-size:10px; font-weight:bold;">📍 المكان رقم ${_wassayniLocCount} (+${_WASSAYNI_EXTRA_PER_LOC.toLocaleString()} ل.س)</small><input type="text" id="wassayni-loc-name-${idx}" placeholder="اسم المكان / المحل" style="font-size:11px; margin-top:6px; background:rgba(0,0,0,0.3); color:#fff; border:1px solid #444; padding:8px; border-radius:8px; width:100%;">`;
+        list.appendChild(div);
+        calcWassayniPrice();
+    }
+
+    // [WASSAYNI-REMOVE-LOC] حذف مكان
+    function removeWassayniLocation(idx) {
+        const el = document.getElementById('wassayni-loc-' + idx);
+        if (el) { el.remove(); _wassayniLocCount--; }
+        // إعادة ترقيم المكانات
+        const list = document.getElementById('wassayni-locations-list');
+        if (list) {
+            const items = list.querySelectorAll('.wassayni-location-item');
+            _wassayniLocCount = items.length;
+            items.forEach((item, i) => {
+                if (i === 0) return; // المكان الأول لا يُحذف
+                const lbl = item.querySelector('small');
+                const btn = item.querySelector('.remove-loc-btn');
+                if (lbl) lbl.innerText = '📍 المكان رقم ' + (i + 1) + ' (+' + _WASSAYNI_EXTRA_PER_LOC.toLocaleString() + ' ل.س)';
+                if (btn) btn.setAttribute('onclick', 'removeWassayniLocation(' + i + ')');
+                item.id = 'wassayni-loc-' + i;
+                const inp = item.querySelector('input[type="text"]');
+                if (inp) inp.id = 'wassayni-loc-name-' + i;
+            });
+        }
+        calcWassayniPrice();
+    }
+
     function setWassayniLocChoice(enabled) {
         window._wassayniLocEnabled = enabled;
         const mapSection = document.getElementById('wassayni-map-section');
@@ -5557,6 +5692,18 @@
         if (_locEnabled && (pickupLoc.lat === 0 || dropoffLoc.lat === 0)) return showNotify("يرجى تحديد المواقع وكتابة تفاصيل الطلب", "error");
         if(!task) return showNotify("يرجى كتابة تفاصيل الطلب", "error");
         // [END-LOC-CHOICE]
+
+        // [WASSAYNI-MULTI-LOC] جمع أسماء المكانات
+        const _locNames = [];
+        for (let _li = 0; _li < _wassayniLocCount; _li++) {
+            const _locInp = document.getElementById('wassayni-loc-name-' + _li);
+            if (_locInp && _locInp.value.trim()) _locNames.push(_locInp.value.trim());
+        }
+        // [WASSAYNI-PRICE-CALC] حساب السعر النهائي
+        const _finalDeliveryPrice = calcWassayniPrice();
+        const _locSummary = _locNames.length > 0 ? ('\nالمكانات: ' + _locNames.join(' ← ')) : '';
+        const _fullTask = task + _locSummary;
+        // [END-WASSAYNI-MULTI-LOC]
         
         document.getElementById('eagle-searching').style.display = 'flex';
         document.getElementById('searching-text').innerText = "جاري إرسال المهمة لصقور الشاهين... 🚀";
@@ -5573,15 +5720,15 @@
             customer_address: (currentUser.address || "") + " | " + addrDetails,
             total: 0,
             status: 'searching',
-            items: JSON.stringify([{n: "مهمة وصيني", p: 0, task: task}]),
+            items: JSON.stringify([{n: "مهمة وصيني", p: 0, task: _fullTask, locations: _locNames, loc_count: _wassayniLocCount}]),
             customer_id: currentUser.uid,
-            delivery_price: 0,
+            delivery_price: _finalDeliveryPrice,
             verify_code: verificationCode,
             res_type: 'wassayni',
             created_at: new Date().toISOString(),
             lat: _locEnabled ? dropoffLoc.lat : ((currentUser && currentUser.lat) ? currentUser.lat : userLoc.lat),
             lng: _locEnabled ? dropoffLoc.lng : ((currentUser && currentUser.lng) ? currentUser.lng : userLoc.lng),
-            order_details: task
+            order_details: _fullTask
         };
         
         const { error } = await _supabase.from('sh_public_orders').insert([wassayniOrder]);
@@ -5589,7 +5736,7 @@
             currentOrderKey = orderId;
             localStorage.setItem('shahen_active_order_id', orderId);
             
-            let localWassayni = { id: orderId, restaurant_name: "خدمة وصيني 🦅", total: 0, status: 'searching', date: new Date().toLocaleString('ar-SA'), items: [{n: "مهمة وصيني", p: 0}], points_earned: 0, points_spent: 0, delivery_price: 0, restaurant_id: null, customer_id: currentUser.uid, verify_code: verificationCode, res_type: 'wassayni', order_details: task };
+            let localWassayni = { id: orderId, restaurant_name: "خدمة وصيني 🦅", total: 0, status: 'searching', date: new Date().toLocaleString('ar-SA'), items: [{n: "مهمة وصيني", p: 0}], points_earned: 0, points_spent: 0, delivery_price: _finalDeliveryPrice, restaurant_id: null, customer_id: currentUser.uid, verify_code: verificationCode, res_type: 'wassayni', order_details: _fullTask };
             let orders = getStorage('orders');
             orders.push(localWassayni);
             setStorage('orders', orders);
