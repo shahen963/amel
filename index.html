@@ -443,6 +443,10 @@
         .menu-empty-cat { text-align: center; padding: 20px; color: #555; font-size: 11px; }
         /* ===== نهاية CSS المنيو ===== */
     </style>
+    <!-- ===== [FCM-PUSH] Firebase للإشعارات الخارجية ===== -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
+    <!-- ===== نهاية [FCM-PUSH] Firebase ===== -->
 </head>
 <body>
 
@@ -1092,6 +1096,59 @@
     const SB_KEY = "sb_publishable_k6LgEuwPLdCsBMCFC12wfQ_BSOJotuw";
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
+    // ===== [FCM-PUSH] إعداد Firebase Cloud Messaging =====
+    const _FCM_CONFIG = {
+        apiKey:            "AIzaSyB7UYhxlp9ey6h5y-93XGvACr2XDL2iNys",
+        authDomain:        "shaheen-5a1bc.firebaseapp.com",
+        projectId:         "shaheen-5a1bc",
+        storageBucket:     "shaheen-5a1bc.firebasestorage.app",
+        messagingSenderId: "8978921835",
+        appId:             "1:8978921835:web:398e60e58dd4edf94df42e"
+    };
+    const _FCM_VAPID_KEY = "BM4Tc11aEqLH9Q9nOD7gmRZDoZFbnaawIlnY4zvqOJfxNyBnYeS4VQxc4EL9S8tAmDb3UNFYkgvhkxzZ6zbdXos";
+    const _NOTIFY_FUNCTION_URL = "https://ricoslplbhphydhtrufe.supabase.co/functions/v1/notify-customer";
+
+    let _fcmApp = null, _fcmMessaging = null, _fcmToken = null;
+
+    async function initFCM() {
+        try {
+            if (!('Notification' in window) || !('serviceWorker' in navigator)) return;
+            if (_fcmApp) return;
+            _fcmApp = firebase.initializeApp(_FCM_CONFIG);
+            _fcmMessaging = firebase.messaging(_fcmApp);
+            const swReg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+            const permission = await Notification.requestPermission();
+            if (permission !== 'granted') return;
+            _fcmToken = await _fcmMessaging.getToken({ vapidKey: _FCM_VAPID_KEY, serviceWorkerRegistration: swReg });
+            if (_fcmToken && currentUser && currentUser.uid) {
+                await _supabase.from('customers').update({ fcm_token: _fcmToken }).eq('id', currentUser.uid);
+            }
+            _fcmMessaging.onMessage(function(payload) {
+                const title = payload.notification?.title || 'شاهين إكسبريس 🦅';
+                const body  = payload.notification?.body  || '';
+                showNotify(title + (body ? ' — ' + body : ''), 'success');
+            });
+        } catch(e) { /* FCM غير متاح */ }
+    }
+
+    async function _sendPushToCustomer(customerId, orderStatus, orderId, restaurantName) {
+        try {
+            const { data: custRow } = await _supabase.from('customers').select('fcm_token').eq('id', customerId).maybeSingle();
+            if (!custRow || !custRow.fcm_token) return;
+            await fetch(_NOTIFY_FUNCTION_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'apikey': SB_KEY },
+                body: JSON.stringify({
+                    fcm_token:       custRow.fcm_token,
+                    order_status:    orderStatus,
+                    order_id:        orderId,
+                    restaurant_name: restaurantName || ''
+                })
+            });
+        } catch(e) { /* خطأ إرسال الإشعار */ }
+    }
+    // ===== نهاية [FCM-PUSH] =====
+
     let currentUser = null;
     try {
         currentUser = JSON.parse(localStorage.getItem('shahen_user') || 'null');
@@ -1443,6 +1500,9 @@
                 await _supabase.from('customers').update({ auto_username: _existingAutoUser }).eq('id', dbCust.id).catch(() => {});
             }
             // ===== نهاية التحقق من اسم المستخدم =====
+            // ===== [FCM-PUSH] تهيئة الإشعارات بعد تسجيل الدخول =====
+            setTimeout(() => { initFCM(); }, 1500);
+            // ===== نهاية [FCM-PUSH] =====
         }
 
         localStorage.setItem('shahen_user', JSON.stringify(currentUser));
@@ -4671,6 +4731,17 @@
         if (document.getElementById('p-history') && document.getElementById('p-history').style.display !== 'none') {
             renderHistory();
         }
+        // ===== [FCM-PUSH] إرسال إشعار خارجي للعميل عند تغيير حالة الطلب =====
+        try {
+            const _pushStatuses = ['accepted','preparing','ready','picked','completed','cancelled','awaiting_driver','store_invoice_sent'];
+            if (_pushStatuses.includes(newStatus) && currentUser && currentUser.uid) {
+                const { data: _pushOrder } = await _supabase.from('sh_public_orders').select('customer_id, restaurant_name').eq('id', id).maybeSingle();
+                if (_pushOrder && _pushOrder.customer_id) {
+                    _sendPushToCustomer(_pushOrder.customer_id, newStatus, id, _pushOrder.restaurant_name);
+                }
+            }
+        } catch(e) { /* [FCM-PUSH] خطأ في إرسال الإشعار */ }
+        // ===== نهاية [FCM-PUSH] =====
     }
 
     async function cancelOrder() {
