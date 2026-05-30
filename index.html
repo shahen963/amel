@@ -152,7 +152,7 @@
         .pay-option.active { border-color: var(--gold); background: rgba(212,175,55,0.1); color: var(--gold); }
 
         /* تعديلات الأقسام العلوية - رفع المستوى وتثبيت مطلق لضمان عدم الاختفاء */
-        .main-category-tabs { display: none; background: var(--purple); padding: 10px 6px; border-radius: 0; border-bottom: 2px solid var(--gold); overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; gap: 6px; position: sticky; top: 0px; z-index: 8000 !important; box-shadow: 0 10px 25px rgba(0,0,0,0.8); width: 100%; margin-bottom: 15px; flex-shrink: 0; }
+        .main-category-tabs { display: none; background: var(--purple); padding: 10px 6px; border-radius: 0; border-bottom: 2px solid var(--gold); overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; gap: 6px; position: sticky; top: -1px; z-index: 8000 !important; box-shadow: 0 10px 25px rgba(0,0,0,0.8); width: 100%; margin-bottom: 15px; }
         .main-category-tabs::-webkit-scrollbar { display: none; }
         .m-tab { flex: 0 0 auto; padding: 6px 15px; text-align: center; font-size: 11px; color: #aaa; cursor: pointer; border-radius: 10px; transition: 0.3s; white-space: nowrap; background: rgba(212,175,55,0.1); border: 1px solid rgba(212,175,55,0.1); }
         .m-tab.active { background: var(--gold); color: #000; font-weight: bold; box-shadow: 0 0 10px var(--gold); border-color: #fff; transform: scale(1.02); }
@@ -443,10 +443,6 @@
         .menu-empty-cat { text-align: center; padding: 20px; color: #555; font-size: 11px; }
         /* ===== نهاية CSS المنيو ===== */
     </style>
-    <!-- ===== [FCM-PUSH] Firebase للإشعارات الخارجية ===== -->
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
-    <!-- ===== نهاية [FCM-PUSH] Firebase ===== -->
 </head>
 <body>
 
@@ -991,14 +987,6 @@
             <button class="btn-gold" style="flex:1; font-size: 11px; padding: 10px;" onclick="saveMapSelection()">تحديث العنوان والبيانات ✅</button>
         </div>
         
-        <!-- ===== [FCM-PUSH] زر تفعيل الإشعارات ===== -->
-        <div id="fcm-notif-section" style="margin-bottom:12px;">
-            <button id="fcm-enable-btn" class="btn-gold" style="font-size:12px; background:rgba(39,174,96,0.15); color:#2ecc71; border:1px solid #2ecc71;" onclick="enableNotifications()">
-                🔔 تفعيل إشعارات الطلبات
-            </button>
-            <p id="fcm-status-text" style="font-size:10px; color:#888; text-align:center; margin:5px 0 0 0;"></p>
-        </div>
-        <!-- ===== نهاية [FCM-PUSH] ===== -->
         <button class="btn-gold" style="background:#e74c3c; color:white; margin-top:auto; font-size: 12px;" onclick="logout()">تسجيل خروج من طلبات الشاهين</button>
         <!-- ===== زر قناة التليجرام للمندوبين — تم حذفه من واجهة العميل ===== -->
     </div>
@@ -1103,59 +1091,6 @@
     // لا تستخدم service_role key في الواجهة الأمامية أبداً.
     const SB_KEY = "sb_publishable_k6LgEuwPLdCsBMCFC12wfQ_BSOJotuw";
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
-
-    // ===== [FCM-PUSH] إعداد Firebase Cloud Messaging =====
-    const _FCM_CONFIG = {
-        apiKey:            "AIzaSyB7UYhxlp9ey6h5y-93XGvACr2XDL2iNys",
-        authDomain:        "shaheen-5a1bc.firebaseapp.com",
-        projectId:         "shaheen-5a1bc",
-        storageBucket:     "shaheen-5a1bc.firebasestorage.app",
-        messagingSenderId: "8978921835",
-        appId:             "1:8978921835:web:398e60e58dd4edf94df42e"
-    };
-    const _FCM_VAPID_KEY = "ioV2OjV4zITXrJ3WpwIHR-WYJYXVjZMvx15OzGUi2VE";
-    const _NOTIFY_FUNCTION_URL = "https://ricoslplbhphydhtrufe.supabase.co/functions/v1/notify-customer";
-
-    let _fcmApp = null, _fcmMessaging = null, _fcmToken = null;
-
-    async function initFCM() {
-        try {
-            if (!('Notification' in window) || !('serviceWorker' in navigator)) return;
-            if (_fcmApp) return;
-            _fcmApp = firebase.initializeApp(_FCM_CONFIG);
-            _fcmMessaging = firebase.messaging(_fcmApp);
-            const swReg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-            const permission = await Notification.requestPermission();
-            if (permission !== 'granted') return;
-            _fcmToken = await _fcmMessaging.getToken({ vapidKey: _FCM_VAPID_KEY, serviceWorkerRegistration: swReg });
-            if (_fcmToken && currentUser && currentUser.uid) {
-                await _supabase.from('customers').update({ fcm_token: _fcmToken }).eq('id', currentUser.uid);
-            }
-            _fcmMessaging.onMessage(function(payload) {
-                const title = payload.notification?.title || 'شاهين إكسبريس 🦅';
-                const body  = payload.notification?.body  || '';
-                showNotify(title + (body ? ' — ' + body : ''), 'success');
-            });
-        } catch(e) { alert('FCM Error: ' + e.message); /* FCM غير متاح */ }
-    }
-
-    async function _sendPushToCustomer(customerId, orderStatus, orderId, restaurantName) {
-        try {
-            const { data: custRow } = await _supabase.from('customers').select('fcm_token').eq('id', customerId).maybeSingle();
-            if (!custRow || !custRow.fcm_token) return;
-            await fetch(_NOTIFY_FUNCTION_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'apikey': SB_KEY },
-                body: JSON.stringify({
-                    fcm_token:       custRow.fcm_token,
-                    order_status:    orderStatus,
-                    order_id:        orderId,
-                    restaurant_name: restaurantName || ''
-                })
-            });
-        } catch(e) { /* خطأ إرسال الإشعار */ }
-    }
-    // ===== نهاية [FCM-PUSH] =====
 
     let currentUser = null;
     try {
@@ -1508,9 +1443,6 @@
                 await _supabase.from('customers').update({ auto_username: _existingAutoUser }).eq('id', dbCust.id).catch(() => {});
             }
             // ===== نهاية التحقق من اسم المستخدم =====
-            // ===== [FCM-PUSH] تهيئة الإشعارات بعد تسجيل الدخول =====
-            setTimeout(() => { initFCM(); }, 1500);
-            // ===== نهاية [FCM-PUSH] =====
         }
 
         localStorage.setItem('shahen_user', JSON.stringify(currentUser));
@@ -2165,7 +2097,7 @@
         if (id === 'p-home')    { _navHome(); }
         if (id === 'p-cart')    { renderCart(); _ensureConnectionBeforeOrder && _ensureConnectionBeforeOrder().catch(()=>{}); }
         if (id === 'p-history') { renderHistory(); }
-        if (id === 'p-profile') { initProfileMap(); _updateFcmBtnState && _updateFcmBtnState(); }
+        if (id === 'p-profile') { initProfileMap(); }
         if (id !== 'p-chat' && _clientMsgPollInterval) { clearInterval(_clientMsgPollInterval); _clientMsgPollInterval = null; }
     }
 
@@ -4739,17 +4671,6 @@
         if (document.getElementById('p-history') && document.getElementById('p-history').style.display !== 'none') {
             renderHistory();
         }
-        // ===== [FCM-PUSH] إرسال إشعار خارجي للعميل عند تغيير حالة الطلب =====
-        try {
-            const _pushStatuses = ['accepted','preparing','ready','picked','completed','cancelled','awaiting_driver','store_invoice_sent'];
-            if (_pushStatuses.includes(newStatus) && currentUser && currentUser.uid) {
-                const { data: _pushOrder } = await _supabase.from('sh_public_orders').select('customer_id, restaurant_name').eq('id', id).maybeSingle();
-                if (_pushOrder && _pushOrder.customer_id) {
-                    _sendPushToCustomer(_pushOrder.customer_id, newStatus, id, _pushOrder.restaurant_name);
-                }
-            }
-        } catch(e) { /* [FCM-PUSH] خطأ في إرسال الإشعار */ }
-        // ===== نهاية [FCM-PUSH] =====
     }
 
     async function cancelOrder() {
@@ -5711,57 +5632,6 @@
             }
         }
     }
-
-    // ===== [FCM-PUSH] دالة تفعيل الإشعارات يدوياً من الإعدادات =====
-    async function enableNotifications() {
-        const btn = document.getElementById('fcm-enable-btn');
-        const statusEl = document.getElementById('fcm-status-text');
-        if (btn) { btn.disabled = true; btn.innerText = '⏳ جاري التفعيل...'; }
-        try {
-            const permission = await Notification.requestPermission();
-            if (permission === 'granted') {
-                await initFCM();
-                if (_fcmToken) {
-                    if (btn) { btn.innerText = '✅ الإشعارات مفعّلة'; btn.style.color = '#2ecc71'; btn.style.borderColor = '#2ecc71'; }
-                    if (statusEl) statusEl.innerText = 'ستصلك إشعارات عند تحديث حالة طلبك';
-                    showNotify('✅ تم تفعيل الإشعارات بنجاح 🔔');
-                } else {
-                    if (btn) { btn.disabled = false; btn.innerText = '🔔 تفعيل إشعارات الطلبات'; }
-                    if (statusEl) statusEl.innerText = 'تعذّر الحصول على token — حاول مرة ثانية';
-                }
-            } else if (permission === 'denied') {
-                if (btn) { btn.innerText = '🚫 الإشعارات محظورة'; btn.style.color = '#e74c3c'; btn.style.borderColor = '#e74c3c'; }
-                if (statusEl) statusEl.innerText = 'يرجى السماح بالإشعارات من إعدادات المتصفح';
-            } else {
-                if (btn) { btn.disabled = false; btn.innerText = '🔔 تفعيل إشعارات الطلبات'; }
-            }
-        } catch(e) {
-            if (btn) { btn.disabled = false; btn.innerText = '🔔 تفعيل إشعارات الطلبات'; }
-            if (statusEl) statusEl.innerText = 'خطأ: ' + e.message;
-        }
-    }
-
-    // تحديث حالة زر الإشعارات عند فتح صفحة الحساب
-    function _updateFcmBtnState() {
-        const btn = document.getElementById('fcm-enable-btn');
-        const statusEl = document.getElementById('fcm-status-text');
-        if (!btn) return;
-        if (Notification.permission === 'granted' && _fcmToken) {
-            btn.innerText = '✅ الإشعارات مفعّلة';
-            btn.style.background = 'rgba(39,174,96,0.15)';
-            btn.disabled = false;
-            if (statusEl) statusEl.innerText = 'ستصلك إشعارات عند تحديث حالة طلبك';
-        } else if (Notification.permission === 'denied') {
-            btn.innerText = '🚫 الإشعارات محظورة من المتصفح';
-            btn.style.color = '#e74c3c';
-            btn.style.borderColor = '#e74c3c';
-            if (statusEl) statusEl.innerText = 'افتح إعدادات المتصفح وسمح بالإشعارات';
-        } else {
-            btn.innerText = '🔔 تفعيل إشعارات الطلبات';
-            btn.disabled = false;
-        }
-    }
-    // ===== نهاية [FCM-PUSH] دالة تفعيل الإشعارات =====
 
     function logout() {
         // [FIX-C7] تنظيف كل الـ intervals والـ channels عند الخروج
