@@ -1136,7 +1136,7 @@
                 const body  = payload.notification?.body  || '';
                 showNotify(title + (body ? ' — ' + body : ''), 'success');
             });
-        } catch(e) { /* FCM غير متاح */ }
+        } catch(e) { alert('FCM Error: ' + e.message); /* FCM غير متاح */ }
     }
 
     async function _sendPushToCustomer(customerId, orderStatus, orderId, restaurantName) {
