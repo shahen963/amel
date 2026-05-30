@@ -274,6 +274,13 @@
         .shahen-loader-circle::after { content: '🦅'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 20px; }
         .shahen-loader-text { color: var(--gold); font-size: 13px; font-weight: bold; animation: pulse 1.5s infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        /* [PERF-PATCH-LOGIN-5] Skeleton cards — تظهر فوراً بعد تسجيل الدخول بدل الفراغ */
+        @keyframes shimmer { 0% { background-position: -400px 0; } 100% { background-position: 400px 0; } }
+        .sk-card { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 10px; display: flex; gap: 8px; align-items: center; }
+        .sk-img  { width: 65px; height: 65px; border-radius: 10px; flex-shrink: 0; background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(212,175,55,0.15) 50%, rgba(255,255,255,0.05) 75%); background-size: 400px 100%; animation: shimmer 1.4s infinite; }
+        .sk-lines { flex: 1; display: flex; flex-direction: column; gap: 7px; }
+        .sk-line  { height: 12px; border-radius: 6px; background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(212,175,55,0.15) 50%, rgba(255,255,255,0.05) 75%); background-size: 400px 100%; animation: shimmer 1.4s infinite; }
+        .sk-line.short { width: 55%; }
         /* ===== شاشة دردشة الطلب المخصص - بلون بنفسجي =====  */
         #specialty-chat-screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -1461,88 +1468,133 @@
         const e = document.getElementById('uEmail').value.trim();
         const p = document.getElementById('uPass').value.trim();
         if(!e || !p) return showNotify("يرجى إدخل البيانات", "error");
-        
+
+        // [PERF-PATCH-LOGIN-1] إظهار loading على الزر فوراً — لا يبقى صامتاً
+        const _loginBtn = document.getElementById('auth-btn');
+        const _loginBtnOrigText = _loginBtn ? _loginBtn.innerText : 'دخول الآن';
+        if (_loginBtn) {
+            _loginBtn.disabled = true;
+            _loginBtn.innerText = '⏳ جاري الدخول...';
+            _loginBtn.style.opacity = '0.7';
+            _loginBtn.style.pointerEvents = 'none';
+        }
+
+        try {
         const { data: authResult, error: authError } = await _supabase.auth.signInWithPassword({ email: e, password: p });
         
         if (authError) {
             // [SEC-FIX-C3] تم إزالة console.error في بيئة الإنتاج
+            if (_loginBtn) { _loginBtn.disabled = false; _loginBtn.innerText = _loginBtnOrigText; _loginBtn.style.opacity = ''; _loginBtn.style.pointerEvents = ''; }
             if (authError.message.includes("Invalid login credentials")) {
                 return showNotify("يرجى مراجعة بريدك والتحقق من حسابك أو التأكد من صحة البيانات", "error");
             }
             if (authError.message.includes("Email not confirmed") || authError.message.includes("email_not_confirmed")) {
-                // الحساب موجود لكن البريد لم يُفعَّل بعد
                 document.getElementById('verify-email-display').innerText = e;
                 document.getElementById('email-verify-overlay').style.display = 'flex';
-                // تعديل نص الـ dialog ليكون موجهاً لمن يحاول الدخول
                 const _overlayTitle = document.querySelector('#email-verify-overlay h3');
                 if (_overlayTitle) _overlayTitle.innerText = 'يا بطل، تحقق من بريدك أولاً! 📬';
                 return;
             }
-            _clientLoginAttempts++; if (_clientLoginAttempts >= 5) { _clientLockUntil = Date.now() + 60000; _clientLoginAttempts = 0; } return showNotify("حدث خطأ في تسجيل الدخول، يرجى المحاولة مرة أخرى", "error"); // [SEC-FIX-C4,C5] لا تكشف رسالة الخادم للمستخدم
+            _clientLoginAttempts++; if (_clientLoginAttempts >= 5) { _clientLockUntil = Date.now() + 60000; _clientLoginAttempts = 0; } return showNotify("حدث خطأ في تسجيل الدخول، يرجى المحاولة مرة أخرى", "error"); // [SEC-FIX-C4,C5]
         }
 
         // ===== فحص إضافي: التأكد من أن البريد مُفعَّل =====
         if (authResult.user && !authResult.user.email_confirmed_at) {
             await _supabase.auth.signOut();
+            if (_loginBtn) { _loginBtn.disabled = false; _loginBtn.innerText = _loginBtnOrigText; _loginBtn.style.opacity = ''; _loginBtn.style.pointerEvents = ''; }
             document.getElementById('verify-email-display').innerText = e;
             const _overlayTitle2 = document.querySelector('#email-verify-overlay h3');
             if (_overlayTitle2) _overlayTitle2.innerText = 'يا بطل، تحقق من بريدك أولاً! 📬';
             document.getElementById('email-verify-overlay').style.display = 'flex';
             return;
         }
-        
-        const { data: dbCust, error: dbError } = await _supabase.from('customers').select('*').eq('id', authResult.user.id).single();
-        
-        if (dbError || !dbCust) {
-            const profile = authResult.user.user_metadata || {};
-            const fallbackUser = { id: authResult.user.id, name: profile.full_name || "صقر شاهين", email: authResult.user.email, phone: profile.phone || "000", address: profile.address || "--", points: 0, balance: 0 };
-            // ===== توليد اسم مستخدم تلقائي للعميل عند أول دخول =====
-            fallbackUser.auto_username = _generateAutoUsername('CUS');
-            // ===== نهاية توليد اسم المستخدم =====
-            await _supabase.from('customers').insert([fallbackUser]);
-            currentUser = { uid: fallbackUser.id, ...fallbackUser };
-        } else {
-            currentUser = { uid: dbCust.id, name: dbCust.name, email: dbCust.email, phone: dbCust.phone, address: dbCust.address, points: dbCust.points, balance: dbCust.balance };
-            // ===== [SCREEN-SIZE-SAVE] حفظ مقاس الشاشة في حساب المستخدم عند الدخول =====
-            const _loginSize = localStorage.getItem('shahen_display_size');
-            if (_loginSize) {
-                _supabase.from('customers').update({ display_size: _loginSize }).eq('id', dbCust.id).catch(() => {});
-            }
-            // ===== نهاية SCREEN-SIZE-SAVE =====
-            // ===== توليد اسم مستخدم تلقائي إذا لم يكن موجوداً =====
-            if (!dbCust.auto_username) {
-                const _existingAutoUser = _generateAutoUsername('CUS');
-                await _supabase.from('customers').update({ auto_username: _existingAutoUser }).eq('id', dbCust.id).catch(() => {});
-            }
-            // ===== نهاية التحقق من اسم المستخدم =====
-        }
 
+        // [PERF-PATCH-LOGIN-2] بناء بيانات المستخدم من auth فوراً بدون انتظار DB
+        // يسمح بالانتقال للصفحة الرئيسية في الحال بينما تكمل DB queries في الخلفية
+        const _authProfile = authResult.user.user_metadata || {};
+        const _quickUser = {
+            uid: authResult.user.id,
+            id: authResult.user.id,
+            name: _authProfile.full_name || "صقر شاهين",
+            email: authResult.user.email,
+            phone: _authProfile.phone || "000",
+            address: _authProfile.address || "--",
+            points: 0,
+            balance: 0
+        };
+        currentUser = _quickUser;
         localStorage.setItem('shahen_user', JSON.stringify(currentUser));
+
+        // [PERF-PATCH-LOGIN-3] الانتقال للصفحة الرئيسية فوراً — قبل أي await إضافي
         showNotify("أهلاً بك مجدداً يا شاهين 🦅");
         document.getElementById('p-login').style.display = 'none';
-        // تحديث واجهة الملف الشخصي فوراً بدون Refresh
         document.getElementById('my-name').innerText = currentUser.name || "--";
         document.getElementById('my-phone').innerText = currentUser.phone || "--";
         document.getElementById('my-address').innerText = currentUser.address || "--";
         document.getElementById('shahen-points').innerText = currentUser.points || "0";
-        // إصلاح المشكلة الرابعة: فحص التعهد فور تسجيل الدخول مباشرة بدون Refresh
+        if (_loginBtn) { _loginBtn.disabled = false; _loginBtn.innerText = _loginBtnOrigText; _loginBtn.style.opacity = ''; _loginBtn.style.pointerEvents = ''; }
+
         if(!localStorage.getItem('shahen_pledge')) {
-            // [PLEDGE-FIX] إخفاء صفحة الدخول أولاً ثم إظهار التعهد فوراً
             document.getElementById('p-login').style.display = 'none';
             document.getElementById('p-pledge').style.display = 'flex';
             document.getElementById('tab-bar').style.display = 'none';
             document.getElementById('manual-refresh').style.display = 'none';
             document.getElementById('admin-notif-bell').style.display = 'none';
-            // [PLEDGE-FIX] تشغيل loadUserData في الخلفية حتى لو لم يقبل التعهد بعد
-            // هذا يُهيئ البيانات والـ subscriptions مسبقاً قبل قبول التعهد
+            // تحميل البيانات في الخلفية — لا await
             loadUserData();
+            _loginSyncDbProfile(authResult.user.id);
         } else {
             document.getElementById('tab-bar').style.display = 'flex';
             document.getElementById('manual-refresh').style.display = 'flex';
             document.getElementById('admin-notif-bell').style.display = 'flex';
             nav('p-home');
+            // تحميل loadUserData و DB profile في الخلفية — لا await
             loadUserData();
+            _loginSyncDbProfile(authResult.user.id);
         }
+
+        } catch(_loginErr) {
+            if (_loginBtn) { _loginBtn.disabled = false; _loginBtn.innerText = _loginBtnOrigText; _loginBtn.style.opacity = ''; _loginBtn.style.pointerEvents = ''; }
+            showNotify("حدث خطأ غير متوقع، يرجى المحاولة لاحقاً", "error");
+        }
+    }
+
+    // [PERF-PATCH-LOGIN-4] مزامنة بيانات DB في الخلفية بعد ما يدخل المستخدم
+    // لا تحجب الواجهة — تُحدَّث البيانات بهدوء
+    async function _loginSyncDbProfile(userId) {
+        try {
+            const { data: dbCust, error: dbError } = await _supabase.from('customers').select('*').eq('id', userId).single();
+            if (dbError || !dbCust) {
+                // مستخدم جديد — أنشئ سجله
+                const _newUser = {
+                    id: userId,
+                    name: currentUser.name,
+                    email: currentUser.email,
+                    phone: currentUser.phone,
+                    address: currentUser.address,
+                    points: 0,
+                    balance: 0,
+                    auto_username: _generateAutoUsername('CUS')
+                };
+                await _supabase.from('customers').insert([_newUser]).catch(() => {});
+            } else {
+                // مستخدم موجود — حدّث currentUser بالبيانات الكاملة من DB
+                currentUser = { uid: dbCust.id, name: dbCust.name, email: dbCust.email, phone: dbCust.phone, address: dbCust.address, points: dbCust.points, balance: dbCust.balance };
+                localStorage.setItem('shahen_user', JSON.stringify(currentUser));
+                // تحديث الواجهة بالبيانات الحقيقية من DB
+                document.getElementById('my-name').innerText = currentUser.name || "--";
+                document.getElementById('my-phone').innerText = currentUser.phone || "--";
+                document.getElementById('my-address').innerText = currentUser.address || "--";
+                document.getElementById('shahen-points').innerText = currentUser.points || "0";
+                // screen size sync
+                const _loginSize = localStorage.getItem('shahen_display_size');
+                if (_loginSize) _supabase.from('customers').update({ display_size: _loginSize }).eq('id', dbCust.id).catch(() => {});
+                // auto_username
+                if (!dbCust.auto_username) {
+                    _supabase.from('customers').update({ auto_username: _generateAutoUsername('CUS') }).eq('id', dbCust.id).catch(() => {});
+                }
+            }
+        } catch(_syncErr) { /* تجاهل — البيانات الأساسية موجودة من auth */ }
     }
 
     function acceptPledge() {
@@ -2188,7 +2240,6 @@
     function _navHome() {
         // ===== عرض الكاش فوراً إذا متوفر — لا تختفي المطاعم أبداً =====
         if (_cache.res && _cache.res.length > 0) {
-            // ===== عرض جميع المطاعم بدون فلتر branch =====
             _renderResFromData(_cache.res);
         } else {
             // محاولة جلب من LocalStorage قبل السيرفر
@@ -2196,6 +2247,15 @@
             if (_stored && _stored.length > 0) {
                 _cache.res = _stored;
                 _renderResFromData(_stored);
+            } else {
+                // [PERF-PATCH-LOGIN-5] عرض skeleton cards فوراً لحين وصول البيانات
+                const _skListDiv = document.getElementById('res-list');
+                if (_skListDiv && !_skListDiv.innerHTML.trim()) {
+                    const _skHtml = Array(6).fill(0).map(() =>
+                        `<div class="sk-card"><div class="sk-img"></div><div class="sk-lines"><div class="sk-line"></div><div class="sk-line short"></div></div></div>`
+                    ).join('');
+                    _skListDiv.innerHTML = _skHtml;
+                }
             }
         }
         // تحديث من DB فقط إذا انتهى TTL
