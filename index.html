@@ -461,6 +461,20 @@
         .menu-section-block { margin-bottom: 20px; }
         .menu-empty-cat { text-align: center; padding: 20px; color: #555; font-size: 11px; }
         /* ===== نهاية CSS المنيو ===== */
+
+        /* ===== [SWITCH-RES-DIALOG] نافذة تبديل المطعم ===== */
+        #switch-res-dialog { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 30000; display: none; align-items: center; justify-content: center; padding: 20px; animation: fadeIn 0.25s ease; }
+        #switch-res-dialog.show { display: flex; }
+        .switch-res-box { background: var(--glass); border: 2px solid var(--gold); border-radius: 24px; padding: 24px 20px; width: 100%; max-width: 320px; text-align: center; box-shadow: 0 0 40px rgba(212,175,55,0.3), 0 20px 60px rgba(0,0,0,0.8); animation: scaleUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .switch-res-icon { font-size: 44px; margin-bottom: 12px; display: block; }
+        .switch-res-title { color: var(--gold); font-size: 15px; font-weight: bold; margin-bottom: 10px; line-height: 1.5; }
+        .switch-res-msg { color: #ccc; font-size: 12px; line-height: 1.6; margin-bottom: 20px; }
+        .switch-res-btns { display: flex; flex-direction: column; gap: 10px; }
+        .switch-res-btn-yes { background: var(--gold); color: #000; border: none; padding: 13px 16px; border-radius: 14px; font-weight: bold; font-size: 13px; cursor: pointer; transition: 0.2s; }
+        .switch-res-btn-yes:active { transform: scale(0.95); opacity: 0.85; }
+        .switch-res-btn-no { background: rgba(255,255,255,0.05); color: #ccc; border: 1px solid rgba(255,255,255,0.15); padding: 13px 16px; border-radius: 14px; font-weight: bold; font-size: 13px; cursor: pointer; transition: 0.2s; }
+        .switch-res-btn-no:active { transform: scale(0.95); opacity: 0.85; }
+        /* ===== نهاية [SWITCH-RES-DIALOG] ===== */
     </style>
 </head>
 <body>
@@ -487,6 +501,21 @@
 </div>
 
 <div class="app-shell" id="main-app-shell">
+
+    <!-- ===== [SWITCH-RES-DIALOG] نافذة تأكيد تبديل المطعم ===== -->
+    <div id="switch-res-dialog">
+        <div class="switch-res-box">
+            <span class="switch-res-icon">🛒</span>
+            <div class="switch-res-title">لديك منتجات من مطعم آخر داخل السلة</div>
+            <div class="switch-res-msg">هل تريد إفراغ السلة والانتقال إلى المطعم الجديد؟</div>
+            <div class="switch-res-btns">
+                <button class="switch-res-btn-yes" onclick="_confirmSwitchRes()">نعم، إفراغ السلة والانتقال للمطعم الجديد</button>
+                <button class="switch-res-btn-no" onclick="_cancelSwitchRes()">لا، البقاء على المطعم الحالي</button>
+            </div>
+        </div>
+    </div>
+    <!-- ===== نهاية [SWITCH-RES-DIALOG] ===== -->
+
     <div class="typing-pulse-bar" id="typing-pulse-bar">
         <div class="top-nav-action" id="admin-notif-bell" onclick="toggleAdminModal()" title="التنببهات">
             <i class="fas fa-bell"></i>
@@ -3643,14 +3672,66 @@
         _spMsgIds.clear();
     }
 
+    // ===== [SWITCH-RES-DIALOG] متغيرات مؤقتة للمنتج المعلّق ===== 
+    var _pendingSwitchRid = null;
+    var _pendingSwitchN = null;
+    var _pendingSwitchP = null;
+    var _pendingSwitchImg = null;
+
     function addToCart(rid, n, p, img) {
-        if(currentResId && currentResId !== rid) return showNotify("طلب من مطعم واحد فقط!", "error");
+        if(currentResId && currentResId !== rid) {
+            // [SWITCH-RES-DIALOG] بدلاً من منع الإضافة، نعرض Dialog احترافي
+            _pendingSwitchRid = rid;
+            _pendingSwitchN = n;
+            _pendingSwitchP = p;
+            _pendingSwitchImg = img;
+            var dlg = document.getElementById('switch-res-dialog');
+            if(dlg) dlg.classList.add('show');
+            return;
+        }
         // [FIX-CART] img لا تُحفظ في cart - غير مطلوبة في الطلب وقد تسبب فشل insert
         currentResId = rid; cart.push({n, p});
         document.getElementById('badge').innerText = cart.length;
         document.getElementById('badge').style.display = 'block';
         showNotify("تمت الإضافة للسلة ✅");
     }
+
+    // [SWITCH-RES-DIALOG] تأكيد إفراغ السلة والانتقال للمطعم الجديد
+    function _confirmSwitchRes() {
+        var dlg = document.getElementById('switch-res-dialog');
+        if(dlg) dlg.classList.remove('show');
+        // إفراغ السلة الحالية تماماً
+        cart = [];
+        currentResId = null;
+        discountAmount = 0;
+        appliedCoupon = '';
+        pointsDiscountUsed = 0;
+        // إضافة المنتج الجديد مباشرة
+        if(_pendingSwitchRid !== null) {
+            currentResId = _pendingSwitchRid;
+            cart.push({n: _pendingSwitchN, p: _pendingSwitchP});
+            document.getElementById('badge').innerText = cart.length;
+            document.getElementById('badge').style.display = 'block';
+            showNotify("تمت الإضافة للسلة ✅");
+        }
+        // مسح المتغيرات المؤقتة
+        _pendingSwitchRid = null;
+        _pendingSwitchN = null;
+        _pendingSwitchP = null;
+        _pendingSwitchImg = null;
+    }
+
+    // [SWITCH-RES-DIALOG] إلغاء التبديل والبقاء على المطعم الحالي
+    function _cancelSwitchRes() {
+        var dlg = document.getElementById('switch-res-dialog');
+        if(dlg) dlg.classList.remove('show');
+        // مسح المتغيرات المؤقتة بدون أي تغيير
+        _pendingSwitchRid = null;
+        _pendingSwitchN = null;
+        _pendingSwitchP = null;
+        _pendingSwitchImg = null;
+    }
+    // ===== نهاية [SWITCH-RES-DIALOG] =====
 
     function removeFromCart(index) {
         cart.splice(index, 1);
