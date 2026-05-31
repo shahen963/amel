@@ -1611,13 +1611,17 @@
         loadUserData();
     }
 
-    function updatePromoBar(text) {
+    function updatePromoBar(text, fontSize, speed, color) {
         const track = document.getElementById('promo-track');
         const typingContent = document.getElementById('typing-text-content');
         if (typingContent && text) typingContent.innerText = text + " 🦅";
         if (!track || !text) return;
-        const item = `<span class="promo-text-item">${text} 🦅</span>`;
+        const _fontSize = fontSize || 13;
+        const _speed = speed || 50;
+        const _color = color || '#000';
+        const item = `<span class="promo-text-item" style="font-size:${_fontSize}px; color:${_color};">${text} 🦅</span>`;
         track.innerHTML = item.repeat(12);
+        track.style.animationDuration = _speed + 's';
     }
 
     async function loadUserData() {
@@ -1655,7 +1659,7 @@
         }
         // ===== نهاية SCREEN-SIZE-LOAD =====
 
-        const { data: config } = await _supabase.from('app_config').select('*').eq('id', 1).single();
+        const { data: config } = await _supabase.from('app_config').select('points_per_order,money_per_point,min_order_for_bonus,bonus_points,news_text,news_font_size,news_speed,news_color,wassayni_base_price,wassayni_extra_price,driver_telegram_channel,contact_whatsapp1,contact_facebook,contact_instagram,driver_whatsapp_channel').eq('id', 1).single();
         if(config) {
             pointsConfig = { 
                 pointsPerOrder: config.points_per_order, 
@@ -1670,8 +1674,16 @@
             if (config.wassayni_extra_price) {
                 window._wassayniExtraPriceFromAdmin = config.wassayni_extra_price;
             }
-            document.getElementById('points-config-display').innerText = `كل طلب يمنحك ${config.points_per_order} نقطة (1 نقطة = ${config.money_per_point} ل.س)`;
-            updatePromoBar(config.news_text);
+            // ===== [NEWS-CACHE] حفظ إعدادات الخبر للتحديث اللحظي =====
+        window._newsConfig = {
+            text: config.news_text || '',
+            fontSize: config.news_font_size || 13,
+            speed: config.news_speed || 50,
+            color: config.news_color || '#000'
+        };
+        // ===== [END-NEWS-CACHE] =====
+        document.getElementById('points-config-display').innerText = `كل طلب يمنحك ${config.points_per_order} نقطة (1 نقطة = ${config.money_per_point} ل.س)`;
+            updatePromoBar(config.news_text, config.news_font_size, config.news_speed, config.news_color);
             // ===== تحميل رابط قناة تيليجرام المناديب من الإعدادات =====
             if (config.driver_telegram_channel) {
                 // حفظ الرابط في _tgLinks للفتح الموثوق
@@ -1714,8 +1726,13 @@
         
         _supabase.channel('config_updates')
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'app_config', filter: 'id=eq.1' }, payload => {
-            if(payload.new.news_text) {
-                updatePromoBar(payload.new.news_text);
+            if(payload.new.news_text !== undefined || payload.new.news_font_size !== undefined || payload.new.news_speed !== undefined || payload.new.news_color !== undefined) {
+                if(!window._newsConfig) window._newsConfig = { text:'', fontSize:13, speed:50, color:'#000' };
+                if(payload.new.news_text !== undefined) window._newsConfig.text = payload.new.news_text;
+                if(payload.new.news_font_size !== undefined) window._newsConfig.fontSize = payload.new.news_font_size;
+                if(payload.new.news_speed !== undefined) window._newsConfig.speed = payload.new.news_speed;
+                if(payload.new.news_color !== undefined) window._newsConfig.color = payload.new.news_color;
+                updatePromoBar(window._newsConfig.text, window._newsConfig.fontSize, window._newsConfig.speed, window._newsConfig.color);
             }
             if(payload.new.points_per_order) pointsConfig.pointsPerOrder = payload.new.points_per_order;
             if(payload.new.min_order_for_bonus) pointsConfig.minOrderForBonus = payload.new.min_order_for_bonus;
@@ -2283,7 +2300,7 @@
         }
         try {
             const { data: dbData, error } = await _supabase
-                .from('restaurants').select('*');
+                .from('restaurants').select('id,name,logo,icon,branch,delivery_fee,open_time,close_time,specialty_type,is_locked,restaurant_menu,maps_url,is_direct_contact,profit_percent');
 
             if(error) throw error;
             if(dbData) {
@@ -2589,7 +2606,7 @@
         // يتم التحكم بهما من لوحة الإدارة لكل صيدلية بشكل مستقل
         try {
             const [pharmaRes, oncallRes] = await Promise.all([
-                _supabase.from('pharmacies').select('*'),
+                _supabase.from('pharmacies').select('id,name,logo,address,phone,open_time,close_time,is_locked,consultation_fee_enabled,consultation_fee'),
                 _supabase.from('pharma_oncall').select('*').eq('is_active', true)
             ]);
 
@@ -2944,7 +2961,7 @@
     }
 
     async function _fetchAndOpenMenu(id) {
-        const { data: r } = await _supabase.from('restaurants').select('*').eq('id', id).single();
+        const { data: r } = await _supabase.from('restaurants').select('id,name,logo,icon,branch,delivery_fee,open_time,close_time,specialty_type,is_locked,restaurant_menu,maps_url,is_direct_contact,profit_percent').eq('id', id).single();
         if(r) { if(!data.find(x=>x.id===r.id)) data.push(r); _doOpenMenu(r); }
     }
 
