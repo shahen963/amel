@@ -1755,6 +1755,28 @@
             // ===== [END-CONTACT-SYNC-RT] =====
         }).subscribe();
 
+        // ===== [RT-RESTAURANTS] مراقبة جدول المطاعم لحظياً — يضمن ظهور المطاعم الجديدة فور إضافتها من الإدارة =====
+        _supabase.channel('restaurants_realtime')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'restaurants' }, payload => {
+            // مطعم جديد أُضيف من الإدارة — أعِد الجلب وحدّث العرض
+            _cache.resTs = 0; // إبطال الكاش لإجبار الجلب
+            _fetchResAndRender();
+        })
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'restaurants' }, payload => {
+            // مطعم عُدِّل من الإدارة — حدّث الكاش وأعِد العرض
+            _cache.resTs = 0;
+            _fetchResAndRender();
+        })
+        .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'restaurants' }, payload => {
+            // مطعم حُذف من الإدارة — أعِد الجلب وحدّث العرض
+            _cache.resTs = 0;
+            localStorage.removeItem('cached_restaurants'); // مسح الكاش القديم لضمان عدم ظهور المحذوف
+            _cache.res = null;
+            _fetchResAndRender();
+        })
+        .subscribe();
+        // ===== [END-RT-RESTAURANTS] =====
+
         if(!currentUser) return;
 
         const { data: dbUser } = await _supabase.from('customers').select('*').eq('id', currentUser.uid).single();
