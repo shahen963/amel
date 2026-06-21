@@ -133,6 +133,10 @@
         .chat-in { background: #333; align-self: flex-start; border-bottom-left-radius: 2px; }
         .chat-out { background: var(--gold); color: #000; align-self: flex-end; border-bottom-right-radius: 2px; }
         .chat-img { width: 100%; max-width: 250px; min-height: 150px; height: auto; border-radius: 10px; margin-top: 5px; cursor: pointer; border: 2px solid var(--gold); display: block; object-fit: cover; background: #222; min-width: 200px; }
+        /* [DRIVER-STATUS-TIMELINE] عناصر الخط الزمني لحالة الطلب — منطقة مخصصة منفصلة عن الدردشة */
+        .status-entry { display:flex; align-items:center; gap:6px; font-size:11px; font-weight:bold; color:var(--gold); background:rgba(212,175,55,0.1); border-radius:8px; padding:6px 10px; transition: opacity 0.4s, filter 0.4s; }
+        .status-entry-dimmed { opacity:0.45; filter:grayscale(55%); color:#999; background:rgba(255,255,255,0.04); }
+        .status-entry-dimmed .status-entry-check { color:#2ecc71; }
 
         /* تنسيق التقييم بالنجوم */
         .rating-stars { color: #555; cursor: pointer; font-size: 24px; margin: 12px 0; }
@@ -758,6 +762,7 @@
         <div class="m-tab" onclick="switchCategory('pharmacies')"><i class="fas fa-handholding-medical"></i> صيدليات</div>
         <div class="m-tab" onclick="switchCategory('flowers')"><i class="fas fa-gift"></i> ورد وحلويات</div>
         <div class="m-tab" onclick="switchCategory('wassayni')"><i class="fas fa-paper-plane"></i> وصيني 🦅</div>
+        <div class="m-tab" onclick="switchCategory('family')"><i class="fas fa-home"></i> الأسر المنتجة</div>
     </div>
 
     <div id="p-home" class="page">
@@ -912,6 +917,20 @@
                 🚀 إرسال المهمة الآن
             </button>
         </div>
+
+        <!-- ═══════════════════════════════════
+             [FAMILY-BIZ] قسم الأسر المنتجة — مستقل بالكامل
+        ═══════════════════════════════════ -->
+        <div id="view-family" class="category-view">
+            <div id="shahen-family-loader" class="shahen-data-loader" style="display:none;">
+                <div class="shahen-loader-circle"></div>
+                <div class="shahen-loader-text">جاري جلب الأسر المنتجة... 🦅</div>
+            </div>
+            <h2 style="color:var(--gold); font-size: 16px; margin-bottom: 10px;">الأسر المنتجة 🏠</h2>
+            <input type="text" id="familySearch" placeholder="🔍 ابحث عن أسرة أو منتج..." onkeyup="searchFamily()">
+            <div id="family-list"></div>
+        </div>
+        <!-- ══ END [FAMILY-BIZ] view-family ══ -->
     </div>
 
     <div id="p-menu" class="page" style="padding:0; padding-bottom:90px;">
@@ -950,6 +969,42 @@
         </div>
     </div>
 
+    <!-- ═══════════════════════════════════
+         [FAMILY-BIZ] صفحة تفاصيل الأسرة المنتجة — صفحة مستقلة بالكامل
+         لا تتشارك أي عنصر أو دالة مع p-menu لتجنب أي تعارض
+    ═══════════════════════════════════ -->
+    <div id="p-family-detail" class="page" style="padding:0; padding-bottom:90px;">
+        <div style="background:linear-gradient(135deg,var(--purple),rgba(30,10,30,0.98)); border-bottom:2px solid var(--gold); padding:12px 15px; position:sticky; top:0; z-index:200;">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <i class="fas fa-chevron-right" onclick="nav('p-home', event); switchCategory('family')" style="color:var(--gold); font-size:18px; cursor:pointer; flex-shrink:0;"></i>
+                <h2 id="fam-detail-title" style="color:var(--gold); margin:0; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">الأسرة المنتجة</h2>
+            </div>
+        </div>
+
+        <img id="fam-detail-image" src="" style="width:100%; height:170px; object-fit:cover; display:block;" onerror="this.style.display='none'">
+
+        <div style="padding:14px;">
+            <div id="fam-detail-status-badge" style="display:inline-block; padding:3px 12px; border-radius:20px; font-size:11px; font-weight:bold; margin-bottom:8px;"></div>
+            <span id="fam-detail-cat-badge" style="display:inline-block; padding:3px 12px; border-radius:20px; font-size:11px; font-weight:bold; margin-bottom:8px; margin-right:6px; background:rgba(212,175,55,0.15); color:var(--gold);"></span>
+            <p id="fam-detail-desc" style="font-size:12px; color:#ddd; line-height:1.7; margin:0 0 12px;"></p>
+
+            <div class="card" style="padding:10px 14px; margin-bottom:14px;">
+                <div id="fam-detail-hours" style="font-size:11px; color:#aaa; margin-bottom:4px;"></div>
+                <div id="fam-detail-address" style="font-size:11px; color:#aaa;"></div>
+            </div>
+
+            <h3 style="color:var(--gold); font-size:13px; margin-bottom:10px;">🛍️ المنتجات</h3>
+            <div id="fam-detail-products" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;"></div>
+
+            <div id="fam-order-box" style="display:none; margin-bottom:16px;"></div>
+
+            <button class="btn-gold" id="fam-detail-contact-btn" style="height:50px; font-size:14px;" onclick="contactFamilyBusiness()">
+                <i class="fab fa-whatsapp"></i> تواصل عام مع المتجر
+            </button>
+        </div>
+    </div>
+    <!-- ══ END [FAMILY-BIZ] p-family-detail ══ -->
+
     <div id="p-cart" class="page">
         <div id="cart-res-header" style="text-align: center; padding: 12px; background: rgba(212,175,55,0.1); border-radius: 15px; margin-bottom: 12px; border: 1px solid var(--gold); display: none;">
             <i class="fas fa-store" style="color: var(--gold); margin-left: 6px; font-size: 14px;"></i>
@@ -972,6 +1027,16 @@
         <!-- ===== خريطة تتبع المندوب الحي للعميل ===== -->
         <!-- [DEL-TRACK] نظام تتبع المندوب الحي - محذوف -->
         <!-- ===== نهاية خريطة التتبع ===== -->
+
+        <!-- [DRIVER-STATUS-TIMELINE] خط زمني لحالة الطلب — منطقة مخصصة وثابتة، منفصلة عن الدردشة العادية -->
+        <div id="order-status-timeline" style="display:none; background:rgba(0,0,0,0.25); border:1px solid rgba(212,175,55,0.3); border-radius:12px; padding:10px 12px; margin-bottom:8px;">
+            <div style="display:flex; align-items:center; gap:6px; margin-bottom:6px;">
+                <i class="fas fa-route" style="color:var(--gold); font-size:12px;"></i>
+                <b style="color:var(--gold); font-size:11px;">حالة طلبك مباشرة</b>
+            </div>
+            <div id="order-status-list" style="display:flex; flex-direction:column; gap:4px;"></div>
+        </div>
+
         <div id="chat-box" style="flex:1; display:flex; flex-direction:column; overflow-y:auto; padding:8px; background: rgba(0,0,0,0.1); border-radius: 12px; position: relative;">
         </div>
         <div id="client-code-notice" style="display:block; background:rgba(212,175,55,0.1); padding:10px; border-radius:12px; margin-top:5px; border:1px dashed var(--gold); text-align:center;">
@@ -1193,6 +1258,100 @@
     // لا تستخدم service_role key في الواجهة الأمامية أبداً.
     const SB_KEY = "sb_publishable_k6LgEuwPLdCsBMCFC12wfQ_BSOJotuw";
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
+
+    // ════════════════════════════════════════════════════
+    //  [CURRENCY-SYS] نظام دعم العملة السورية (قديمة/جديدة)
+    //  مطابق تماماً لنفس النظام في لوحة الإدارة وتطبيق المندوب
+    // ════════════════════════════════════════════════════
+    window._currSettings = { mode:'both', newColor:'#22c55e', oldColor:'#ef4444' };
+    window._loadCurrencySettings = async function(){
+        try{
+            const r = await fetch(SB_URL+'/rest/v1/app_currency_settings?select=*&id=eq.1&limit=1', {
+                headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}
+            });
+            if(!r.ok) return;
+            const rows = await r.json();
+            const row = rows[0];
+            if(row){
+                window._currSettings = {
+                    mode: row.display_mode || 'both',
+                    newColor: row.new_color || '#22c55e',
+                    oldColor: row.old_color || '#ef4444'
+                };
+            }
+        }catch(e){ /* استخدام الإعدادات الافتراضية بصمت لو فشل الجلب */ }
+    };
+    window.fmtSYP = function(oldAmount, opts){
+        opts = opts || {};
+        const s = window._currSettings || {mode:'both',newColor:'#22c55e',oldColor:'#ef4444'};
+        const oldVal = Math.round(parseFloat(oldAmount)||0);
+        const newVal = Math.round(oldVal/100);
+        const oldStr = oldVal.toLocaleString('en-US') + ' ل.س';
+        const newStr = newVal.toLocaleString('en-US') + ' ل.س';
+        const sizeStyle = opts.size ? `font-size:${opts.size}px;` : '';
+        const sep = opts.inline ? ' &nbsp; ' : '<br>';
+        let html = '';
+        if(s.mode==='new') html = `<span style="color:${s.newColor};font-weight:bold;${sizeStyle}">🟢 ${newStr}</span>`;
+        else if(s.mode==='old') html = `<span style="color:${s.oldColor};font-weight:bold;${sizeStyle}">🔴 ${oldStr}</span>`;
+        else html = `<span style="color:${s.newColor};font-weight:bold;${sizeStyle}">🟢 ${newStr}</span>${sep}<span style="color:${s.oldColor};${opts.inline?'font-weight:bold;':'font-size:11px;'}${sizeStyle}">🔴 ${oldStr}</span>`;
+        return html;
+    };
+    window._loadCurrencySettings(); // تحميل فوري عند بدء التطبيق
+
+    // ════════════════════════════════════════════════════
+    //  [PUSH-NOTIF] نظام الإشعارات الحقيقية (تصل حتى لو التطبيق مغلق تماماً)
+    // ════════════════════════════════════════════════════
+    const _VAPID_PUBLIC_KEY = "BBuVEt0hXoVVn5rEwiFI_nHY8RBGmJCc6HhXADxruVOR4a-ozttF_0QKpCgFDxHFsuPeRk-XQspszlomUvcbHkw";
+
+    function _urlBase64ToUint8Array(base64String) {
+        const padding = '='.repeat((4 - base64String.length % 4) % 4);
+        const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+        const rawData = window.atob(base64);
+        const outputArray = new Uint8Array(rawData.length);
+        for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
+        return outputArray;
+    }
+
+    async function initPushNotifications() {
+        try {
+            if (!('serviceWorker' in navigator) || !('PushManager' in window)) return; // المتصفح لا يدعم الإشعارات
+            if (!currentUser || !currentUser.uid) return; // العميل غير مسجَّل دخول بعد
+
+            const registration = await navigator.serviceWorker.register('/sw.js');
+
+            // طلب الصلاحية فقط لو لم يُطلب من قبل (لا نُكرر الطلب على العميل في كل فتحة)
+            if (Notification.permission === 'default') {
+                const perm = await Notification.requestPermission();
+                if (perm !== 'granted') return;
+            }
+            if (Notification.permission !== 'granted') return;
+
+            let subscription = await registration.pushManager.getSubscription();
+            if (!subscription) {
+                subscription = await registration.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: _urlBase64ToUint8Array(_VAPID_PUBLIC_KEY)
+                });
+            }
+
+            // حفظ الاشتراك في قاعدة البيانات (متجاهلين التكرار لو موجود مسبقاً)
+            const subJson = subscription.toJSON();
+            await _supabase.from('push_subscriptions').upsert({
+                customer_id: currentUser.uid,
+                endpoint: subJson.endpoint,
+                p256dh: subJson.keys.p256dh,
+                auth: subJson.keys.auth,
+                updated_at: new Date().toISOString()
+            }, { onConflict: 'endpoint' });
+        } catch (e) {
+            // فشل صامت — الإشعارات العادية داخل التطبيق تبقى تعمل كخيار احتياطي
+        }
+    }
+    // تفعيل الإشعارات بعد دخول المستخدم بقليل (حتى لا يُربكه طلب الصلاحية فوراً عند الفتح)
+    setTimeout(() => { try { initPushNotifications(); } catch(e) {} }, 3000);
+    // ════════════════════════════════════════════════════
+    //  [END-CURRENCY-SYS]
+    // ════════════════════════════════════════════════════
 
     let currentUser = null;
     try {
@@ -2414,7 +2573,7 @@
                     <img src="${r.logo||'https://via.placeholder.com/150'}" style="border-radius:10px;border:1px solid var(--gold);object-fit:cover;width:65px;height:65px;" onerror="this.src='https://via.placeholder.com/150'">
                     <div style="flex:1;text-align:right;margin-right:8px;">
                         <b class="res-name" style="font-size:11px;">${escHtml(r.name)}</b>
-                        <br><small style="color:var(--gold);font-size:9px;">${r.delivery_fee||0} ل.س • ${r.open_time||''}</small>
+                        <br><small style="font-size:9px;">${fmtSYP(r.delivery_fee||0,{inline:true,size:9})} • ${r.open_time||''}</small>
                     </div>
                 </div>
             </div>`).join('');
@@ -2444,7 +2603,301 @@
         }
         if(cat === 'flowers')   { document.querySelectorAll('.m-tab')[2].classList.add('active'); document.getElementById('view-flowers').classList.add('active'); }
         if(cat === 'wassayni')  { document.querySelectorAll('.m-tab')[3].classList.add('active'); document.getElementById('view-wassayni').classList.add('active'); initWassayniMaps(); calcWassayniPrice(); }
+        if(cat === 'family')    { document.querySelectorAll('.m-tab')[4].classList.add('active'); document.getElementById('view-family').classList.add('active'); loadFamilyBusinesses(); }
     }
+
+    // ═══════════════════════════════════════════════════
+    // [FAMILY-BIZ] الأسر المنتجة — وظائف مستقلة بالكامل
+    // لا تتشارك أي متغير أو دالة مع باقي النظام (مطاعم/صيدليات/إلخ)
+    // ═══════════════════════════════════════════════════
+    let _familyCache = [];
+    let _currentFamilyBiz = null;
+    let _currentFamilyProducts = []; // كاش آمن للمنتجات (لتجنب تمرير JSON عبر onclick)
+    let _famOrderQty = 1;
+    let _famOrderProductId = null;
+
+    async function loadFamilyBusinesses(){
+        const loader = document.getElementById('shahen-family-loader');
+        const listDiv = document.getElementById('family-list');
+        if(_familyCache.length){ _renderFamilyList(_familyCache); }
+        else if(loader) loader.style.display = 'flex';
+        try{
+            const r = await fetch(SB_URL+'/rest/v1/family_businesses?select=*&is_visible=eq.true&order=created_at.desc', {
+                headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}
+            });
+            if(!r.ok){
+                if(!_familyCache.length && listDiv) listDiv.innerHTML = '<p style="text-align:center;color:#888;font-size:11px;padding:30px;">لا توجد أسر منتجة متاحة حالياً</p>';
+                return;
+            }
+            const list = await r.json();
+            _familyCache = list || [];
+            _renderFamilyList(_familyCache);
+        }catch(e){
+            if(!_familyCache.length && listDiv) listDiv.innerHTML = '<p style="text-align:center;color:#888;font-size:11px;padding:30px;">تعذر تحميل الأسر المنتجة، حاول لاحقاً</p>';
+        } finally {
+            if(loader) loader.style.display = 'none';
+        }
+    }
+
+    function _renderFamilyList(list){
+        const listDiv = document.getElementById('family-list');
+        if(!listDiv) return;
+        if(!list || !list.length){
+            listDiv.innerHTML = '<p style="text-align:center;color:#888;font-size:11px;padding:30px;">لا توجد أسر منتجة متاحة حالياً</p>';
+            return;
+        }
+        listDiv.innerHTML = list.map(b => `
+            <div class="card" onclick="openFamilyBusiness('${b.id}')" style="cursor:pointer;">
+                <div class="flex-reverse">
+                    <img src="${b.main_image||'https://via.placeholder.com/150'}" style="border-radius:10px;border:1px solid var(--gold);object-fit:cover;width:65px;height:65px;" onerror="this.src='https://via.placeholder.com/150'">
+                    <div style="flex:1;text-align:right;margin-right:8px;">
+                        <b class="res-name" style="font-size:11px;">${escHtml(b.name)}</b>
+                        ${b.category?` <small style="font-size:9px;color:var(--gold);">| ${escHtml(b.category)}</small>`:''}
+                        <br><small style="font-size:9px;color:${b.is_open?'#2ecc71':'#e74c3c'};font-weight:bold;">${b.is_open?'🟢 مفتوح الآن':'🔴 مغلق حالياً'}</small>
+                        ${b.address?` <small style="font-size:9px;color:#888;">| 📍 ${escHtml(b.address)}</small>`:''}
+                    </div>
+                </div>
+            </div>`).join('');
+    }
+
+    function searchFamily(){
+        const q = (document.getElementById('familySearch')?.value||'').trim().toLowerCase();
+        if(!q){ _renderFamilyList(_familyCache); return; }
+        const filtered = _familyCache.filter(b =>
+            (b.name||'').toLowerCase().includes(q) || (b.description||'').toLowerCase().includes(q)
+        );
+        _renderFamilyList(filtered);
+    }
+
+    async function openFamilyBusiness(id){
+        let biz = _familyCache.find(b => String(b.id) === String(id));
+        if(!biz){
+            try{
+                const r = await fetch(SB_URL+'/rest/v1/family_businesses?select=*&id=eq.'+id+'&limit=1', {
+                    headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}
+                });
+                const rows = await r.json();
+                biz = rows[0];
+            }catch(e){}
+        }
+        if(!biz){ showNotify('تعذر تحميل بيانات الأسرة المنتجة', 'error'); return; }
+        _currentFamilyBiz = biz;
+
+        document.getElementById('fam-detail-title').innerText = biz.name || 'الأسرة المنتجة';
+        const imgEl = document.getElementById('fam-detail-image');
+        if(biz.main_image){ imgEl.src = biz.main_image; imgEl.style.display = 'block'; } else imgEl.style.display = 'none';
+
+        const badgeEl = document.getElementById('fam-detail-status-badge');
+        badgeEl.innerText = biz.is_open ? '🟢 مفتوح الآن' : '🔴 مغلق حالياً';
+        badgeEl.style.background = biz.is_open ? 'rgba(46,204,113,0.15)' : 'rgba(231,76,60,0.15)';
+        badgeEl.style.color = biz.is_open ? '#2ecc71' : '#e74c3c';
+        const catBadgeEl = document.getElementById('fam-detail-cat-badge');
+        if(catBadgeEl){
+            if(biz.category){ catBadgeEl.style.display='inline-block'; catBadgeEl.innerText = biz.category; }
+            else catBadgeEl.style.display='none';
+        }
+
+        document.getElementById('fam-detail-desc').innerText = biz.description || '';
+
+        const hoursEl = document.getElementById('fam-detail-hours');
+        hoursEl.innerHTML = (biz.open_time || biz.close_time)
+            ? `<i class="fas fa-clock" style="color:var(--gold);"></i> ${escHtml(biz.open_time||'')}${biz.close_time?(' - '+escHtml(biz.close_time)):''}`
+            : '';
+        const addrEl = document.getElementById('fam-detail-address');
+        addrEl.innerHTML = biz.address ? `<i class="fas fa-map-marker-alt" style="color:var(--gold);"></i> ${escHtml(biz.address)}` : '';
+
+        const prodDiv = document.getElementById('fam-detail-products');
+        prodDiv.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#888;font-size:11px;padding:10px;">جاري تحميل المنتجات...</p>';
+        try{
+            const rp = await fetch(SB_URL+'/rest/v1/family_business_products?select=*&business_id=eq.'+biz.id+'&order=created_at.asc', {
+                headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}
+            });
+            const products = await rp.json();
+            _currentFamilyProducts = products || []; // كاش آمن لتجنب تمرير بيانات معقدة عبر onclick
+            if(!products || !products.length){
+                prodDiv.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#888;font-size:11px;padding:10px;">لم تتم إضافة منتجات بعد</p>';
+            } else {
+                prodDiv.innerHTML = products.map(p => {
+                    const unavailable = p.is_available === false;
+                    return `
+                    <div class="card" style="padding:8px;text-align:center;${unavailable?'opacity:.5;':''}">
+                        <img src="${p.image||'https://via.placeholder.com/80'}" style="width:100%;height:70px;object-fit:cover;border-radius:8px;margin-bottom:6px;" onerror="this.src='https://via.placeholder.com/80'">
+                        <b style="font-size:11px;display:block;">${escHtml(p.name)}</b>
+                        ${p.description?`<div style="font-size:9px;color:#888;margin:2px 0;">${escHtml(p.description)}</div>`:''}
+                        ${p.prep_time?`<div style="font-size:8px;color:var(--gold);margin:2px 0;"><i class="fas fa-clock"></i> ${escHtml(p.prep_time)}</div>`:''}
+                        <div style="font-size:11px;margin:4px 0;">${fmtSYP(p.price,{inline:true,size:11})}</div>
+                        ${unavailable ? `
+                            <div style="font-size:9px;color:#e74c3c;font-weight:bold;background:rgba(231,76,60,0.1);border-radius:6px;padding:4px;">غير متوفر حالياً</div>
+                        ` : p.needs_customization ? `
+                            <button onclick="contactFamilyProduct('${p.id}')" style="width:100%;background:rgba(212,175,55,0.15); border:1px solid var(--gold); color:var(--gold); border-radius:8px; padding:6px; font-size:10px; cursor:pointer;">
+                                <i class="fab fa-whatsapp"></i> تواصل للتخصيص
+                            </button>
+                        ` : `
+                            <div style="display:flex; gap:4px;">
+                                <button onclick="contactFamilyProduct('${p.id}')" style="flex:1; background:rgba(255,255,255,0.06); border:1px solid #555; color:#ccc; border-radius:8px; padding:6px 2px; font-size:9px; cursor:pointer;">
+                                    <i class="fab fa-whatsapp"></i> تواصل
+                                </button>
+                                <button onclick="famOrderProduct('${p.id}')" style="flex:1.3; background:var(--gold); border:none; color:#1a1a1a; border-radius:8px; padding:6px 2px; font-size:9px; font-weight:bold; cursor:pointer;">
+                                    <i class="fas fa-shopping-cart"></i> اطلب مع التوصيل
+                                </button>
+                            </div>
+                        `}
+                    </div>`;
+                }).join('');
+            }
+        }catch(e){
+            prodDiv.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#888;font-size:11px;padding:10px;">تعذر تحميل المنتجات</p>';
+        }
+
+        nav('p-family-detail');
+    }
+
+    async function _famResolveContactPhone(){
+        if(!_currentFamilyBiz) return '';
+        let phone = _currentFamilyBiz.contact_phone || '';
+        if(_currentFamilyBiz.contact_mode === 'admin'){
+            try{
+                const r = await fetch(SB_URL+'/rest/v1/app_config?select=contact_whatsapp1&id=eq.1&limit=1', {
+                    headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}
+                });
+                const rows = await r.json();
+                if(rows[0]?.contact_whatsapp1) phone = rows[0].contact_whatsapp1;
+            }catch(e){}
+        }
+        return (phone||'').replace(/[^0-9]/g,'');
+    }
+
+    async function contactFamilyBusiness(){
+        if(!_currentFamilyBiz) return;
+        const phone = await _famResolveContactPhone();
+        if(!phone){ showNotify('رقم التواصل غير متوفر حالياً', 'error'); return; }
+        const msg = encodeURIComponent(`مرحباً، أنا مهتم بالتخصيص من "${_currentFamilyBiz.name}" عبر شاهين إكسبريس 🦅`);
+        window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
+    }
+
+    // ── تواصل بخصوص منتج محدد (تخصيص أو استفسار) ──
+    async function contactFamilyProduct(productId){
+        if(!_currentFamilyBiz) return;
+        const p = _currentFamilyProducts.find(x => String(x.id) === String(productId));
+        const phone = await _famResolveContactPhone();
+        if(!phone){ showNotify('رقم التواصل غير متوفر حالياً', 'error'); return; }
+        const productName = p ? p.name : '';
+        const msg = encodeURIComponent(`مرحباً، أنا مهتم بـ"${productName}" من "${_currentFamilyBiz.name}" عبر شاهين إكسبريس 🦅`);
+        window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
+    }
+
+    // ── [FAMILY-ORDER] طلب صنف جاهز مع التوصيل (يدخل في نظام الطلبات والتوصيل الحقيقي) ──
+    function famOrderProduct(productId){
+        const p = _currentFamilyProducts.find(x => String(x.id) === String(productId));
+        if(!p){ showNotify('تعذر تحميل بيانات المنتج', 'error'); return; }
+        if(!currentUser || !currentUser.phone){ showNotify('يرجى تسجيل الدخول أولاً لإتمام الطلب', 'error'); return; }
+        if(!currentUser.address){ showNotify('يرجى إضافة عنوانك من صفحة "حسابي" أولاً', 'error'); return; }
+        _famOrderProductId = productId;
+        _famOrderQty = 1;
+        _famRenderOrderBox();
+        const box = document.getElementById('fam-order-box');
+        if(box){ box.style.display = 'block'; box.scrollIntoView({behavior:'smooth', block:'center'}); }
+    }
+
+    function famChangeOrderQty(delta){
+        _famOrderQty = Math.max(1, _famOrderQty + delta);
+        _famRenderOrderBox();
+    }
+
+    function _famRenderOrderBox(){
+        const p = _currentFamilyProducts.find(x => String(x.id) === String(_famOrderProductId));
+        if(!p) return;
+        const deliveryFee = parseFloat(_currentFamilyBiz?.delivery_fee || 0);
+        const subtotal = p.price * _famOrderQty;
+        const total = subtotal + deliveryFee;
+        const box = document.getElementById('fam-order-box');
+        if(!box) return;
+        box.innerHTML = `
+            <div style="background:rgba(212,175,55,0.06); border:1px solid var(--gold); border-radius:12px; padding:12px;">
+                <b style="font-size:12px; color:var(--gold);">🛒 طلب: ${escHtml(p.name)}</b>
+                <div style="display:flex; align-items:center; justify-content:center; gap:14px; margin:10px 0;">
+                    <button onclick="famChangeOrderQty(-1)" style="width:32px;height:32px;border-radius:8px;background:#333;color:#fff;border:none;font-size:16px;cursor:pointer;">-</button>
+                    <b style="font-size:14px;">${_famOrderQty}</b>
+                    <button onclick="famChangeOrderQty(1)" style="width:32px;height:32px;border-radius:8px;background:var(--gold);color:#1a1a1a;border:none;font-size:16px;cursor:pointer;">+</button>
+                </div>
+                <div style="font-size:11px;color:#ccc;display:flex;justify-content:space-between;margin-bottom:3px;"><span>الأصناف:</span><span>${fmtSYP(subtotal,{inline:true,size:11})}</span></div>
+                <div style="font-size:11px;color:#ccc;display:flex;justify-content:space-between;margin-bottom:6px;"><span>التوصيل:</span><span>${fmtSYP(deliveryFee,{inline:true,size:11})}</span></div>
+                <div style="font-size:13px;font-weight:bold;display:flex;justify-content:space-between;border-top:1px solid rgba(212,175,55,0.3);padding-top:6px;margin-bottom:10px;"><span>الإجمالي:</span><span style="color:var(--gold);">${fmtSYP(total,{inline:true,size:13})}</span></div>
+                <div style="display:flex;gap:6px;">
+                    <button onclick="famCancelOrderBox()" style="flex:1;background:transparent;border:1px solid #555;color:#aaa;border-radius:8px;padding:9px;font-size:12px;cursor:pointer;">إلغاء</button>
+                    <button onclick="famConfirmOrder()" style="flex:2;background:var(--gold);border:none;color:#1a1a1a;border-radius:8px;padding:9px;font-size:12px;font-weight:bold;cursor:pointer;">✅ تأكيد الطلب</button>
+                </div>
+            </div>`;
+    }
+
+    function famCancelOrderBox(){
+        const box = document.getElementById('fam-order-box');
+        if(box){ box.style.display = 'none'; box.innerHTML = ''; }
+        _famOrderProductId = null;
+    }
+
+    let _famOrderPending = false;
+    async function famConfirmOrder(){
+        if(_famOrderPending) return;
+        const p = _currentFamilyProducts.find(x => String(x.id) === String(_famOrderProductId));
+        if(!p || !_currentFamilyBiz) return;
+        _famOrderPending = true;
+        const btn = event?.currentTarget;
+        if(btn){ btn.disabled = true; btn.innerText = 'جاري الإرسال...'; }
+        try{
+            const deliveryFee = parseFloat(_currentFamilyBiz.delivery_fee || 0);
+            const subtotal = p.price * _famOrderQty;
+            const total = subtotal + deliveryFee;
+            const orderId = generateUniqueId();
+            const verificationCode = Math.floor(1000 + Math.random() * 9000);
+            const itemsArr = [{n: p.name, p: p.price, qty: _famOrderQty}];
+
+            const orderData = {
+                id: orderId, customer_name: currentUser.name, phone: currentUser.phone,
+                restaurant_name: _currentFamilyBiz.name, total: total,
+                status: 'searching', date: new Date().toLocaleString('ar-SA'),
+                items: itemsArr, points_earned: 0, points_spent: 0,
+                delivery_price: deliveryFee, restaurant_id: null,
+                customer_id: currentUser.uid, verify_code: verificationCode
+            };
+            const safeOrderData = { ...orderData };
+            delete safeOrderData.date; delete safeOrderData.phone;
+            safeOrderData.items = JSON.stringify(itemsArr);
+            const { error: err1 } = await _supabase.from('orders').insert([safeOrderData]);
+            if(err1) throw err1;
+
+            const _corePublicData = {
+                id: orderId,
+                customer_name: currentUser.name,
+                phone: currentUser.phone,
+                restaurant_name: _currentFamilyBiz.name,
+                res_address: _currentFamilyBiz.address || 'موقع الأسرة المنتجة',
+                customer_address: currentUser.address || 'عنوان العميل',
+                total: total,
+                status: 'searching',
+                items: JSON.stringify(itemsArr),
+                customer_id: currentUser.uid,
+                delivery_price: deliveryFee,
+                created_at: new Date().toISOString(),
+                verify_code: verificationCode,
+                res_type: 'family',
+                notes: '🏠 طلب من أسرة منتجة'
+            };
+            if(currentUser.lat) _corePublicData.lat = currentUser.lat;
+            if(currentUser.lng) _corePublicData.lng = currentUser.lng;
+            const { error: err2 } = await _supabase.from('sh_public_orders').insert([_corePublicData]);
+            if(err2) throw err2;
+
+            famCancelOrderBox();
+            showNotify(`✅ تم إرسال طلبك! كود التسليم: ${verificationCode} 🦅`, 'success');
+        }catch(e){
+            showNotify('فشل إرسال الطلب، حاول مجدداً ❌', 'error');
+        }finally{
+            _famOrderPending = false;
+            if(btn){ btn.disabled = false; btn.innerText = '✅ تأكيد الطلب'; }
+        }
+    }
+    // ══ END [FAMILY-BIZ] ══
 
     function initWassayniMaps() {
         if(!mapPickup) {
@@ -2803,8 +3256,8 @@
                         ${oncallBadge}
                         <div style="margin-top:3px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
                             ${timeRange}
-                            <small style="font-size:9px;color:#aaa;">${p.fee ? p.fee.toLocaleString()+' ل.س توصيل' : ''}</small>
-                            ${(p.consultation_fee_enabled && p.consultation_fee > 0) ? `<small style="font-size:9px;color:#f39c12;font-weight:bold;"><i class="fas fa-comment-medical"></i> رسوم استشارة: ${Number(p.consultation_fee).toLocaleString()} ل.س</small>` : `<small style="font-size:9px;color:#2ecc71;">💬 استشارة مجانية</small>`}
+                            <small style="font-size:9px;">${p.fee ? fmtSYP(p.fee,{inline:true,size:9})+' توصيل' : ''}</small>
+                            ${(p.consultation_fee_enabled && p.consultation_fee > 0) ? `<small style="font-size:9px;color:#f39c12;font-weight:bold;"><i class="fas fa-comment-medical"></i> رسوم استشارة: ${fmtSYP(p.consultation_fee,{inline:true,size:9})}</small>` : `<small style="font-size:9px;color:#2ecc71;">💬 استشارة مجانية</small>`}
                         </div>
                     </div>
                     <i class="fas fa-chevron-left" style="font-size:12px;color:var(--gold);flex-shrink:0;"></i>
@@ -3007,7 +3460,7 @@
         // تحديث رأس المطعم
         document.getElementById('menu-title').innerText = res.name || 'قائمة المنيو';
         document.getElementById('menu-sub-info').innerHTML = `
-            <span style="color:var(--gold);">${res.delivery_fee || 0} ل.س توصيل</span>
+            <span>${fmtSYP(res.delivery_fee||0,{inline:true,size:11})} توصيل</span>
             ${res.open_time ? ' | ' + res.open_time + ' - ' + (res.close_time || '') : ''}
             ${res.maps_url ? ' | <a href="' + res.maps_url + '" target="_blank" style="color:#4285F4;text-decoration:none;"><i class="fas fa-map-marker-alt"></i> الموقع</a>' : ''}
         `;
@@ -3213,7 +3666,7 @@
                             <div class="item-name">${item.n}</div>
                             ${item.desc ? '<div class="item-desc">' + item.desc + '</div>' : ''}
                             ${extrasHtml}
-                            <div class="item-price">${(item.p || 0).toLocaleString()} ل.س</div>
+                            <div class="item-price">${fmtSYP(item.p||0,{inline:true,size:12})}</div>
                         </div>
                         <button class="add-btn" onclick="addToCart('${_currentMenuRes?.id}','${item.n.replace(/'/g, "\\'")}',${item.p || 0})">+</button>
                     `;
@@ -3526,11 +3979,16 @@
         inp.value = '';
         _appendSpMsg(text, 'out', new Date().toISOString());
         _spScrollBottom();
-        const { data: saved } = await _supabase.from('sh_messages').insert({
-            order_id: _spChatOrderId, sender: 'client', message: text
-        }).select().single();
-        if (saved) _spMsgIds.add(saved.id);
-        _spMsgPending = false; // [FIX-C6] reset
+        try {
+            const { data: saved } = await _supabase.from('sh_messages').insert({
+                order_id: _spChatOrderId, sender: 'client', message: text
+            }).select().single();
+            if (saved) _spMsgIds.add(saved.id);
+        } catch(e) {
+            showNotify("فشل إرسال الرسالة، تحقق من الاتصال ❌", "error");
+        } finally {
+            _spMsgPending = false; // [FIX-AUDIT-3] ضمان فتح القفل دائماً حتى عند خطأ شبكة غير متوقع
+        }
     }
 
     // إضافة رسالة للواجهة
@@ -3774,12 +4232,12 @@
         sum.innerHTML = `
             <div class="card" style="background:rgba(212,175,55,0.05); border:1px dashed var(--gold); margin-bottom:8px; padding: 12px;">
                 <div style="text-align:center; color:var(--gold); border-bottom:1px solid rgba(212,175,55,0.2); padding-bottom:8px; margin-bottom:8px; font-weight:bold; font-size: 13px;">فاتورة: ${res ? res.name : 'طلب خارجي'}</div>
-                <div class="flex-reverse" style="font-size: 11px;"><span>الوجبات:</span><span>${sub.toLocaleString()} ل.س</span></div>
-                <div class="flex-reverse" style="font-size: 11px;"><span>التوصيل:</span><span>${deliveryPrice.toLocaleString()} ل.س</span></div>
-                ${discountAmount > 0 ? `<div class="flex-reverse" style="color:var(--gold); font-size: 11px;"><span>خصم الكوبون:</span><span>-${discountAmount.toLocaleString()} ل.س</span></div>` : ''}
-                ${pointsDiscountUsed > 0 ? `<div class="flex-reverse" style="color:var(--gold); font-size: 11px;"><span>خصم النقاط:</span><span>-${pointsDiscountUsed.toLocaleString()} ل.س</span></div>` : ''}
+                <div class="flex-reverse" style="font-size: 11px;"><span>الوجبات:</span><span>${fmtSYP(sub,{inline:true,size:11})}</span></div>
+                <div class="flex-reverse" style="font-size: 11px;"><span>التوصيل:</span><span>${fmtSYP(deliveryPrice,{inline:true,size:11})}</span></div>
+                ${discountAmount > 0 ? `<div class="flex-reverse" style="color:var(--gold); font-size: 11px;"><span>خصم الكوبون:</span><span>-${fmtSYP(discountAmount,{inline:true,size:11})}</span></div>` : ''}
+                ${pointsDiscountUsed > 0 ? `<div class="flex-reverse" style="color:var(--gold); font-size: 11px;"><span>خصم النقاط:</span><span>-${fmtSYP(pointsDiscountUsed,{inline:true,size:11})}</span></div>` : ''}
                 <hr style="border:0; border-top:1px solid rgba(212,175,55,0.2); margin:5px 0;">
-                <div class="flex-reverse" style="font-weight:bold; font-size:14px;"><span>الإجمالي:</span><span>${(total > 0 ? total : 0).toLocaleString()} ل.س</span></div>
+                <div class="flex-reverse" style="font-weight:bold; font-size:14px;"><span>الإجمالي:</span><span>${fmtSYP(total > 0 ? total : 0,{inline:true,size:14})}</span></div>
             </div>
             ${currentUser && currentUser.points >= 100 ? `
             <div class="card" style="margin-bottom:8px; background:rgba(212,175,55,0.1); padding: 8px;">
@@ -4091,6 +4549,41 @@
 
     let _consultChatChannel = null;
     let _consultMsgIds = new Set();
+
+    // [DRIVER-STATUS-TIMELINE] علامة مخصصة لرسائل حالة الطلب — نستخدم sender:'driver' (مضمون أنه مقبول)
+    // مع بادئة خاصة في النص للتمييز، بدل قيمة sender جديدة قد ترفضها قاعدة البيانات بصمت
+    const _STATUS_TAG = '🔖STATUS🔖';
+
+    // دالة موحّدة لعرض رسالة في صندوق الدردشة العادي — رسائل حالة الطلب لا تظهر هنا أبداً (لها منطقة خاصة)
+    function _appendOrderMsg(chatBoxEl, m) {
+        if (!chatBoxEl) return;
+        if (m.message && m.message.startsWith(_STATUS_TAG)) {
+            _appendStatusTimeline(m.message.replace(_STATUS_TAG, '').trim());
+            return;
+        }
+        const msgDiv = document.createElement('div');
+        msgDiv.className = m.sender === 'client' ? 'chat-msg chat-out' : 'chat-msg chat-in';
+        msgDiv.innerText = m.message;
+        chatBoxEl.appendChild(msgDiv);
+    }
+
+    // [DRIVER-STATUS-TIMELINE] إضافة مرحلة جديدة للخط الزمني — وتعتيم كل المراحل السابقة تلقائياً
+    function _appendStatusTimeline(text) {
+        const wrap = document.getElementById('order-status-timeline');
+        const list = document.getElementById('order-status-list');
+        if (!wrap || !list) return;
+        wrap.style.display = 'block';
+        list.querySelectorAll('.status-entry').forEach(el => el.classList.add('status-entry-dimmed'));
+        const entry = document.createElement('div');
+        entry.className = 'status-entry';
+        entry.innerHTML = `<span class="status-entry-check"><i class="fas fa-circle-notch fa-spin"></i></span> <span>${text}</span>`;
+        list.appendChild(entry);
+        // إيقاف الدوران بعد لحظة (تأثير "جاري التنفيذ" قصير فقط للمرحلة الجديدة)
+        setTimeout(() => {
+            const icon = entry.querySelector('.status-entry-check i');
+            if (icon) icon.className = 'fas fa-check-circle';
+        }, 900);
+    }
     // تعديل: متغير للـ polling الاحتياطي في حال الـ Realtime لم يشتغل
     let _clientMsgPollInterval = null;
 
@@ -4300,7 +4793,12 @@
     async function cancelConsultationByClient() {
         if (!currentOrderKey) return showNotify("لا يوجد طلب نشط", "error");
         if (!confirm("هل أنت متأكد من إلغاء الاستشارة؟")) return;
-        const { error } = await _supabase.from('sh_public_orders').update({ status: 'cancelled' }).eq('id', currentOrderKey);
+        // [FIX-RECORDS-2] طلب سبب الإلغاء (اختياري) ليظهر في سجلات الإدارة
+        let _consultCancelReason = null;
+        try { _consultCancelReason = prompt('سبب الإلغاء (اختياري) — اتركه فارغاً للتخطي:'); } catch(e) {}
+        const _consultCancelPayload = { status: 'cancelled' };
+        if (_consultCancelReason && _consultCancelReason.trim()) _consultCancelPayload.cancel_reason = _consultCancelReason.trim();
+        const { error } = await _supabase.from('sh_public_orders').update(_consultCancelPayload).eq('id', currentOrderKey);
         if (!error) {
             // تحديث السجل المحلي
             let orders = getStorage('orders');
@@ -4957,8 +5455,15 @@
     }
 
     async function cancelOrder() {
-        await _supabase.from('orders').update({ status: 'cancelled' }).eq('id', currentOrderKey);
-        await _supabase.from('sh_public_orders').delete().eq('id', currentOrderKey);
+        // [FIX-RECORDS-1] طلب سبب الإلغاء (اختياري) ليظهر في سجلات الإدارة
+        let _cancelReason = null;
+        try { _cancelReason = prompt('سبب الإلغاء (اختياري) — اتركه فارغاً للتخطي:'); } catch(e) {}
+        const _updatePayload = { status: 'cancelled' };
+        if (_cancelReason && _cancelReason.trim()) _updatePayload.cancel_reason = _cancelReason.trim();
+        await _supabase.from('orders').update(_updatePayload).eq('id', currentOrderKey);
+        // [FIX-RECORDS-1b] لا نحذف السجل من sh_public_orders بعد الآن — فقط نحدّث حالته
+        // (المناديب يفلترون بالحالة لرؤية الطلبات الجديدة، فلا تأثير وظيفي، لكن السجل يبقى محفوظاً للأرشيف)
+        await _supabase.from('sh_public_orders').update(_updatePayload).eq('id', currentOrderKey);
         let orders = getStorage('orders');
         orders = orders.map(o => String(o.id) === String(currentOrderKey) ? {...o, status: 'cancelled'} : o);
         setStorage('orders', orders);
@@ -5190,15 +5695,15 @@
                             <div style="font-size:9px; color:${typeColor}; margin-top:2px;">${typeLabel}</div>
                         </div>
                         <div style="text-align:left;">
-                            <div style="font-size:14px; font-weight:bold; color:var(--gold);">${_total.toLocaleString()} ل.س</div>
+                            <div style="font-size:14px; font-weight:bold;">${fmtSYP(_total,{inline:true,size:14})}</div>
                             <div style="font-size:8px; color:#888; text-align:left;">#${o.id}</div>
                         </div>
                     </div>
 
                     <!-- تفاصيل إضافية -->
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px; font-size:9px; color:#888; background:rgba(0,0,0,0.2); border-radius:8px; padding:6px 8px;">
-                        ${_delivery > 0 ? `<div>🛵 توصيل: <b style="color:#fff;">${_delivery.toLocaleString()} ل.س</b></div>` : '<div></div>'}
-                        ${_sub > 0 && _delivery > 0 ? `<div>🛍️ طلب: <b style="color:#fff;">${_sub.toLocaleString()} ل.س</b></div>` : '<div></div>'}
+                        ${_delivery > 0 ? `<div>🛵 توصيل: <b>${fmtSYP(_delivery,{inline:true,size:9})}</b></div>` : '<div></div>'}
+                        ${_sub > 0 && _delivery > 0 ? `<div>🛍️ طلب: <b>${fmtSYP(_sub,{inline:true,size:9})}</b></div>` : '<div></div>'}
                         ${o.driver_name ? `<div>🦅 المندوب: <b style="color:var(--gold);">${escHtml(o.driver_name)}</b></div>` : '<div></div>'}
                         ${o.verify_code && !isArchived ? `<div>🔑 الكود: <b style="color:var(--gold); letter-spacing:2px;">${o.verify_code}</b></div>` : '<div></div>'}
                     </div>
@@ -5278,10 +5783,10 @@
                     <div style="display:flex;justify-content:space-between;"><span style="color:#aaa;">المطعم/المتجر:</span><b style="color:#fff;">${escHtml(order.restaurant_name || '---')}</b></div>
                     ${order.driver_name ? `<div style="display:flex;justify-content:space-between;"><span style="color:#aaa;">المندوب:</span><b style="color:var(--gold);">🦅 ${escHtml(order.driver_name)}</b></div>` : ''}
                     ${order.order_details ? `<div style="margin-top:6px; background:rgba(52,152,219,0.1); border:1px solid rgba(52,152,219,0.3); border-radius:8px; padding:8px;"><b style="color:#3498db; display:block; font-size:10px; margin-bottom:4px;"><i class="fas fa-file-alt"></i> تفاصيل الطلب:</b><div style="font-size:10px; color:#ddd; line-height:1.6; white-space:pre-wrap;">${escHtml(order.order_details)}</div></div>` : ''}
-                    <div style="display:flex;justify-content:space-between;"><span style="color:#aaa;">${_invLbl}:</span><b style="color:#fff;">${_subtotal.toLocaleString()} ل.س</b></div>
-                    <div style="display:flex;justify-content:space-between;"><span style="color:#aaa;">🛵 التوصيل:</span><b style="color:#fff;">${_delivery.toLocaleString()} ل.س</b></div>
-                    ${_consultFee > 0 ? `<div style="display:flex;justify-content:space-between;"><span style="color:#f39c12;">🩺 رسوم الاستشارة:</span><b style="color:#f39c12;">${_consultFee.toLocaleString()} ل.س</b></div>` : ''}
-                    <div style="display:flex;justify-content:space-between;border-top:1px solid rgba(212,175,55,0.3);padding-top:6px;margin-top:6px;"><span style="color:var(--gold);font-weight:bold;">الإجمالي:</span><b style="color:var(--gold);font-size:14px;">${_total.toLocaleString()} ل.س</b></div>
+                    <div style="display:flex;justify-content:space-between;"><span style="color:#aaa;">${_invLbl}:</span><b>${fmtSYP(_subtotal,{inline:true,size:11})}</b></div>
+                    <div style="display:flex;justify-content:space-between;"><span style="color:#aaa;">🛵 التوصيل:</span><b>${fmtSYP(_delivery,{inline:true,size:11})}</b></div>
+                    ${_consultFee > 0 ? `<div style="display:flex;justify-content:space-between;"><span style="color:#f39c12;">🩺 رسوم الاستشارة:</span><b style="color:#f39c12;">${fmtSYP(_consultFee,{inline:true,size:11})}</b></div>` : ''}
+                    <div style="display:flex;justify-content:space-between;border-top:1px solid rgba(212,175,55,0.3);padding-top:6px;margin-top:6px;"><span style="color:var(--gold);font-weight:bold;">الإجمالي:</span><b style="font-size:14px;">${fmtSYP(_total,{inline:true,size:14})}</b></div>
                     ${_dateStr ? `<div style="text-align:center;color:#aaa;font-size:9px;margin-top:4px;">${_dateStr}</div>` : ''}
                 </div>
                 <button onclick="document.getElementById('_archived-summary-modal').remove()" style="width:100%;margin-top:12px;background:var(--gold);color:#000;border:none;padding:10px;border-radius:10px;font-weight:bold;cursor:pointer;font-size:12px;">إغلاق</button>
@@ -5502,10 +6007,7 @@
                 const chatBoxOld = document.getElementById('chat-box');
                 driverOldMsgs.forEach(m => {
                     _consultMsgIds.add(m.id);
-                    const msgDiv = document.createElement('div');
-                    msgDiv.className = m.sender === 'client' ? 'chat-msg chat-out' : 'chat-msg chat-in';
-                    msgDiv.innerText = m.message;
-                    chatBoxOld.appendChild(msgDiv);
+                    _appendOrderMsg(chatBoxOld, m);
                 });
                 chatBoxOld.scrollTop = chatBoxOld.scrollHeight;
             }
@@ -5525,12 +6027,9 @@
                     _consultMsgIds.add(m.id);
                     if (m.sender !== 'client') {
                         const chatBoxLive = document.getElementById('chat-box');
-                        const msgDiv = document.createElement('div');
-                        msgDiv.className = 'chat-msg chat-in';
-                        msgDiv.innerText = m.message;
-                        chatBoxLive.appendChild(msgDiv);
+                        _appendOrderMsg(chatBoxLive, m);
                         chatBoxLive.scrollTop = chatBoxLive.scrollHeight;
-                        showNotify("رسالة جديدة من المندوب 💬", "info");
+                        showNotify((m.message && m.message.startsWith(_STATUS_TAG)) ? "تحديث على حالة طلبك 📦" : "رسالة جديدة من المندوب 💬", "info");
                     }
                 })
                 .subscribe();
@@ -5548,10 +6047,7 @@
                         _consultMsgIds.add(m.id);
                         if (m.sender !== 'client') {
                             const chatBoxPoll = document.getElementById('chat-box');
-                            const msgDiv = document.createElement('div');
-                            msgDiv.className = 'chat-msg chat-in';
-                            msgDiv.innerText = m.message;
-                            chatBoxPoll.appendChild(msgDiv);
+                            _appendOrderMsg(chatBoxPoll, m);
                             hasNew = true;
                         }
                     });
@@ -5707,23 +6203,30 @@
         chatBox.appendChild(d);
         chatBox.scrollTop = chatBox.scrollHeight;
 
-        if (currentOrderKey) {
-            // تعديل: إرسال order_id كنص مباشرة بدون تحويل لـ Number لدعم UUID والأرقام معاً
-            const orderIdToSend = isNaN(currentOrderKey) ? currentOrderKey : Number(currentOrderKey);
-            const { data: saved, error: msgErr } = await _supabase.from('sh_messages').insert({
-                order_id: orderIdToSend,
-                sender: 'client',
-                message: text
-            }).select().single();
-            if (msgErr) {
-                // [FIX-C5] console.error محذوف في الإنتاج
-                showNotify("فشل إرسال الرسالة، حاول مجدداً ❌", "error");
-                inp.value = text;
-                chatBox.removeChild(d);
+        try {
+            if (currentOrderKey) {
+                // تعديل: إرسال order_id كنص مباشرة بدون تحويل لـ Number لدعم UUID والأرقام معاً
+                const orderIdToSend = isNaN(currentOrderKey) ? currentOrderKey : Number(currentOrderKey);
+                const { data: saved, error: msgErr } = await _supabase.from('sh_messages').insert({
+                    order_id: orderIdToSend,
+                    sender: 'client',
+                    message: text
+                }).select().single();
+                if (msgErr) {
+                    // [FIX-C5] console.error محذوف في الإنتاج
+                    showNotify("فشل إرسال الرسالة، حاول مجدداً ❌", "error");
+                    inp.value = text;
+                    chatBox.removeChild(d);
+                }
+                if (saved) _consultMsgIds.add(saved.id);
             }
-            if (saved) _consultMsgIds.add(saved.id);
+        } catch(e) {
+            showNotify("فشل إرسال الرسالة، تحقق من الاتصال ❌", "error");
+            inp.value = text;
+            if (d.parentNode) chatBox.removeChild(d);
+        } finally {
+            _sendMsgPending = false; // [FIX-AUDIT-2] ضمان فتح القفل دائماً حتى عند خطأ شبكة غير متوقع
         }
-        _sendMsgPending = false; // [FIX-C5] reset guard
     }
 
     function initProfileMap() {
