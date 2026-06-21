@@ -927,7 +927,18 @@
                 <div class="shahen-loader-text">جاري جلب الأسر المنتجة... 🦅</div>
             </div>
             <h2 style="color:var(--gold); font-size: 16px; margin-bottom: 10px;">الأسر المنتجة 🏠</h2>
-            <input type="text" id="familySearch" placeholder="🔍 ابحث عن أسرة أو منتج..." onkeyup="searchFamily()">
+
+            <!-- [FAM-AI-SEARCH] البحث الذكي بمساعدة الذكاء الاصطناعي -->
+            <div class="card" style="padding:10px; margin-bottom:10px; border:1px solid var(--gold);">
+                <label style="font-size:11px; color:var(--gold); display:block; margin-bottom:6px;"><i class="fas fa-magic"></i> اسأل بطريقتك — مثلاً: "أريد حلويات لمناسبة"</label>
+                <div style="display:flex; gap:6px;">
+                    <input type="text" id="famAiQuery" placeholder="صف ما تبحث عنه..." style="flex:1; margin:0;" onkeydown="if(event.key==='Enter') runFamilyAiSearch()">
+                    <button onclick="runFamilyAiSearch()" class="btn-gold" style="width:auto; padding:0 16px; margin:0; height:38px;"><i class="fas fa-search"></i></button>
+                </div>
+                <div id="fam-ai-results" style="margin-top:10px;"></div>
+            </div>
+
+            <input type="text" id="familySearch" placeholder="🔍 أو ابحث بالاسم مباشرة..." onkeyup="searchFamily()">
             <div id="family-list"></div>
         </div>
         <!-- ══ END [FAMILY-BIZ] view-family ══ -->
@@ -986,11 +997,44 @@
         <div style="padding:14px;">
             <div id="fam-detail-status-badge" style="display:inline-block; padding:3px 12px; border-radius:20px; font-size:11px; font-weight:bold; margin-bottom:8px;"></div>
             <span id="fam-detail-cat-badge" style="display:inline-block; padding:3px 12px; border-radius:20px; font-size:11px; font-weight:bold; margin-bottom:8px; margin-right:6px; background:rgba(212,175,55,0.15); color:var(--gold);"></span>
+            <!-- [FAM-RATING] شارة التقييم بجانب الاسم -->
+            <span id="fam-detail-rating-badge" onclick="_toggleFamRatingsPanel()" style="display:inline-flex; align-items:center; gap:4px; cursor:pointer; margin-bottom:8px;"></span>
             <p id="fam-detail-desc" style="font-size:12px; color:#ddd; line-height:1.7; margin:0 0 12px;"></p>
 
             <div class="card" style="padding:10px 14px; margin-bottom:14px;">
                 <div id="fam-detail-hours" style="font-size:11px; color:#aaa; margin-bottom:4px;"></div>
                 <div id="fam-detail-address" style="font-size:11px; color:#aaa;"></div>
+            </div>
+
+            <!-- [FAM-RATING] لوحة التقييمات الكاملة — تُفتح عند الضغط على شارة التقييم -->
+            <div id="fam-ratings-panel" style="display:none; margin-bottom:16px;">
+                <div class="card" style="padding:14px;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+                        <h3 style="color:var(--gold); font-size:13px; margin:0;"><i class="fas fa-star"></i> التقييمات</h3>
+                        <button onclick="_openSubmitFamRating()" style="background:var(--gold); color:#1a1a1a; border:none; border-radius:8px; padding:6px 12px; font-size:10px; font-weight:bold; cursor:pointer;">قيّم هذه الأسرة ⭐</button>
+                    </div>
+                    <div id="fam-ratings-summary" style="text-align:center; padding:10px; background:rgba(212,175,55,0.06); border-radius:10px; margin-bottom:12px;"></div>
+                    <div id="fam-ratings-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+                </div>
+            </div>
+
+            <!-- [FAM-RATING] نموذج إضافة تقييم -->
+            <div id="fam-submit-rating-box" style="display:none; margin-bottom:16px;">
+                <div class="card" style="padding:14px; border:1px solid var(--gold);">
+                    <h4 style="color:var(--gold); font-size:12px; margin:0 0 10px;">قيّم تجربتك مع هذه الأسرة</h4>
+                    <div id="fam-rating-stars-input" style="font-size:24px; text-align:center; margin-bottom:10px; letter-spacing:6px;">
+                        <i class="far fa-star fam-star-input" data-val="1" onclick="_setFamRatingStars(1)" style="color:#555; cursor:pointer;"></i>
+                        <i class="far fa-star fam-star-input" data-val="2" onclick="_setFamRatingStars(2)" style="color:#555; cursor:pointer;"></i>
+                        <i class="far fa-star fam-star-input" data-val="3" onclick="_setFamRatingStars(3)" style="color:#555; cursor:pointer;"></i>
+                        <i class="far fa-star fam-star-input" data-val="4" onclick="_setFamRatingStars(4)" style="color:#555; cursor:pointer;"></i>
+                        <i class="far fa-star fam-star-input" data-val="5" onclick="_setFamRatingStars(5)" style="color:#555; cursor:pointer;"></i>
+                    </div>
+                    <textarea id="fam-rating-comment-input" placeholder="اكتب تجربتك (اختياري)..." style="width:100%; min-height:50px; background:rgba(0,0,0,0.2); border:1px solid rgba(212,175,55,0.3); border-radius:8px; padding:8px; color:#fff; font-size:11px; resize:vertical; font-family:inherit; margin-bottom:10px;"></textarea>
+                    <div style="display:flex; gap:8px;">
+                        <button onclick="_submitFamRating()" style="flex:2; background:var(--gold); color:#1a1a1a; border:none; border-radius:8px; padding:9px; font-size:12px; font-weight:bold; cursor:pointer;">إرسال التقييم</button>
+                        <button onclick="document.getElementById('fam-submit-rating-box').style.display='none'" style="flex:1; background:transparent; border:1px solid #555; color:#aaa; border-radius:8px; padding:9px; font-size:12px; cursor:pointer;">إلغاء</button>
+                    </div>
+                </div>
             </div>
 
             <h3 style="color:var(--gold); font-size:13px; margin-bottom:10px;">🛍️ المنتجات</h3>
@@ -1101,6 +1145,8 @@
                 <span style="font-size: 13px;">رصيد نقاط الشاهين 🦅</span>
                 <b id="shahen-points" style="color:var(--gold); font-size:18px;">0</b>
             </div>
+            <!-- [POINTS-MONEY] القيمة النقدية لنقاطك -->
+            <div id="shahen-points-money" style="font-size: 11px; margin-top:4px; color:#2ecc71; font-weight:bold; text-align:left;"></div>
             <div id="points-config-display" style="font-size: 9px; margin-top: 4px; opacity: 0.7; color: var(--gold);"></div>
         </div>
 
@@ -1375,6 +1421,19 @@
     let pickupLoc = {lat:0, lng:0}, dropoffLoc = {lat:0, lng:0}, historyTab = 'active', currentRating = 0, lastStatusNotified = ""; 
     let discountAmount = 0, appliedCoupon = "", paymentMethod = 'cash', pointsDiscountUsed = 0;
     let pointsConfig = { pointsPerOrder: 0, moneyPerPoint: 0, minOrderForBonus: 99000, bonusPoints: 5 };
+
+    // [POINTS-MONEY] دالة موحّدة لتحديث القيمة النقدية لنقاط العميل أسفل رصيد النقاط
+    function _updatePointsMoneyDisplay(){
+        const el = document.getElementById('shahen-points-money');
+        if(!el) return;
+        const pts = (currentUser && currentUser.points) ? parseFloat(currentUser.points) : 0;
+        const rate = pointsConfig.moneyPerPoint || 0;
+        if(rate > 0 && pts > 0){
+            el.innerText = `= ${(pts * rate).toLocaleString()} ل.س`;
+        } else {
+            el.innerText = '';
+        }
+    }
     let verificationCode = 0; 
     let lastMsgCount = 0; 
     let phFilter = 'all';
@@ -1722,6 +1781,7 @@
         document.getElementById('my-phone').innerText = currentUser.phone || "--";
         document.getElementById('my-address').innerText = currentUser.address || "--";
         document.getElementById('shahen-points').innerText = currentUser.points || "0";
+        _updatePointsMoneyDisplay(); // [POINTS-MONEY]
         if (_loginBtn) { _loginBtn.disabled = false; _loginBtn.innerText = _loginBtnOrigText; _loginBtn.style.opacity = ''; _loginBtn.style.pointerEvents = ''; }
 
         if(!localStorage.getItem('shahen_pledge')) {
@@ -1776,6 +1836,7 @@
                 document.getElementById('my-phone').innerText = currentUser.phone || "--";
                 document.getElementById('my-address').innerText = currentUser.address || "--";
                 document.getElementById('shahen-points').innerText = currentUser.points || "0";
+        _updatePointsMoneyDisplay(); // [POINTS-MONEY]
                 // screen size sync
                 const _loginSize = localStorage.getItem('shahen_display_size');
                 if (_loginSize) _supabase.from('customers').update({ display_size: _loginSize }).eq('id', dbCust.id).catch(() => {});
@@ -1861,6 +1922,7 @@
                 window._wassayniExtraPriceFromAdmin = config.wassayni_extra_price;
             }
             document.getElementById('points-config-display').innerText = `كل طلب يمنحك ${config.points_per_order} نقطة (1 نقطة = ${config.money_per_point} ل.س)`;
+            _updatePointsMoneyDisplay(); // [POINTS-MONEY] تحديث فور توفر سعر النقطة
             updatePromoBar(config.news_text);
             // ===== تحميل رابط قناة تيليجرام المناديب من الإعدادات =====
             if (config.driver_telegram_channel) {
@@ -1989,6 +2051,7 @@
         document.getElementById('my-phone').innerText = currentUser.phone || "--";
         document.getElementById('my-address').innerText = currentUser.address || "--";
         document.getElementById('shahen-points').innerText = currentUser.points || "0";
+        _updatePointsMoneyDisplay(); // [POINTS-MONEY]
         
         fetchAdminMessages();
         initRealtimeNotifications();
@@ -2637,12 +2700,49 @@
             }
             const list = await r.json();
             _familyCache = list || [];
-            _renderFamilyList(_familyCache);
+            _renderFamilyList(_familyCache); // [PERF-FIX-2] عرض القائمة فوراً بدون انتظار التقييمات
+            // [FAM-RATING] جلب التقييمات في الخلفية ثم تحديث الشارات فقط — لا يُبطئ ظهور القائمة الأولى
+            _loadFamilyRatingStats(_familyCache.map(b=>b.id)).then(()=>{ _renderFamilyList(_familyCache); });
         }catch(e){
             if(!_familyCache.length && listDiv) listDiv.innerHTML = '<p style="text-align:center;color:#888;font-size:11px;padding:30px;">تعذر تحميل الأسر المنتجة، حاول لاحقاً</p>';
         } finally {
             if(loader) loader.style.display = 'none';
         }
+    }
+
+    // [FAM-RATING] جلب كل التقييمات لقائمة من المتاجر دفعة واحدة (استعلام واحد لا استعلام لكل بطاقة)
+    let _famRatingStats = {}; // business_id -> {avg, count}
+    async function _loadFamilyRatingStats(businessIds){
+        if(!businessIds || !businessIds.length) return;
+        try{
+            const idsParam = businessIds.join(',');
+            const r = await fetch(SB_URL+`/rest/v1/family_business_ratings?select=business_id,stars&business_id=in.(${idsParam})`, {
+                headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}
+            });
+            if(!r.ok) return;
+            const rows = await r.json();
+            const grouped = {};
+            (rows||[]).forEach(row=>{
+                if(!grouped[row.business_id]) grouped[row.business_id] = [];
+                grouped[row.business_id].push(row.stars);
+            });
+            Object.keys(grouped).forEach(bid=>{
+                const arr = grouped[bid];
+                _famRatingStats[bid] = { avg: (arr.reduce((a,b)=>a+b,0)/arr.length), count: arr.length };
+            });
+        }catch(e){}
+    }
+
+    function _famStarsHtml(avg, size){
+        size = size || 10;
+        let html = '';
+        const rounded = Math.round(avg*2)/2; // أقرب نصف نجمة
+        for(let i=1;i<=5;i++){
+            if(rounded >= i) html += `<i class="fas fa-star" style="color:#f4c430;font-size:${size}px;"></i>`;
+            else if(rounded >= i-0.5) html += `<i class="fas fa-star-half-alt" style="color:#f4c430;font-size:${size}px;"></i>`;
+            else html += `<i class="far fa-star" style="color:#555;font-size:${size}px;"></i>`;
+        }
+        return html;
     }
 
     function _renderFamilyList(list){
@@ -2652,18 +2752,102 @@
             listDiv.innerHTML = '<p style="text-align:center;color:#888;font-size:11px;padding:30px;">لا توجد أسر منتجة متاحة حالياً</p>';
             return;
         }
-        listDiv.innerHTML = list.map(b => `
-            <div class="card" onclick="openFamilyBusiness('${b.id}')" style="cursor:pointer;">
-                <div class="flex-reverse">
+        listDiv.innerHTML = list.map(b => {
+            const rating = _famRatingStats[b.id];
+            const ratingHtml = rating
+                ? `<span style="display:inline-flex;align-items:center;gap:3px;">${_famStarsHtml(rating.avg,9)} <small style="color:#888;font-size:9px;">(${rating.count})</small></span>`
+                : `<small style="color:#666;font-size:9px;">لا توجد تقييمات بعد</small>`;
+            return `
+            <div class="card" style="cursor:pointer;">
+                <div class="flex-reverse" onclick="openFamilyBusiness('${b.id}')">
                     <img src="${b.main_image||'https://via.placeholder.com/150'}" style="border-radius:10px;border:1px solid var(--gold);object-fit:cover;width:65px;height:65px;" onerror="this.src='https://via.placeholder.com/150'">
                     <div style="flex:1;text-align:right;margin-right:8px;">
                         <b class="res-name" style="font-size:11px;">${escHtml(b.name)}</b>
                         ${b.category?` <small style="font-size:9px;color:var(--gold);">| ${escHtml(b.category)}</small>`:''}
+                        <br>${ratingHtml}
                         <br><small style="font-size:9px;color:${b.is_open?'#2ecc71':'#e74c3c'};font-weight:bold;">${b.is_open?'🟢 مفتوح الآن':'🔴 مغلق حالياً'}</small>
                         ${b.address?` <small style="font-size:9px;color:#888;">| 📍 ${escHtml(b.address)}</small>`:''}
                     </div>
                 </div>
-            </div>`).join('');
+                <div style="display:flex;gap:6px;margin-top:8px;">
+                    <button onclick="event.stopPropagation();openFamilyBusiness('${b.id}', true)" style="flex:1;background:rgba(212,175,55,0.1);border:1px solid var(--gold);color:var(--gold);border-radius:8px;padding:6px;font-size:10px;cursor:pointer;">
+                        <i class="fas fa-star"></i> عرض التقييمات
+                    </button>
+                    <button onclick="event.stopPropagation();_quickContactFamilyCard('${b.id}')" style="flex:1;background:rgba(37,211,102,0.1);border:1px solid #25d366;color:#25d366;border-radius:8px;padding:6px;font-size:10px;cursor:pointer;">
+                        <i class="fab fa-whatsapp"></i> تواصل واتساب
+                    </button>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    // [FAM-CARD-WA] تواصل سريع من البطاقة مباشرة بدون فتح صفحة التفاصيل
+    async function _quickContactFamilyCard(id){
+        const biz = _familyCache.find(b => String(b.id) === String(id));
+        if(!biz) return;
+        _currentFamilyBiz = biz;
+        await contactFamilyBusiness();
+    }
+
+    // [FAM-AI-SEARCH] البحث الذكي بمساعدة الذكاء الاصطناعي
+    const _FAM_AI_FN_URL = 'https://ricoslplbhphydhtrufe.supabase.co/functions/v1/family-ai-search';
+    let _famAiSearchPending = false;
+    async function runFamilyAiSearch(){
+        if(_famAiSearchPending) return;
+        const query = document.getElementById('famAiQuery')?.value.trim();
+        const resultsEl = document.getElementById('fam-ai-results');
+        if(!query){ showNotify('اكتب طلبك أولاً'); return; }
+        _famAiSearchPending = true;
+        resultsEl.innerHTML = '<p style="text-align:center;color:#888;font-size:11px;padding:10px;"><i class="fas fa-spinner fa-spin"></i> الذكاء الاصطناعي يبحث لك...</p>';
+        try{
+            // جلب المنتجات لكل الأسر الظاهرة لإرسالها مع الطلب (دفعة واحدة)
+            const bizList = _familyCache.length ? _familyCache : await (async()=>{ await loadFamilyBusinesses(); return _familyCache; })();
+            const ids = bizList.map(b=>b.id);
+            let productsMap = {};
+            if(ids.length){
+                const rp = await fetch(SB_URL+`/rest/v1/family_business_products?select=business_id,name,price,prep_time&business_id=in.(${ids.join(',')})`, {
+                    headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}
+                });
+                const rows = rp.ok ? await rp.json() : [];
+                (rows||[]).forEach(p=>{ if(!productsMap[p.business_id]) productsMap[p.business_id]=[]; productsMap[p.business_id].push(p); });
+            }
+            const payload = bizList.map(b=>({ id:b.id, name:b.name, category:b.category, description:b.description, products: productsMap[b.id]||[] }));
+
+            const r = await fetch(_FAM_AI_FN_URL, {
+                method:'POST',
+                headers:{'Content-Type':'application/json','Authorization':'Bearer '+SB_KEY},
+                body: JSON.stringify({ query, businesses: payload })
+            });
+            if(!r.ok){
+                const txt = await r.text();
+                resultsEl.innerHTML = `<p style="text-align:center;color:#e74c3c;font-size:11px;padding:10px;">تعذر البحث الذكي حالياً: ${escHtml(txt.slice(0,100))}</p>`;
+                return;
+            }
+            const data = await r.json();
+            if(!data.results || !data.results.length){
+                resultsEl.innerHTML = '<p style="text-align:center;color:#888;font-size:11px;padding:10px;">لم يجد الذكاء الاصطناعي تطابقاً مناسباً — جرّب صياغة مختلفة</p>';
+                return;
+            }
+            resultsEl.innerHTML = data.results.map(res=>{
+                const biz = bizList.find(b=>String(b.id)===String(res.business_id));
+                if(!biz) return '';
+                return `
+                <div class="card" onclick="openFamilyBusiness('${biz.id}')" style="cursor:pointer; margin-bottom:6px; border-color:var(--gold);">
+                    <div class="flex-reverse">
+                        <img src="${biz.main_image||'https://via.placeholder.com/60'}" style="border-radius:8px;width:50px;height:50px;object-fit:cover;" onerror="this.src='https://via.placeholder.com/60'">
+                        <div style="flex:1;text-align:right;margin-right:8px;">
+                            <b style="font-size:11px;">${escHtml(biz.name)}</b>
+                            <div style="font-size:9px;color:var(--gold);margin-top:2px;"><i class="fas fa-magic"></i> ${escHtml(res.reason||'')}</div>
+                            ${res.suggested_products && res.suggested_products.length ? `<div style="font-size:9px;color:#aaa;margin-top:2px;">مقترح: ${res.suggested_products.map(p=>escHtml(p)).join('، ')}</div>` : ''}
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        }catch(e){
+            resultsEl.innerHTML = '<p style="text-align:center;color:#e74c3c;font-size:11px;padding:10px;">تعذر الاتصال بخدمة البحث الذكي</p>';
+        } finally {
+            _famAiSearchPending = false;
+        }
     }
 
     function searchFamily(){
@@ -2675,7 +2859,7 @@
         _renderFamilyList(filtered);
     }
 
-    async function openFamilyBusiness(id){
+    async function openFamilyBusiness(id, openRatings){
         let biz = _familyCache.find(b => String(b.id) === String(id));
         if(!biz){
             try{
@@ -2702,6 +2886,12 @@
             if(biz.category){ catBadgeEl.style.display='inline-block'; catBadgeEl.innerText = biz.category; }
             else catBadgeEl.style.display='none';
         }
+
+        // [FAM-RATING] تحميل وعرض التقييمات
+        document.getElementById('fam-ratings-panel').style.display = 'none';
+        document.getElementById('fam-submit-rating-box').style.display = 'none';
+        await _loadFamRatingsDetail(biz.id);
+        if (openRatings === true) _toggleFamRatingsPanel(true);
 
         document.getElementById('fam-detail-desc').innerText = biz.description || '';
 
@@ -2735,11 +2925,14 @@
                         ${unavailable ? `
                             <div style="font-size:9px;color:#e74c3c;font-weight:bold;background:rgba(231,76,60,0.1);border-radius:6px;padding:4px;">غير متوفر حالياً</div>
                         ` : p.needs_customization ? `
-                            <button onclick="contactFamilyProduct('${p.id}')" style="width:100%;background:rgba(212,175,55,0.15); border:1px solid var(--gold); color:var(--gold); border-radius:8px; padding:6px; font-size:10px; cursor:pointer;">
+                            <button onclick="contactFamilyProduct('${p.id}')" style="width:100%;background:rgba(212,175,55,0.15); border:1px solid var(--gold); color:var(--gold); border-radius:8px; padding:6px; font-size:10px; cursor:pointer; margin-bottom:4px;">
                                 <i class="fab fa-whatsapp"></i> تواصل للتخصيص
                             </button>
+                            <button onclick="_openProductCustomizeBox('${p.id}')" style="width:100%;background:transparent; border:1px solid #555; color:#ccc; border-radius:8px; padding:5px; font-size:9px; cursor:pointer;">
+                                <i class="fas fa-pen"></i> تخصيص الطلب
+                            </button>
                         ` : `
-                            <div style="display:flex; gap:4px;">
+                            <div style="display:flex; gap:4px; margin-bottom:4px;">
                                 <button onclick="contactFamilyProduct('${p.id}')" style="flex:1; background:rgba(255,255,255,0.06); border:1px solid #555; color:#ccc; border-radius:8px; padding:6px 2px; font-size:9px; cursor:pointer;">
                                     <i class="fab fa-whatsapp"></i> تواصل
                                 </button>
@@ -2747,7 +2940,14 @@
                                     <i class="fas fa-shopping-cart"></i> اطلب مع التوصيل
                                 </button>
                             </div>
+                            <button onclick="_openProductCustomizeBox('${p.id}')" style="width:100%;background:transparent; border:1px solid #555; color:#ccc; border-radius:8px; padding:5px; font-size:9px; cursor:pointer;">
+                                <i class="fas fa-pen"></i> تخصيص الطلب
+                            </button>
                         `}
+                        <div id="fam-customize-box-${p.id}" style="display:none; margin-top:6px; text-align:right;">
+                            <textarea id="fam-customize-input-${p.id}" placeholder="اكتب طلبك الخاص أو ملاحظاتك..." style="width:100%; min-height:45px; background:rgba(0,0,0,0.25); border:1px solid rgba(212,175,55,0.3); border-radius:6px; padding:6px; color:#fff; font-size:10px; resize:vertical; font-family:inherit; margin-bottom:5px;"></textarea>
+                            <button onclick="_sendProductCustomization('${p.id}')" style="width:100%; background:#25d366; color:#fff; border:none; border-radius:6px; padding:6px; font-size:9px; cursor:pointer;"><i class="fab fa-whatsapp"></i> إرسال التخصيص</button>
+                        </div>
                     </div>`;
                 }).join('');
             }
@@ -2773,6 +2973,110 @@
         return (phone||'').replace(/[^0-9]/g,'');
     }
 
+    // ══ [FAM-RATING] نظام التقييمات الكامل ══
+    let _famCurrentRatingStars = 0;
+    let _famDetailRatings = [];
+
+    async function _loadFamRatingsDetail(businessId){
+        try{
+            const r = await fetch(SB_URL+'/rest/v1/family_business_ratings?select=*&business_id=eq.'+businessId+'&order=created_at.desc', {
+                headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}
+            });
+            _famDetailRatings = r.ok ? (await r.json() || []) : [];
+        }catch(e){ _famDetailRatings = []; }
+
+        const badgeEl = document.getElementById('fam-detail-rating-badge');
+        const summaryEl = document.getElementById('fam-ratings-summary');
+        const listEl = document.getElementById('fam-ratings-list');
+
+        if(!_famDetailRatings.length){
+            if(badgeEl) badgeEl.innerHTML = `<small style="color:#888;font-size:11px;">لا توجد تقييمات بعد — كن أول من يقيّم!</small>`;
+            if(summaryEl) summaryEl.innerHTML = `<p style="color:#888;font-size:11px;margin:0;">لا توجد تقييمات بعد</p>`;
+            if(listEl) listEl.innerHTML = '';
+            return;
+        }
+        const avg = _famDetailRatings.reduce((s,r)=>s+r.stars,0) / _famDetailRatings.length;
+        if(badgeEl) badgeEl.innerHTML = `${_famStarsHtml(avg,13)} <small style="color:#aaa;font-size:11px;">${avg.toFixed(1)} (${_famDetailRatings.length} تقييم) <i class="fas fa-chevron-down" style="font-size:9px;"></i></small>`;
+        if(summaryEl) summaryEl.innerHTML = `
+            <div style="font-size:22px; font-weight:bold; color:var(--gold);">${avg.toFixed(1)}</div>
+            <div style="margin:4px 0;">${_famStarsHtml(avg,16)}</div>
+            <small style="color:#aaa;">من ${_famDetailRatings.length} تقييم</small>`;
+        if(listEl) listEl.innerHTML = _famDetailRatings.map(rt => `
+            <div style="background:rgba(255,255,255,0.03); border-radius:8px; padding:8px 10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                    <b style="font-size:11px;">${escHtml(rt.customer_name||'عميل')}</b>
+                    <small style="color:#888; font-size:9px;">${new Date(rt.created_at).toLocaleDateString('ar-SY')}</small>
+                </div>
+                <div style="margin-bottom:4px;">${_famStarsHtml(rt.stars,11)}</div>
+                ${rt.comment ? `<p style="font-size:11px; color:#ccc; margin:0;">${escHtml(rt.comment)}</p>` : ''}
+            </div>`).join('');
+    }
+
+    function _toggleFamRatingsPanel(forceOpen){
+        const panel = document.getElementById('fam-ratings-panel');
+        if(!panel) return;
+        const shouldOpen = forceOpen === true || panel.style.display === 'none';
+        panel.style.display = shouldOpen ? 'block' : 'none';
+        if(shouldOpen) panel.scrollIntoView({behavior:'smooth', block:'center'});
+    }
+
+    function _openSubmitFamRating(){
+        if(!currentUser || !currentUser.uid){ showNotify('يرجى تسجيل الدخول أولاً للتقييم', 'error'); return; }
+        _famCurrentRatingStars = 0;
+        document.querySelectorAll('.fam-star-input').forEach(s=>{ s.className='far fa-star fam-star-input'; s.style.color='#555'; });
+        document.getElementById('fam-rating-comment-input').value = '';
+        document.getElementById('fam-submit-rating-box').style.display = 'block';
+        document.getElementById('fam-submit-rating-box').scrollIntoView({behavior:'smooth', block:'center'});
+    }
+
+    function _setFamRatingStars(n){
+        _famCurrentRatingStars = n;
+        document.querySelectorAll('.fam-star-input').forEach(s=>{
+            const val = parseInt(s.dataset.val);
+            if(val <= n){ s.className='fas fa-star fam-star-input'; s.style.color='#f4c430'; }
+            else { s.className='far fa-star fam-star-input'; s.style.color='#555'; }
+        });
+    }
+
+    let _famRatingSubmitPending = false;
+    async function _submitFamRating(){
+        if(_famRatingSubmitPending) return;
+        if(!_currentFamilyBiz) return;
+        if(!currentUser || !currentUser.uid){ showNotify('يرجى تسجيل الدخول أولاً', 'error'); return; }
+        if(_famCurrentRatingStars < 1){ showNotify('يرجى اختيار عدد النجوم أولاً', 'error'); return; }
+        _famRatingSubmitPending = true;
+        try{
+            const comment = document.getElementById('fam-rating-comment-input')?.value.trim() || '';
+            const payload = {
+                business_id: _currentFamilyBiz.id,
+                customer_id: currentUser.uid,
+                customer_name: currentUser.name || 'عميل',
+                stars: _famCurrentRatingStars,
+                comment
+            };
+            const r = await fetch(SB_URL+'/rest/v1/family_business_ratings', {
+                method:'POST',
+                headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},
+                body: JSON.stringify(payload)
+            });
+            if(!r.ok){
+                const txt = await r.text();
+                showNotify(txt.includes('duplicate') || txt.includes('23505') ? '⚠️ لقد قيّمت هذه الأسرة من قبل — تم تحديث تقييمك' : 'تعذر إرسال التقييم', txt.includes('duplicate')?'success':'error');
+            } else {
+                showNotify('✅ شكراً لتقييمك!');
+            }
+            document.getElementById('fam-submit-rating-box').style.display = 'none';
+            await _loadFamRatingsDetail(_currentFamilyBiz.id);
+            _toggleFamRatingsPanel(true);
+            // تحديث الكاش العام لتظهر النجوم الجديدة في القائمة أيضاً
+            await _loadFamilyRatingStats([_currentFamilyBiz.id]);
+        }catch(e){
+            showNotify('تعذر إرسال التقييم، تحقق من الاتصال', 'error');
+        } finally {
+            _famRatingSubmitPending = false;
+        }
+    }
+
     async function contactFamilyBusiness(){
         if(!_currentFamilyBiz) return;
         const phone = await _famResolveContactPhone();
@@ -2782,6 +3086,31 @@
     }
 
     // ── تواصل بخصوص منتج محدد (تخصيص أو استفسار) ──
+    // [FAM-CUSTOMIZE] فتح/إغلاق صندوق كتابة طلب التخصيص لمنتج محدد
+    function _openProductCustomizeBox(productId){
+        const box = document.getElementById('fam-customize-box-'+productId);
+        if(!box) return;
+        const isHidden = box.style.display === 'none';
+        // إغلاق كل الصناديق الأخرى المفتوحة أولاً
+        document.querySelectorAll('[id^="fam-customize-box-"]').forEach(b=>{ if(b.id !== 'fam-customize-box-'+productId) b.style.display='none'; });
+        box.style.display = isHidden ? 'block' : 'none';
+        if(isHidden) document.getElementById('fam-customize-input-'+productId)?.focus();
+    }
+
+    // [FAM-CUSTOMIZE] إرسال طلب التخصيص المكتوب عبر واتساب مع اسم المنتج
+    async function _sendProductCustomization(productId){
+        const note = document.getElementById('fam-customize-input-'+productId)?.value.trim();
+        if(!note){ showNotify('يرجى كتابة طلبك أولاً', 'error'); return; }
+        const p = _currentFamilyProducts.find(x => String(x.id) === String(productId));
+        if(!p || !_currentFamilyBiz) return;
+        const phone = await _famResolveContactPhone();
+        if(!phone){ showNotify('رقم التواصل غير متوفر حالياً', 'error'); return; }
+        const msg = encodeURIComponent(`مرحباً، بخصوص "${p.name}" من "${_currentFamilyBiz.name}" عبر شاهين إكسبريس 🦅\nطلبي المخصص: ${note}`);
+        window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
+        document.getElementById('fam-customize-box-'+productId).style.display = 'none';
+    }
+
+    // [FAM-CUSTOMIZE] فتح/إغلاق صندوق كتابة طلب التخصيص لمنتج محدد (نهاية)
     async function contactFamilyProduct(productId){
         if(!_currentFamilyBiz) return;
         const p = _currentFamilyProducts.find(x => String(x.id) === String(productId));
@@ -6621,6 +6950,7 @@
                 document.getElementById('my-phone').innerText = currentUser.phone || "--";
                 document.getElementById('my-address').innerText = currentUser.address || "--";
                 document.getElementById('shahen-points').innerText = currentUser.points || "0";
+        _updatePointsMoneyDisplay(); // [POINTS-MONEY]
                 document.getElementById('p-login').style.display = 'none';
                 document.getElementById('tab-bar').style.display = 'flex';
                 document.getElementById('manual-refresh').style.display = 'flex';
