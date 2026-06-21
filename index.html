@@ -1368,6 +1368,8 @@
     let data = getStorage('cached_restaurants'); 
     let pharmacyData = getStorage('cached_pharmacies'); 
     let cart = [], currentResId = null, orderHistory = getStorage('shahen_local_history'), cancelInterval = null, isLoginMode = true;
+    let _lastCheckedOrderState = null; // [FIX-CHAT-DUPLICATE] منع إعادة بناء الدردشة المتكررة لنفس الحالة
+    let _orderNotesValue = ''; // [ORDER-NOTES] ملاحظات الطلب — يبقى محفوظاً عبر إعادة رسم السلة
     let currentOrderKey = localStorage.getItem('shahen_active_order_id'); 
     let profileMap = null, mapMarker = null, mapPickup = null, mapDropoff = null, markerPickup = null, markerDropoff = null;
     let pickupLoc = {lat:0, lng:0}, dropoffLoc = {lat:0, lng:0}, historyTab = 'active', currentRating = 0, lastStatusNotified = ""; 
@@ -2493,7 +2495,11 @@
         }
         try {
             const { data: dbData, error } = await _supabase
-                .from('restaurants').select('*');
+                .from('restaurants')
+                // [PERF-FIX-1] استبعاد عمود restaurant_menu الثقيل من استعلام القائمة الرئيسية
+                // كان يُحمَّل لكل مطعم في كل مرة فقط لعرض بطاقة (اسم+شعار+سعر)، مما يُبطّئ فتح الصفحة بشكل واضح
+                // يُجلب المنيو الكامل فقط عند فتح مطعم محدد (عبر _fetchAndOpenMenu)
+                .select('id,name,logo,delivery_fee,open_time,close_time,is_locked,subscription_status,maps_url,branch,is_direct_contact,specialty_type');
 
             if(error) throw error;
             if(dbData) {
@@ -3443,13 +3449,19 @@
     function openMenu(id) {
         // ابحث في data أولاً، ثم اجلب من DB مباشرة إن لم يوجد
         let res = data.find(r => r.id === id);
-        if(!res) { _fetchAndOpenMenu(id); return; }
+        // [PERF-FIX-1] لو الكائن المخزَّن هو نسخة القائمة الخفيفة فقط (بلا منيو)، نجلب النسخة الكاملة
+        if(!res || res.restaurant_menu === undefined) { _fetchAndOpenMenu(id); return; }
         _doOpenMenu(res);
     }
 
     async function _fetchAndOpenMenu(id) {
         const { data: r } = await _supabase.from('restaurants').select('*').eq('id', id).single();
-        if(r) { if(!data.find(x=>x.id===r.id)) data.push(r); _doOpenMenu(r); }
+        if(r) {
+            // [PERF-FIX-1] استبدال النسخة الخفيفة (إن وُجدت) بالنسخة الكاملة في الكاش لتجنّب إعادة الجلب لاحقاً بنفس الجلسة
+            const idx = data.findIndex(x => x.id === r.id);
+            if (idx > -1) data[idx] = r; else data.push(r);
+            _doOpenMenu(r);
+        }
     }
 
     function _doOpenMenu(res) {
@@ -4250,6 +4262,10 @@
                 <input type="text" id="coupon-input" placeholder="كوبون خصم?" style="margin:0; flex:1; padding:8px; font-size:11px;">
                 <button class="btn-gold" style="width:auto; padding:0 12px; font-size: 11px;" onclick="applyCoupon()">تطبيق</button>
             </div>
+            <div class="card" style="margin-bottom:8px; padding:10px;">
+                <label style="font-size:11px; color:var(--gold); display:block; margin-bottom:6px;"><i class="fas fa-sticky-note"></i> ملاحظات الطلب (اختياري)</label>
+                <textarea id="order-notes-input" placeholder="مثال: بدون بصل، اتصل قبل الوصول..." style="width:100%; min-height:50px; background:rgba(0,0,0,0.2); border:1px solid rgba(212,175,55,0.3); border-radius:8px; padding:8px; color:#fff; font-size:11px; resize:vertical; font-family:inherit;" oninput="_orderNotesValue = this.value">${escHtml(_orderNotesValue)}</textarea>
+            </div>
             <button class="btn-gold" style="margin-top:8px" onclick="confirmOrderStart()">تأكيد الطلب 🦅</button>`;
     }
 
@@ -4377,6 +4393,8 @@
             // ── حقول اختيارية: update منفصل لا يوقف الطلب عند فشله ──
             const _extraFields = {};
             if (discountAmount + pointsDiscountUsed > 0) _extraFields.discount = discountAmount + pointsDiscountUsed;
+            // [ORDER-NOTES] ملاحظات الطلب — تحديث منفصل غير معطِّل لضمان عدم تعطّل إنشاء الطلب لو لم يُضَف العمود بعد
+            if (_orderNotesValue && _orderNotesValue.trim()) _extraFields.order_notes = _orderNotesValue.trim();
             const _orderLat = (currentUser && currentUser.lat) ? currentUser.lat : (userLoc && userLoc.lat ? userLoc.lat : null);
             const _orderLng = (currentUser && currentUser.lng) ? currentUser.lng : (userLoc && userLoc.lng ? userLoc.lng : null);
             if (_orderLat) _extraFields.lat = _orderLat;
@@ -4413,6 +4431,7 @@
             document.getElementById('badge').innerText = 0;
             document.getElementById('badge').style.display = 'none';
             pointsDiscountUsed = 0; discountAmount = 0;
+            _orderNotesValue = ''; // [ORDER-NOTES] إعادة الضبط بعد إرسال الطلب بنجاح
             startSearching();
         } catch (error) {
             // [BG-ORDER-FIX] عند التجمد بعد الخلفية — أعد الاتصال أولاً ثم retry
@@ -4503,6 +4522,8 @@
     // ===== نهاية FIX-RT-1 =====
 
     function startSearching() {
+        _lastCheckedOrderState = null; // [FIX-CHAT-DUPLICATE] إعادة الضبط لطلب جديد
+        lastStatusNotified = ""; // [FIX-STUCK-SEARCHING] إعادة الضبط — أهم إصلاح! بدونه، أي طلب سابق وصل لحالة accepted يُسبب تجاهل كل الطلبات القادمة التي تصل لنفس الحالة بصمت
         document.getElementById('searching-sound').play();
         document.getElementById('eagle-searching').style.display = 'flex';
         // عرض كود التحقق داخل شاشة البحث إذا كان موجوداً
@@ -4527,6 +4548,7 @@
             if (timerElement) { timerElement.innerText = timeLeft; }
             if (timeLeft <= 0) {
                 clearInterval(cancelInterval);
+                if (_searchPollInterval) clearInterval(_searchPollInterval);
                 document.getElementById('eagle-searching').style.display = 'none';
                 document.getElementById('searching-sound').pause();
                 showNotify("عذراً، لم يتم العثور على صقور حالياً. 🦅", "error");
@@ -5845,11 +5867,21 @@
 
         // إذا كان الطلب مقبولاً، نفتح صفحة الدردشة والكود فوراً
         if (['accepted', 'preparing', 'ready'].includes(serverOrder.status)) {
+            // [FIX-CHAT-DUPLICATE] منع إعادة بناء الدردشة بشكل متكرر لو استُدعيت الدالة عدة مرات لنفس الحالة بالضبط
+            // (كان يحدث عند تتالي تحديثات لحظية سريعة، فيُعاد جلب وعرض كل الرسائل القديمة مرة أخرى فوق الحالية)
+            const _stateKey = String(id) + '|' + serverOrder.status;
+            if (_lastCheckedOrderState === _stateKey) return;
+            _lastCheckedOrderState = _stateKey;
             const driverWA = /^[0-9+]{7,15}$/.test(serverOrder.driver_phone||'') ? serverOrder.driver_phone : '966546083283'; // [SEC-FIX-REDIRECT] التحقق من صحة رقم الجوال
             const driverName = serverOrder.driver_name || "صقر الشاهين 🦅";
             document.getElementById('driver-chat-name').innerText = driverName;
             document.getElementById('driver-chat-phone').innerText = driverWA;
-            document.getElementById('call-driver-btn').onclick = () => window.open(`https://wa.me/${driverWA}`);
+            // [CUSTOMER-QUICK-MSG] رسالة جاهزة تلقائية من العميل للمندوب: الاسم + المطعم + رقم الطلب
+            const _custNameForDriverMsg = (currentUser && currentUser.name) || serverOrder.customer_name || 'العميل';
+            const _resNameForDriverMsg = serverOrder.restaurant_name || 'المطعم';
+            const _orderIdForDriverMsg = String(serverOrder.id || id).substring(0,8);
+            const _custQuickMsg = encodeURIComponent(`مرحباً يا صقر شاهين، أنا ${_custNameForDriverMsg} أتواصل معك بخصوص طلب من مطعم ${_resNameForDriverMsg} — رقم الطلب: ${_orderIdForDriverMsg}.`);
+            document.getElementById('call-driver-btn').onclick = () => window.open(`https://wa.me/${driverWA}?text=${_custQuickMsg}`);
             
             nav('p-chat');
             document.getElementById('chat-input-area').style.display = 'flex';
@@ -5990,7 +6022,7 @@
                 <h3 style="color:#fff; font-size:15px;">الصقر في الطريق إليك!</h3>
                 <p style="font-size:11px; color:#ccc; margin-bottom:12px;">كود التحقق (سيطلبه المندوب):</p>
                 <div style="background:#000; border:2px dashed var(--gold); border-radius:12px; padding:12px; font-size:28px; font-weight:bold; letter-spacing:8px; color:var(--gold); margin-bottom:15px;">${verificationCode}</div>
-                <button class="btn-gold" style="background:#25d366; color:#fff; font-size:12px; padding:10px;" onclick="window.open('https://wa.me/${driverWA}')">
+                <button class="btn-gold" style="background:#25d366; color:#fff; font-size:12px; padding:10px;" onclick="window.open('https://wa.me/${driverWA}?text=${_custQuickMsg}')">
                     <i class="fab fa-whatsapp"></i> تواصل مع الصقر
                 </button>
             </div>`;
