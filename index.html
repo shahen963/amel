@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- [SEC-PATCH-15] رؤوس أمان إضافية -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta name="referrer" content="no-referrer">
+    <title>شاهين إكسبريس | النسخة الكاملة 🦅</title>
+
+    <!-- ===== [PWA-IPHONE] إعدادات PWA لآيفون وسفاري ===== -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="شاهين إكسبريس">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#1a051a">
+    <meta name="application-name" content="شاهين إكسبريس">
+    <!-- أيقونات Apple Touch بجميع الأحجام المطلوبة -->
+    <link rel="apple-touch-icon" href="https://i.postimg.cc/QxzPkmPf/Whats-App-Image-2026-04-10-at-6-22-30-PM-t7edrz.jpg">
+    <link rel="apple-touch-icon" sizes="120x120" href="https://i.postimg.cc/QxzPkmPf/Whats-App-Image-2026-04-10-at-6-22-30-PM-t7edrz.jpg">
+    <link rel="apple-touch-icon" sizes="152x152" href="https://i.postimg.cc/QxzPkmPf/Whats-App-Image-2026-04-10-at-6-22-30-PM-t7edrz.jpg">
+    <link rel="apple-touch-icon" sizes="167x167" href="https://i.postimg.cc/QxzPkmPf/Whats-App-Image-2026-04-10-at-6-22-30-PM-t7edrz.jpg">
+    <link rel="apple-touch-icon" sizes="180x180" href="https://i.postimg.cc/QxzPkmPf/Whats-App-Image-2026-04-10-at-6-22-30-PM-t7edrz.jpg">
+    <link rel="shortcut icon" href="https://i.postimg.cc/QxzPkmPf/Whats-App-Image-2026-04-10-at-6-22-30-PM-t7edrz.jpg">
+    <!-- PWA Manifest مدمج -->
+    <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22%D8%B4%D8%A7%D9%87%D9%8A%D9%86%20%D8%A5%D9%83%D8%B3%D8%A8%D8%B1%D9%8A%D8%B3%22%2C%22short_name%22%3A%22%D8%B4%D8%A7%D9%87%D9%8A%D9%86%22%2C%22theme_color%22%3A%22%231a051a%22%2C%22background_color%22%3A%22%23000000%22%2C%22display%22%3A%22standalone%22%2C%22orientation%22%3A%22portrait%22%2C%22start_url%22%3A%22%2F%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22https%3A%2F%2Fi.postimg.cc%2FQxzPkmPf%2FWhats-App-Image-2026-04-10-at-6-22-30-PM-t7edrz.jpg%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fjpeg%22%7D%2C%7B%22src%22%3A%22https%3A%2F%2Fi.postimg.cc%2FQxzPkmPf%2FWhats-App-Image-2026-04-10-at-6-22-30-PM-t7edrz.jpg%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fjpeg%22%7D%5D%7D">
+    <!-- منع التخزين المؤقت -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <!-- ===== نهاية PWA-IPHONE ===== -->
+    <link rel="stylesheet" href="vendor/fontawesome.css">
+    <link rel="stylesheet" href="vendor/leaflet.css" />
+    <script src="vendor/leaflet.js"></script>
+    <!-- ===== [MAPBOX-TRACK] نظام تتبع المندوب الجديد المعتمد على Mapbox ===== -->
+    <link rel="stylesheet" href="vendor/mapbox-gl.css" />
+    <script src="vendor/mapbox-gl.js"></script>
+    <!-- ===== نهاية [MAPBOX-TRACK] ===== -->
+    <script src="vendor/supabase.min.js"></script>
+    <!-- [FEATURE-WEB-PUSH] مكتبة Firebase لإشعارات نسخة الويب فقط — لا تؤثر على تطبيق APK إطلاقاً -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════════════
+     [FEATURE-VIDEO-SPLASH] شاشة الفيديو الافتتاحية — تظهر فوراً فوق كل شي،
+     وتُخفى تلقائياً بعد انتهاء الفيديو أو بالضغط على "تخطي". أثناء عرضها،
+     بقية التطبيق يكمل تحميله بالخلفية بشكل طبيعي (بدون أي حجب)، فيكون
+     جاهزاً تقريباً لما تختفي شاشة الفيديو — هذا هو ما يجعل الانتقال يبدو سريعاً.
+     ════════════════════════════════════════════════════════════════════ -->
+<!-- [FEATURE-CART-REMINDER] تذكير بالسلة المنسية — يظهر لو فيه سلة غير مكتملة من جلسة سابقة -->
+<div id="cart-reminder-banner" style="display:none; position:fixed; bottom:80px; left:16px; right:16px; z-index:99500; background:linear-gradient(135deg,#2d0050,#1a0033); border:1px solid var(--gold); border-radius:16px; padding:14px; box-shadow:0 6px 20px rgba(0,0,0,0.5);">
+    <div style="display:flex; align-items:center; gap:10px;">
+        <div style="font-size:24px;">🛒</div>
+        <div style="flex:1;">
+            <b style="color:var(--gold); font-size:12px;">نسيت سلتك؟</b>
+            <div style="font-size:10.5px; color:#ccc; margin-top:2px;">عندك أصناف بالسلة من قبل — أكمل طلبك قبل ما تنسى!</div>
+        </div>
+    </div>
+    <div style="display:flex; gap:6px; margin-top:10px;">
+        <button onclick="_restoreSavedCart()" style="flex:1; background:var(--gold); color:#000; border:none; border-radius:8px; padding:8px; font-size:11px; font-weight:bold;">إكمال السلة</button>
+        <button onclick="document.getElementById('cart-reminder-banner').style.display='none'; try{localStorage.removeItem('shahen_saved_cart');}catch(e){}" style="background:rgba(255,255,255,0.1); color:#ccc; border:none; border-radius:8px; padding:8px 14px; font-size:11px;">تجاهل</button>
+    </div>
+</div>
+
+
+<div id="video-splash-overlay" style="position:fixed;inset:0;z-index:9999999;background:#1a0033;display:flex;align-items:center;justify-content:center;">
+  <video id="video-splash-player" src="assets/splash_video.mp4" autoplay playsinline webkit-playsinline preload="auto" style="width:100%;height:100%;object-fit:contain;background:#1a0033;opacity:0;transition:opacity .25s;"></video>
+  <button id="video-splash-skip-btn" onclick="_hideVideoSplash()" style="position:absolute;bottom:32px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.55);color:#fff;border:1px solid rgba(212,175,55,0.8);border-radius:24px;padding:10px 26px;font-size:13px;font-weight:bold;cursor:pointer;backdrop-filter:blur(4px);">تخطي ⏭</button>
+</div>
+
+
+<div class="royal-bg-shadow"></div>
+
+<audio id="searching-sound" src="https://collection.cloudinary.com/dmyfkuoxw/cabcf128e3752f3b5a356ea6934e62dd" loop preload="auto"></audio>
+
+<div id="full-map-overlay">
+    <div class="full-map-header">
+        <div class="full-map-header-top">
+            <button class="btn-gold" style="width:auto; padding:5px 15px; font-size: 11px;" onclick="closeFullMap()">إلغاء ❌</button>
+            <b id="full-map-title" style="color:var(--gold); font-size: 13px;">تحديد موقعك بدقة</b>
+            <button class="btn-gold" style="width:auto; padding:5px 15px; font-size: 11px;" onclick="confirmFullMapLocation()">حفظ الموقع ✅</button>
+        </div>
+        <div class="map-search-box">
+            <input type="text" id="full-map-search-input" placeholder="🔍 ابحث عن شارع، معلم، أو حي..." onkeyup="getSuggestions(this.value)">
+            <div id="search-suggestions"></div>
+            <button onclick="searchAddressFull()"><i class="fas fa-search"></i></button>
+            <button onclick="updateGPSProfileFull()" style="background:#2ecc71;"><i class="fas fa-location-crosshairs"></i></button>
+        </div>
+    </div>
+    <div id="full-map-container"></div>
+</div>
+
+<div class="app-shell" id="main-app-shell">
+
+    <!-- ===== [SWITCH-RES-DIALOG] نافذة تأكيد تبديل المطعم ===== -->
+    <div id="switch-res-dialog">
+        <div class="switch-res-box">
+            <span class="switch-res-icon">🛒</span>
+            <div class="switch-res-title">لديك منتجات من مطعم آخر داخل السلة</div>
+            <div class="switch-res-msg">هل تريد إفراغ السلة والانتقال إلى المطعم الجديد؟</div>
+            <div class="switch-res-btns">
+                <button class="switch-res-btn-yes" onclick="_confirmSwitchRes()">نعم، إفراغ السلة والانتقال للمطعم الجديد</button>
+                <button class="switch-res-btn-no" onclick="_cancelSwitchRes()">لا، البقاء على المطعم الحالي</button>
+            </div>
+        </div>
+    </div>
+    <!-- ===== نهاية [SWITCH-RES-DIALOG] ===== -->
+
+    <!-- ===== [FIX-SAVED-ADDRESSES] نافذة إضافة عنوان جديد ===== -->
+    <div id="add-address-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:30000; align-items:center; justify-content:center; padding:16px;">
+        <div style="background:var(--purple, #1a051a); border:1px solid var(--gold); border-radius:16px; padding:16px; width:100%; max-width:360px; max-height:90vh; overflow-y:auto;">
+            <h3 style="color:var(--gold); text-align:center; font-size:15px; margin:0 0 12px;"><i class="fas fa-map-marked-alt"></i> إضافة عنوان جديد</h3>
+            <p style="font-size:10px; color:#aaa; text-align:center; margin:0 0 8px;">1) حرّك الخريطة حتى يستقر الدبوس على موقعك بدقة</p>
+            <div id="address-map-picker" style="width:100%; height:220px; border-radius:12px; overflow:hidden; position:relative; background:#1a051a;">
+                <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-100%); z-index:10; font-size:34px; pointer-events:none;">📍</div>
+            </div>
+            <button onclick="_useCurrentLocationForAddress()" style="width:100%; margin-top:8px; background:rgba(52,152,219,0.15); color:#3498db; border:1px solid #3498db; border-radius:10px; padding:8px; font-size:11px; cursor:pointer;">
+                <i class="fas fa-crosshairs"></i> استخدم موقعي الحالي
+            </button>
+            <p style="font-size:10px; color:#aaa; margin:12px 0 4px;">2) اكتب العنوان بالتفصيل (اختياري)</p>
+            <input type="text" id="new-address-text" placeholder="مثال: بناء رقم 5، طابق 2، بجانب الصيدلية" class="fi" style="width:100%; height:38px;">
+            <p style="font-size:10px; color:#aaa; margin:10px 0 4px;">3) اسم مختصر لهذا العنوان</p>
+            <input type="text" id="new-address-label" placeholder="مثال: أساسي، فرعي" class="fi" style="width:100%; height:38px;">
+            <div style="display:flex; gap:8px; margin-top:14px;">
+                <button class="btn-gold" style="flex:1;" onclick="saveNewAddress()"><i class="fas fa-check"></i> حفظ العنوان</button>
+                <button style="flex:1; background:rgba(255,255,255,0.08); color:#ccc; border:none; border-radius:10px; cursor:pointer;" onclick="closeAddAddressModal()">إلغاء</button>
+            </div>
+        </div>
+    </div>
+    <!-- ===== نهاية [FIX-SAVED-ADDRESSES] ===== -->
+
+    <div class="typing-pulse-bar" id="typing-pulse-bar">
+        <div class="top-nav-action" id="admin-notif-bell" onclick="toggleAdminModal()" title="التنببهات">
+            <i class="fas fa-bell"></i>
+            <div id="bell-badge" class="notif-badge">0</div>
+        </div>
+        <div class="typing-text" id="typing-text-content">شاهين إكسبريس | نوفي بعهدكم 🦅</div>
+        <div class="top-nav-action" id="manual-refresh" onclick="manualRefreshDataUI()" title="تحديث">
+            <i class="fas fa-sync-alt"></i>
+        </div>
+    </div>
+
+    <div class="promo-bar" id="promo-bar">
+        <div class="promo-track" id="promo-track">
+            </div>
+    </div>
+    <div id="in-app-notify"><i id="notify-icon"></i> <span id="notify-msg"></span></div>
+
+    <div id="admin-modal">
+        <div class="admin-modal-card">
+            <div class="close-modal" onclick="toggleAdminModal()">إغلاق</div>
+            <h3 style="color:var(--gold); text-align: center; margin-top: 0; font-size: 15px;"><i class="fas fa-envelope-open-text"></i> الإشعارات</h3>
+            <button id="mark-read-btn" class="read-all-btn" onclick="markAllAsRead()"><i class="fas fa-check-double"></i> تم قراءة الكل</button>
+            <div id="modal-inbox-content" style="overflow-y: auto; flex: 1; padding-right: 5px;">
+                <p style="text-align:center; opacity:0.5; font-size:11px; padding:20px;">لا توجد رسائل جديدة</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="medical-consult-modal">
+        <div class="consult-card">
+            <i class="fas fa-handholding-medical" style="font-size:26px; color:var(--gold); margin-bottom:8px;"></i>
+            <h3 style="color:var(--gold); font-size:15px; margin:0 0 8px;">طلب استشارة طبية 🏥</h3>
+            <div style="background: rgba(231, 76, 60, 0.1); border: 1px solid #e74c3c; border-radius: 10px; padding: 7px; margin-bottom: 8px; text-align: right;">
+                <p style="font-size: 9.5px; color: #fff; margin: 0; line-height: 1.35;">
+                    <b>تعهد وإخلاء مسؤولية:</b><br>
+                    أي دواء أو منتج يتم طلبه هو على مسؤولية العميل الشخصية. شركة صقور الشاهين والصيدلية غير مسؤولين عن الأدوية التي يختارها العميل.
+                </p>
+            </div>
+            <!-- ✅ تنبيه الاستشارة غير الطبية -->
+            <div style="background: rgba(241,196,15,0.08); border: 1px solid #f1c40f; border-radius: 10px; padding: 8px; margin-bottom: 8px; text-align: right;">
+                <p style="font-size: 10.5px; font-weight: bold; color: #f1c40f; margin: 0 0 4px 0;">
+                    <i class="fas fa-info-circle" style="margin-left:4px;"></i> تنبيه مهم بشأن طبيعة الاستشارة
+                </p>
+                <p style="font-size: 9.5px; color: #ddd; margin: 0; line-height: 1.5;">
+                    💊 هذه الاستشارة <b>غير طبية</b> وليست بديلاً عن استشارة الطبيب المتخصص.<br>
+                    ⚠️ الصيدلي والشركة <b>غير مسؤولَين</b> عن أي قرارات تُتخذ بناءً عليها.<br>
+                    👤 أنت تتحمل <b>كامل المسؤولية</b> عن استخدام أي معلومات مقدمة عبر هذه الخدمة.
+                </p>
+            </div>
+            <p style="font-size:10.5px; color:#ddd; margin-bottom: 8px;">اكتب وصف حالتك وأرفق صوراً إن وُجدت (وصفة طبية، صورة الدواء، أو الحالة).</p>
+
+            <!-- [FEATURE-CONSULT-REDESIGN] وصف المشكلة -->
+            <textarea id="consult-problem-desc" placeholder="اكتب وصف مشكلتك أو استفسارك هنا بالتفصيل..." style="width:100%; min-height:56px; background:#000; border:1px solid var(--gold); color:#fff; border-radius:10px; padding:8px; font-size:11px; margin-bottom:8px; resize:vertical;"></textarea>
+
+            <!-- [FEATURE-CONSULT-REDESIGN] إرفاق صور -->
+            <label style="display:block; font-size:10px; color:var(--gold); margin-bottom:4px; text-align:right;"><i class="fas fa-camera"></i> إرفاق صور (اختياري)</label>
+            <input type="file" id="consult-image-input" accept="image/*" multiple capture="environment" style="display:none;" onchange="_handleConsultImagesSelected(event)">
+            <button onclick="document.getElementById('consult-image-input').click()" style="width:100%; padding:7px; background:rgba(212,175,55,0.1); border:1px dashed var(--gold); border-radius:10px; color:var(--gold); font-size:10px; margin-bottom:6px; cursor:pointer;"><i class="fas fa-plus"></i> إضافة صورة</button>
+            <div id="consult-images-preview" style="display:grid; grid-template-columns:repeat(3,1fr); gap:5px; margin-bottom:8px;"></div>
+
+            <!-- [FEATURE-CONSULT-REDESIGN] اختيار نوع الاستشارة -->
+            <label style="display:block; font-size:10px; color:var(--gold); margin-bottom:4px; text-align:right;"><i class="fas fa-headset"></i> نوع الاستشارة</label>
+            <div style="display:flex; gap:6px; margin-bottom:8px;">
+                <div id="consult-type-voice" class="consult-pay-option active-pay" onclick="selectConsultType('voice')" style="flex:1; border:1.5px solid #3498db; border-radius:8px; padding:7px; cursor:pointer; background:rgba(52,152,219,0.15);">
+                    <i class="fas fa-phone" style="color:#3498db; display:block; margin-bottom:3px; font-size:13px;"></i>
+                    <span style="font-size:9px; color:#fff; font-weight:bold;">اتصال صوتي</span>
+                </div>
+                <div id="consult-type-nocall" class="consult-pay-option" onclick="selectConsultType('no_call')" style="flex:1; border:1.5px solid #555; border-radius:8px; padding:7px; cursor:pointer; background:rgba(0,0,0,0.2);">
+                    <i class="fas fa-file-medical-alt" style="color:#9b59b6; display:block; margin-bottom:3px; font-size:13px;"></i>
+                    <span style="font-size:9px; color:#fff; font-weight:bold;">بدون اتصال</span>
+                </div>
+            </div>
+            <!-- ✅ صندوق رسوم الاستشارة - يُعرض فقط إذا كانت الصيدلية تفرض رسوماً -->
+            <div id="consult-fee-notice" style="display:none; background:rgba(243,156,18,0.12); border:1px solid #f39c12; border-radius:10px; padding:8px; margin-bottom:8px; text-align:center;">
+                <p style="font-size:10px; color:#f39c12; font-weight:bold; margin:0 0 4px 0;"><i class="fas fa-comment-dollar" style="margin-left:4px;"></i> رسوم الاستشارة</p>
+                <p id="consult-fee-amount-text" style="font-size:15px; font-weight:bold; color:#fff; margin:0 0 3px 0;">0 ل.س</p>
+                <p style="font-size:9px; color:#ccc; margin:0 0 7px 0;">تُضاف تلقائياً إلى إجمالي الفاتورة</p>
+                <!-- ===== اختيار طريقة دفع رسوم الاستشارة ===== -->
+                <p style="font-size:11px; color:#f39c12; font-weight:bold; margin:0 0 6px 0;">اختر طريقة دفع رسوم الاستشارة:</p>
+                <div style="display:flex; gap:8px; justify-content:center;">
+                    <div id="consult-pay-cash" class="consult-pay-option active-pay" onclick="selectConsultPayMethod('cash')"
+                        style="flex:1; border:2px solid #f39c12; border-radius:10px; padding:8px; cursor:pointer; background:rgba(243,156,18,0.15); transition:0.3s;">
+                        <i class="fas fa-money-bill-wave" style="color:#f39c12; display:block; margin-bottom:4px; font-size:16px;"></i>
+                        <span style="font-size:10px; color:#fff; font-weight:bold;">كاش</span>
+                    </div>
+                    <div id="consult-pay-points" class="consult-pay-option" onclick="selectConsultPayMethod('points')"
+                        style="flex:1; border:2px solid #555; border-radius:10px; padding:8px; cursor:pointer; background:rgba(0,0,0,0.2); transition:0.3s;">
+                        <i class="fas fa-star" style="color:#f1c40f; display:block; margin-bottom:4px; font-size:16px;"></i>
+                        <span style="font-size:10px; color:#fff; font-weight:bold;">نقاط شاهين</span>
+                    </div>
+                </div>
+                <div id="consult-points-check" style="display:none; margin-top:8px; font-size:10px; color:#aaa; text-align:center;"></div>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <button class="btn-gold" style="flex:1;" onclick="submitMedicalConsult()">أوافق وأطلب الآن 🚀</button>
+                <button class="btn-gold" style="flex:1; background:#555; color:#fff;" onclick="document.getElementById('medical-consult-modal').style.display='none'">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="p-pledge">
+        <div class="pledge-card">
+            <i class="fas fa-handshake fa-2x" style="color:var(--gold); margin-bottom:12px;"></i>
+            <h3 style="color:var(--gold); font-size: 18px;">ميثاق الأمانة</h3>
+            <p style="font-weight: bold; font-size: 14px; margin-bottom: 8px; color: #fff;">قال الله تعالى:﴿أَلَمْ يَعْلَمْ بِأَنَّ اللَّهَ يرى﴾</p>
+            <p style="font-size: 12px; line-height: 1.6; color: #ddd;">أتعهد أمام الله ثم أمام شركة صقور الشاهين بعدم التلاعب بالطلبات أو إلغائها دون حق، وعدم الإضرار برزق المناديب، والالتزام بالأمانة.</p>
+            <div style="margin: 15px 0; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <input type="checkbox" id="pledge-check" style="width:16px; height:16px; margin:0; cursor: pointer;">
+                <label for="pledge-check" style="font-size:12px; color:var(--gold); cursor: pointer;">أقسم بالله وأتعهد بذلك</label>
+            </div>
+            <button class="btn-gold" onclick="acceptPledge()">بدء الاستخدام 🦅</button>
+        </div>
+    </div>
+
+    <div id="rating-overlay">
+        <div class="rating-box">
+            <h2 style="color:var(--gold); font-size: 20px;">قيم مندوبنا 🦅</h2>
+            <p id="rate-driver-name" style="margin-bottom:8px; font-size: 14px;">صقر الشاهين</p>
+            <div id="verify-display-box" style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 12px; margin-bottom: 12px; border: 1px dashed var(--gold);">
+                <p style="font-size: 11px; color: var(--gold); margin-bottom: 8px;">أعطِ هذا الرمز للمندوب ليتمكن من إغلاق الطلب:</p>
+                <div id="client-reveal-code" style="text-align: center; font-size: 28px; letter-spacing: 6px; font-weight: bold; color: #fff;">0000</div>
+            </div>
+            <!-- ✅ تنبيه كود التحقق -->
+            <div style="background: rgba(231,76,60,0.12); border: 1px solid #e74c3c; border-radius: 12px; padding: 12px; margin-bottom: 12px; text-align: right;">
+                <p style="font-size: 12px; font-weight: bold; color: #e74c3c; margin: 0 0 6px 0;">
+                    <i class="fas fa-exclamation-triangle" style="margin-left:5px;"></i> تحذير هام — اقرأ قبل المتابعة
+                </p>
+                <p style="font-size: 11px; color: #fff; margin: 0; line-height: 1.7;">
+                    🔴 <b>لا تعطِ كود التحقق للمندوب إلا بعد استلام طلبك بالكامل والتأكد منه.</b><br>
+                    ✅ تأكد من استلام طلبيتك كاملةً وصحيحةً قبل تسليم الكود.<br>
+                    ⚠️ أي تسليم للكود قبل استلام الطلب يكون على <b>مسؤوليتك الشخصية بالكامل</b>، ولا تتحمل الإدارة أي مسؤولية عن أي خسائر أو مشاكل تنتج عن ذلك.
+                </p>
+            </div>
+            <div class="rating-stars" id="main-rating-stars">
+                <i class="fas fa-star" onclick="setStars(1)"></i>
+                <i class="fas fa-star" onclick="setStars(2)"></i>
+                <i class="fas fa-star" onclick="setStars(3)"></i>
+                <i class="fas fa-star" onclick="setStars(4)"></i>
+                <i class="fas fa-star" onclick="setStars(5)"></i>
+            </div>
+            <textarea id="rating-comment" placeholder="أضف تعليقاً حول الخدمة (اختياري)..." style="width:100%; background:#000; color:#fff; border:1px solid #333; border-radius:10px; padding:10px; margin-bottom:10px; resize:none; font-size: 12px;"></textarea>
+            <button class="btn-gold" id="final-rate-btn" onclick="submitMandatoryRating()">تأكيد التقييم وإنهاء الرحلة</button>
+        </div>
+    </div>
+
+    <div id="eagle-confirm">
+        <img src="https://i.postimg.cc/QxzPkmPf/Whats-App-Image-2026-04-10-at-6-22-30-PM-t7edrz.jpg" class="confirm-logo" style="width: 150px;">
+        <h1 style="color:var(--gold); margin-top:15px; font-size: 22px;">نوفي بعهدكم</h1>
+    </div>
+
+    <div id="eagle-searching">
+        <div class="eagle-fly" style="font-size: 60px;"><i class="fas fa-dove"></i></div>
+        <div class="pulse-text" id="searching-text" style="font-size: 16px;">جاري البحث عن صقور الشاهين...</div>
+        <!-- [FEATURE-SUBMIT-PROGRESS-BAR] شريط تقدّم متحرك — إحساس بصري واضح إن الطلب قيد الإرسال/البحث -->
+        <div style="width:80%; height:6px; background:rgba(255,255,255,0.1); border-radius:10px; overflow:hidden; margin:14px auto 0;">
+            <div style="width:40%; height:100%; background:linear-gradient(90deg,var(--gold),#f3d878); border-radius:10px; animation:shahinProgressSlide 1.3s ease-in-out infinite;"></div>
+        </div>
+        
+        <div style="background: rgba(231,76,60,0.12); border: 1px solid #e74c3c; border-radius: 12px; padding: 12px; margin: 18px 20px 0 20px; text-align: right;">
+            <p style="font-size: 12px; font-weight: bold; color: #e74c3c; margin: 0 0 6px 0;">
+                <i class="fas fa-exclamation-triangle" style="margin-left:5px;"></i> تحذير هام — اقرأ قبل المتابعة
+            </p>
+            <p style="font-size: 11px; color: #fff; margin: 0; line-height: 1.7;">
+                🔴 <b>لا تعطِ كود التحقق للمندوب إلا بعد استلام طلبك بالكامل.</b><br>
+                ✅ تأكد من صحة طلبيتك قبل تسليم الكود.<br>
+                ⚠️ أي تسليم قبل الاستلام على <b>مسؤوليتك الشخصية بالكامل</b>.
+            </p>
+        </div>
+        <button id="cancel-btn" class="btn-gold" style="width: 70%; margin-top: 25px; background: #e74c3c; color: #fff;" onclick="cancelOrder()">إلغاء الطلب (<span id="cancel-timer">60</span>)</button>
+        <small style="color: rgba(212,175,55,0.5); margin-top: 8px;">نوفي بعهدكم</small>
+    </div>
+
+    <div id="eagle-consulting">
+        <div class="consult-loader-ring">
+            <img src="https://i.postimg.cc/QxzPkmPf/Whats-App-Image-2026-04-10-at-6-22-30-PM-t7edrz.jpg" class="consult-img-inner">
+        </div>
+        <div class="pulse-text" id="consulting-status-text" style="font-size: 16px; margin-top: 30px;">جاري التواصل مع الشريك...</div>
+        <div id="consulting-call-btn-holder" style="display:none; width:100%;"></div>
+        <button id="cancel-consult-btn" class="btn-gold" style="width: 70%; margin-top: 25px; background: #555; color: #fff;" onclick="cancelOrder()">إلغاء الطلب</button>
+    </div>
+
+    <!-- ===== [SPP-CLIENT] شاشة مسح QR للدفع عبر نقاط شاهين إكسبريس ===== -->
+    <div id="spp-scanner-overlay" style="position:absolute; top:0; left:0; width:100%; height:100%; background:#000; z-index:25000; display:none; flex-direction:column; align-items:center; justify-content:center;">
+        <div style="width:100%; padding:14px 16px; background:rgba(212,175,55,0.12); border-bottom:1px solid var(--gold); display:flex; align-items:center; justify-content:space-between;">
+            <span style="color:var(--gold); font-weight:bold; font-size:14px;"><i class="fas fa-qrcode"></i> مسح رمز QR للدفع</span>
+            <button onclick="sppClientClose()" style="background:transparent; border:none; color:#e74c3c; font-size:18px; cursor:pointer; padding:0;"><i class="fas fa-times-circle"></i></button>
+        </div>
+        <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; width:100%;">
+            <div style="position:relative; width:100%; max-width:320px; aspect-ratio:1; background:#111; border-radius:16px; overflow:hidden; margin-bottom:16px; border:2px solid var(--gold);">
+                <video id="spp-qr-video" style="width:100%; height:100%; object-fit:cover;" playsinline autoplay muted></video>
+                <!-- إطار التصويب -->
+                <div style="position:absolute; inset:0; pointer-events:none;">
+                    <div style="position:absolute; top:20%; left:20%; width:60%; height:60%; border:3px solid var(--gold); border-radius:8px; box-shadow:0 0 0 2000px rgba(0,0,0,0.5);"></div>
+                    <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:62%; height:3px; background:rgba(212,175,55,0.6); animation:sppScan 1.8s linear infinite;"></div>
+                </div>
+            </div>
+            <p id="spp-scan-status" style="color:var(--gold); font-size:13px; text-align:center; margin:0;">وجّه الكاميرا نحو رمز QR الصادر من المطعم</p>
+            <canvas id="spp-qr-canvas" style="display:none;"></canvas>
+        </div>
+    </div>
+
+    <!-- ===== [SPP-CLIENT] شاشة تأكيد الدفع بالنقاط ===== -->
+    <div id="spp-confirm-overlay" style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.92); z-index:25001; display:none; align-items:center; justify-content:center; padding:20px;">
+        <div style="background:var(--glass); border:2px solid var(--gold); border-radius:22px; padding:24px; width:100%; max-width:340px; text-align:center; box-shadow:0 0 30px rgba(212,175,55,0.3);">
+            <div style="font-size:40px; margin-bottom:10px;">🦅</div>
+            <h3 style="color:var(--gold); font-size:16px; margin:0 0 16px;">تأكيد الدفع عبر نقاط شاهين</h3>
+            <div id="spp-confirm-details" style="background:rgba(0,0,0,0.3); border:1px solid rgba(212,175,55,0.25); border-radius:14px; padding:14px; margin-bottom:16px; text-align:right; font-size:12px; line-height:2.2;"></div>
+            <button id="spp-confirm-btn" onclick="sppClientConfirmPayment()" style="width:100%; padding:14px; background:linear-gradient(135deg,#d4af37,#b8962e); color:#000; border:none; border-radius:12px; font-weight:bold; font-size:15px; cursor:pointer; margin-bottom:10px;">
+                <i class="fas fa-check-circle"></i> تأكيد الدفع
+            </button>
+            <button onclick="sppClientCancelConfirm()" style="width:100%; padding:11px; background:rgba(231,76,60,0.15); color:var(--danger); border:1px solid var(--danger); border-radius:12px; cursor:pointer; font-size:13px;">
+                <i class="fas fa-times"></i> إلغاء
+            </button>
+        </div>
+    </div>
+
+
+    <!-- نافذة تأكيد تفعيل البريد الإلكتروني - داخل التطبيق -->
+    <div id="email-verify-overlay" style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:30000; display:none; align-items:center; justify-content:center; padding:25px;">
+        <div style="background:var(--purple); border:2px solid var(--gold); border-radius:25px; padding:25px; width:100%; text-align:center; box-shadow:0 0 30px rgba(212,175,55,0.4); animation: scaleUp 0.3s ease-out;">
+            <div style="font-size:48px; margin-bottom:10px;">✉️</div>
+            <h3 style="color:var(--gold); font-size:17px; margin:0 0 12px 0;">تم إنشاء حسابك بنجاح!</h3>
+            <div style="background:rgba(212,175,55,0.08); border:1px dashed var(--gold); border-radius:14px; padding:14px; margin-bottom:14px; text-align:right; line-height:1.9;">
+                <p style="margin:0 0 8px 0; font-size:13px; color:#fff;">📧 تم إرسال رابط التفعيل إلى:</p>
+                <p id="verify-email-display" style="margin:0 0 10px 0; font-size:13px; color:var(--gold); font-weight:bold; word-break:break-all; text-align:center;"></p>
+                <p style="margin:0; font-size:12px; color:#ccc;">اضغط على رابط التفعيل الموجود في الرسالة لتفعيل حسابك والدخول.</p>
+            </div>
+            <div style="background:rgba(231,76,60,0.1); border:1px solid rgba(231,76,60,0.3); border-radius:10px; padding:10px; margin-bottom:16px; text-align:right;">
+                <p style="margin:0; font-size:11px; color:#f39c12;">⚠️ إذا لم تجد الرسالة، تحقق من مجلد <b>الرسائل غير المرغوب فيها</b></p>
+            </div>
+            <button class="btn-gold" style="font-size:13px; padding:12px;" onclick="document.getElementById('email-verify-overlay').style.display='none';">حسناً، سأتحقق من بريدي ✅</button>
+        </div>
+    </div>
+
+    <!-- ===== [SCREEN-SIZE-MODAL] مودال اختيار مقاس الشاشة قبل تسجيل الدخول ===== -->
+    <div id="screen-size-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:99999; flex-direction:column; align-items:center; justify-content:center; padding:20px;">
+        <div style="background:linear-gradient(135deg,#1a051a,#0a010a); border:2px solid var(--gold); border-radius:24px; padding:28px 20px; max-width:340px; width:100%; text-align:center;">
+            <img src="https://i.postimg.cc/QxzPkmPf/Whats-App-Image-2026-04-10-at-6-22-30-PM-t7edrz.jpg" style="width:70px; border-radius:20px; border:2px solid var(--gold); margin-bottom:14px;">
+            <h2 style="color:var(--gold); font-size:16px; margin:0 0 6px;">مرحباً في شاهين إكسبريس 🦅</h2>
+            <p style="color:#aaa; font-size:12px; margin:0 0 20px;">اختر حجم العرض المناسب لجهازك — سيُحفظ مع حسابك</p>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                <button onclick="_selectScreenSize('mobile')" style="background:rgba(212,175,55,0.1); border:1px solid var(--gold); color:#fff; padding:14px; border-radius:14px; font-size:13px; cursor:pointer; display:flex; align-items:center; gap:10px; font-family:inherit; width:100%;">
+                    <i class="fas fa-mobile-alt" style="color:var(--gold); font-size:18px; width:24px;"></i>
+                    <div style="text-align:right; flex:1;">
+                        <b style="display:block;">📱 وضع الجوال</b>
+                        <small style="color:#888; font-size:10px;">مناسب للهواتف الذكية</small>
+                    </div>
+                </button>
+                <button onclick="_selectScreenSize('tablet')" style="background:rgba(212,175,55,0.1); border:1px solid var(--gold); color:#fff; padding:14px; border-radius:14px; font-size:13px; cursor:pointer; display:flex; align-items:center; gap:10px; font-family:inherit; width:100%;">
+                    <i class="fas fa-tablet-alt" style="color:var(--gold); font-size:18px; width:24px;"></i>
+                    <div style="text-align:right; flex:1;">
+                        <b style="display:block;">🖥️ وضع الآيباد</b>
+                        <small style="color:#888; font-size:10px;">مناسب للأجهزة اللوحية</small>
+                    </div>
+                </button>
+                <button onclick="_selectScreenSize('desktop')" style="background:rgba(212,175,55,0.1); border:1px solid var(--gold); color:#fff; padding:14px; border-radius:14px; font-size:13px; cursor:pointer; display:flex; align-items:center; gap:10px; font-family:inherit; width:100%;">
+                    <i class="fas fa-laptop" style="color:var(--gold); font-size:18px; width:24px;"></i>
+                    <div style="text-align:right; flex:1;">
+                        <b style="display:block;">💻 وضع اللابتوب</b>
+                        <small style="color:#888; font-size:10px;">مناسب للحاسبات المحمولة</small>
+                    </div>
+                </button>
+                <button onclick="_selectScreenSize('full')" style="background:rgba(212,175,55,0.1); border:1px solid var(--gold); color:#fff; padding:14px; border-radius:14px; font-size:13px; cursor:pointer; display:flex; align-items:center; gap:10px; font-family:inherit; width:100%;">
+                    <i class="fas fa-desktop" style="color:var(--gold); font-size:18px; width:24px;"></i>
+                    <div style="text-align:right; flex:1;">
+                        <b style="display:block;">🖥️ شاشة كاملة</b>
+                        <small style="color:#888; font-size:10px;">عرض حر بدون حدود</small>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- ===== نهاية SCREEN-SIZE-MODAL ===== -->
+
+    <div id="p-login" class="page active" style="justify-content:center; text-align:center;">
+        <div style="display: flex; justify-content: center; width: 100%; margin-bottom: 20px;">
+            <img src="https://i.postimg.cc/QxzPkmPf/Whats-App-Image-2026-04-10-at-6-22-30-PM-t7edrz.jpg" width="100" style="border-radius:25px; border:2px solid var(--gold);">
+        </div>
+
+        <!-- ═══ [FIX-AUTH-REDESIGN] شاشة 1: تسجيل الدخول — بريد إلكتروني فقط، لحسابات موجودة ومفعَّلة فقط ═══ -->
+        <div id="login-step-email">
+            <h2 style="color:var(--gold); font-size: 18px;">سجل دخولك يا شاهين 🦅</h2>
+            <p style="font-size:11px; color:#aaa; margin-bottom:10px;">أدخل بريدك الإلكتروني المسجَّل — بدون كلمة مرور</p>
+            <input type="email" id="login-email-input" placeholder="البريد الإلكتروني" autocomplete="email">
+            <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:center; margin:8px 0 14px; direction:ltr;">
+                <button type="button" onclick="_appendEmailDomain('login-email-input','gmail.com')" class="email-domain-chip">@gmail.com</button>
+                <button type="button" onclick="_appendEmailDomain('login-email-input','hotmail.com')" class="email-domain-chip">@hotmail.com</button>
+                <button type="button" onclick="_appendEmailDomain('login-email-input','yahoo.com')" class="email-domain-chip">@yahoo.com</button>
+                <button type="button" onclick="_appendEmailDomain('login-email-input','outlook.com')" class="email-domain-chip">@outlook.com</button>
+                <button type="button" onclick="_appendEmailDomain('login-email-input','icloud.com')" class="email-domain-chip">@icloud.com</button>
+            </div>
+            <button class="btn-gold" id="login-send-btn" onclick="loginSendCode()">إرسال رمز الدخول 📧</button>
+            <p style="margin-top:15px; font-size:12px; cursor:pointer; color:var(--gold);" onclick="_showAuthScreen('register-step-form')">ليس لديك حساب؟ إنشاء حساب جديد</p>
+        </div>
+
+        <!-- ═══ شاشة 2: التحقق من رمز الدخول (لحساب موجود) ═══ -->
+        <div id="login-step-code" style="display:none;">
+            <div style="text-align:right; margin-bottom:8px;">
+                <span onclick="_showAuthScreen('login-step-email')" style="font-size:12px; color:var(--gold); cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
+                    <i class="fas fa-arrow-right"></i> رجوع
+                </span>
+            </div>
+            <h2 style="color:var(--gold); font-size: 18px;">أدخل رمز الدخول 🔑</h2>
+            <p style="font-size:11px; color:#aaa; margin-bottom:4px;">أُرسل رمز مكوَّن من 6 أرقام إلى:</p>
+            <p style="font-size:12px; color:var(--gold); font-weight:bold; margin-bottom:14px;" id="login-sent-to-email">--</p>
+            <div style="display:flex; justify-content:center; gap:6px; margin-bottom:14px; direction:ltr;">
+                <input type="tel" maxlength="1" class="otp-digit-box login-otp-box" data-idx="0" style="width:38px; height:50px; text-align:center; font-size:20px; font-weight:bold; border-radius:8px; border:1px solid var(--gold); background:rgba(0,0,0,0.3); color:#fff;">
+                <input type="tel" maxlength="1" class="otp-digit-box login-otp-box" data-idx="1" style="width:38px; height:50px; text-align:center; font-size:20px; font-weight:bold; border-radius:8px; border:1px solid var(--gold); background:rgba(0,0,0,0.3); color:#fff;">
+                <input type="tel" maxlength="1" class="otp-digit-box login-otp-box" data-idx="2" style="width:38px; height:50px; text-align:center; font-size:20px; font-weight:bold; border-radius:8px; border:1px solid var(--gold); background:rgba(0,0,0,0.3); color:#fff;">
+                <input type="tel" maxlength="1" class="otp-digit-box login-otp-box" data-idx="3" style="width:38px; height:50px; text-align:center; font-size:20px; font-weight:bold; border-radius:8px; border:1px solid var(--gold); background:rgba(0,0,0,0.3); color:#fff;">
+                <input type="tel" maxlength="1" class="otp-digit-box login-otp-box" data-idx="4" style="width:38px; height:50px; text-align:center; font-size:20px; font-weight:bold; border-radius:8px; border:1px solid var(--gold); background:rgba(0,0,0,0.3); color:#fff;">
+                <input type="tel" maxlength="1" class="otp-digit-box login-otp-box" data-idx="5" style="width:38px; height:50px; text-align:center; font-size:20px; font-weight:bold; border-radius:8px; border:1px solid var(--gold); background:rgba(0,0,0,0.3); color:#fff;">
+            </div>
+            <p id="login-otp-status-msg" style="font-size:11px; color:#888; min-height:16px;"></p>
+            <p style="font-size:11px; cursor:pointer; color:rgba(212,175,55,0.7);" onclick="_showAuthScreen('login-step-email')">تغيير البريد الإلكتروني</p>
+            <button class="btn-gold" id="login-resend-btn" style="margin-top:8px;" onclick="loginResendCode()">إعادة إرسال الرمز</button>
+        </div>
+
+        <!-- ═══ شاشة 3: إنشاء حساب جديد — كل البيانات مطلوبة قبل إرسال أي رمز ═══ -->
+        <div id="register-step-form" style="display:none;">
+            <h2 style="color:var(--gold); font-size: 18px;">إنشاء حساب شاهين 🦅</h2>
+            <p style="font-size:11px; color:#aaa; margin-bottom:10px;">أدخل بياناتك كاملة لإنشاء حسابك</p>
+            <input type="text" id="reg-uName" placeholder="الاسم الكامل">
+            <!-- [FIX-COUNTRY-CODE-PHONE] مفتاح دولة برمز الدولة والعلم — يضبط المفتاح الدولي الحقيقي
+                 المرفق برقم الجوال، بدل تخمينه لاحقاً من صيغة الرقم المحلي -->
+            <div style="display:flex; gap:6px; direction:ltr;">
+                <select id="reg-country-code" style="width:100px; flex-shrink:0; background:rgba(0,0,0,0.3); color:#fff; border:1px solid var(--gold); border-radius:10px; padding:0 8px; font-size:13px; text-align:center;">
+                    <option value="963" selected>🇸🇾 +963</option>
+                    <option value="966">🇸🇦 +966</option>
+                    <option value="90">🇹🇷 +90</option>
+                </select>
+                <input type="tel" id="reg-uPhone" placeholder="رقم الجوال" style="flex:1; direction:rtl;">
+            </div>
+            <input type="text" id="reg-uAddress" placeholder="العنوان (الحي / الشارع)">
+            <input type="email" id="reg-uEmail" placeholder="البريد الإلكتروني" autocomplete="email">
+            <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:center; margin:8px 0 14px; direction:ltr;">
+                <button type="button" onclick="_appendEmailDomain('reg-uEmail','gmail.com')" class="email-domain-chip">@gmail.com</button>
+                <button type="button" onclick="_appendEmailDomain('reg-uEmail','hotmail.com')" class="email-domain-chip">@hotmail.com</button>
+                <button type="button" onclick="_appendEmailDomain('reg-uEmail','yahoo.com')" class="email-domain-chip">@yahoo.com</button>
+                <button type="button" onclick="_appendEmailDomain('reg-uEmail','outlook.com')" class="email-domain-chip">@outlook.com</button>
+                <button type="button" onclick="_appendEmailDomain('reg-uEmail','icloud.com')" class="email-domain-chip">@icloud.com</button>
+            </div>
+            <button class="btn-gold" id="register-send-btn" onclick="registerSendCode()">إنشاء حساب 🦅</button>
+            <p style="margin-top:15px; font-size:12px; cursor:pointer; color:var(--gold);" onclick="_showAuthScreen('login-step-email')">لديك حساب بالفعل؟ تسجيل دخول</p>
+        </div>
+
+        <!-- ═══ شاشة 4: التحقق من رمز تفعيل الحساب الجديد ═══ -->
+        <div id="register-step-code" style="display:none;">
+            <div style="text-align:right; margin-bottom:8px;">
+                <span onclick="_showAuthScreen('login-step-email')" style="font-size:12px; color:var(--gold); cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
+                    <i class="fas fa-arrow-right"></i> رجوع
+                </span>
+            </div>
+            <h2 style="color:var(--gold); font-size: 18px;">فعّل حسابك 🔑</h2>
+            <p style="font-size:11px; color:#aaa; margin-bottom:4px;">أُرسل رمز تفعيل مكوَّن من 6 أرقام إلى:</p>
+            <p style="font-size:12px; color:var(--gold); font-weight:bold; margin-bottom:14px;" id="register-sent-to-email">--</p>
+            <div style="display:flex; justify-content:center; gap:6px; margin-bottom:14px; direction:ltr;">
+                <input type="tel" maxlength="1" class="otp-digit-box register-otp-box" data-idx="0" style="width:38px; height:50px; text-align:center; font-size:20px; font-weight:bold; border-radius:8px; border:1px solid var(--gold); background:rgba(0,0,0,0.3); color:#fff;">
+                <input type="tel" maxlength="1" class="otp-digit-box register-otp-box" data-idx="1" style="width:38px; height:50px; text-align:center; font-size:20px; font-weight:bold; border-radius:8px; border:1px solid var(--gold); background:rgba(0,0,0,0.3); color:#fff;">
+                <input type="tel" maxlength="1" class="otp-digit-box register-otp-box" data-idx="2" style="width:38px; height:50px; text-align:center; font-size:20px; font-weight:bold; border-radius:8px; border:1px solid var(--gold); background:rgba(0,0,0,0.3); color:#fff;">
+                <input type="tel" maxlength="1" class="otp-digit-box register-otp-box" data-idx="3" style="width:38px; height:50px; text-align:center; font-size:20px; font-weight:bold; border-radius:8px; border:1px solid var(--gold); background:rgba(0,0,0,0.3); color:#fff;">
+                <input type="tel" maxlength="1" class="otp-digit-box register-otp-box" data-idx="4" style="width:38px; height:50px; text-align:center; font-size:20px; font-weight:bold; border-radius:8px; border:1px solid var(--gold); background:rgba(0,0,0,0.3); color:#fff;">
+                <input type="tel" maxlength="1" class="otp-digit-box register-otp-box" data-idx="5" style="width:38px; height:50px; text-align:center; font-size:20px; font-weight:bold; border-radius:8px; border:1px solid var(--gold); background:rgba(0,0,0,0.3); color:#fff;">
+            </div>
+            <p id="register-otp-status-msg" style="font-size:11px; color:#888; min-height:16px;"></p>
+            <button class="btn-gold" id="register-resend-btn" style="margin-top:8px;" onclick="registerResendCode()">إعادة إرسال الرمز</button>
+        </div>
+    </div>
+
+    <div class="main-category-tabs" id="main-nav-sticky">
+        <div class="m-tab active" onclick="switchCategory('restaurants')"><i class="fas fa-utensils"></i> المطاعم</div>
+        <div class="m-tab" onclick="switchCategory('pharmacies')"><i class="fas fa-handholding-medical"></i> صيدليات</div>
+        <div class="m-tab" onclick="switchCategory('flowers')"><i class="fas fa-gift"></i> ورد وحلويات</div>
+        <div class="m-tab" onclick="switchCategory('wassayni')"><i class="fas fa-paper-plane"></i> وصيني 🦅</div>
+        <div class="m-tab" onclick="switchCategory('family')"><i class="fas fa-home"></i> الأسر المنتجة</div>
+    </div>
+
+    <div id="p-home" class="page">
+        <div id="view-restaurants" class="category-view active">
+            <div id="shahen-home-loader" class="shahen-data-loader">
+                <div class="shahen-loader-circle"></div>
+                <div class="shahen-loader-text">جاري جلب مطاعم الشاهين... 🦅</div>
+            </div>
+            <h2 style="color:var(--gold); font-size: 16px; margin-bottom: 10px;">اكتشف المطاعم 🍔</h2>
+            <input type="text" id="resSearch" placeholder="🔍 ابحث عن مطعم..." onkeyup="searchRes()">
+            <!-- [FEATURE-RES-FILTERS] فلترة المطاعم: الذهبية (المميزة) + المفتوحة حالياً -->
+            <div style="display:flex; gap:8px; margin-bottom:10px;">
+                <button id="filter-featured-btn" onclick="_toggleResFilter('featured')" style="flex:1; padding:8px; border-radius:10px; border:1.5px solid var(--gold); background:transparent; color:var(--gold); font-size:11px; font-weight:bold; cursor:pointer;">⭐ الذهبية</button>
+                <button id="filter-open-btn" onclick="_toggleResFilter('open')" style="flex:1; padding:8px; border-radius:10px; border:1.5px solid #2ecc71; background:transparent; color:#2ecc71; font-size:11px; font-weight:bold; cursor:pointer;">🟢 مفتوحة الآن</button>
+            </div>
+            <div id="res-list"></div>
+        </div>
+
+        <div id="view-pharmacies" class="category-view">
+             <div id="shahen-ph-loader" class="shahen-data-loader" style="display:none;">
+                <div class="shahen-loader-circle"></div>
+                <div class="shahen-loader-text">جاري جلب صيدليات الشاهين... 🦅</div>
+            </div>
+            <h2 style="color:var(--gold); font-size: 16px; margin-bottom: 10px;">الصيدليات المناوبة 🏥</h2>
+            <!-- [PHARMACY-WASSAYNI] خيار طلب توصيل من صيدلية عبر وصيني -->
+            <div class="card" style="margin-bottom:12px; border:2px solid var(--gold); background:linear-gradient(135deg,rgba(212,175,55,0.15),transparent); cursor:pointer;" onclick="orderPharmacyViaWassayni()">
+                <div style="display:flex; align-items:center; gap:12px; padding:4px 0;">
+                    <div style="width:40px; height:40px; background:var(--gold); border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                        <i class="fas fa-paper-plane" style="color:#000; font-size:18px;"></i>
+                    </div>
+                    <div>
+                        <b style="color:var(--gold); font-size:13px; display:block;">طلب من صيدلية 🦅</b>
+                        <small style="color:#ccc; font-size:11px;">أرسل المندوب لأي صيدلية تختارها — خدمة وصيني</small>
+                    </div>
+                    <i class="fas fa-chevron-left" style="color:var(--gold); margin-right:auto; font-size:14px;"></i>
+                </div>
+            </div>
+            <!-- [END-PHARMACY-WASSAYNI] -->
+            <div class="pharmacy-filters">
+                <div class="filter-chip active" id="ph-all-btn" onclick="setPhFilter('all')">الكل</div>
+                <div class="filter-chip" id="ph-oncall-btn" onclick="setPhFilter('oncall')">المناوبة الآن 🌙</div>
+            </div>
+            <input type="text" id="phSearch" placeholder="🔍 ابحث عن صيدلية..." onkeyup="searchPh()">
+            <div id="ph-list"></div>
+        </div>
+
+        <div id="view-flowers" class="category-view">
+            <div id="shahen-specialty-loader" class="shahen-data-loader" style="display:none;">
+                <div class="shahen-loader-circle"></div>
+                <div class="shahen-loader-text">جاري جلب متاج الورد والحلويات... 🦅</div>
+            </div>
+            <h2 style="color:var(--gold); font-size: 16px; margin-bottom: 10px;">ورد وحلويات 🌸🍬</h2>
+            <!-- تبويبات الأقسام الرئيسية للورد والحلويات -->
+            <div id="specialty-main-tabs" style="display:flex; gap:8px; margin-bottom:12px; overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none; padding-bottom:4px;">
+                <div class="filter-chip active" id="sp-tab-all" onclick="filterSpecialtyByCategory('all')" style="white-space:nowrap;">🔍 الكل</div>
+                <div class="filter-chip" id="sp-tab-flowers" onclick="filterSpecialtyByCategory('flowers')" style="white-space:nowrap;">🌸 قسم الورود</div>
+                <div class="filter-chip" id="sp-tab-sweets" onclick="filterSpecialtyByCategory('sweets')" style="white-space:nowrap;">🍬 قسم الحلويات</div>
+                <div class="filter-chip" id="sp-tab-gifts" onclick="filterSpecialtyByCategory('gifts')" style="white-space:nowrap;">🎁 الهدايا</div>
+                <div class="filter-chip" id="sp-tab-other" onclick="filterSpecialtyByCategory('other')" style="white-space:nowrap;">🦅 أخرى</div>
+            </div>
+            <div id="specialty-category-label" style="color:var(--gold); font-size:12px; font-weight:bold; margin-bottom:8px;"></div>
+            <div class="sub-cat-grid" id="specialty-sections-grid">
+                <div class="sub-cat-card" onclick="renderSpecialtyStores('flowers')">
+                    <i class="fas fa-seedling"></i>
+                    <b>أجمل باقات الورد</b>
+                </div>
+                <div class="sub-cat-card" onclick="renderSpecialtyStores('sweets')">
+                    <i class="fas fa-cookie-bite"></i>
+                    <b>أرقى الحلويات</b>
+                </div>
+            </div>
+            <div id="specialty-store-list" style="margin-top: 15px;"></div>
+            <div style="text-align: center; padding: 20px 15px; margin-top: 10px;">
+                <p style="color: #ddd; font-size: 11px; opacity: 0.7;">نعمل دائماً على إضافة أفضل المتاجر لتجربة ملكية تليق بكم.</p>
+            </div>
+        </div>
+
+        <div id="view-wassayni" class="category-view">
+            <div class="wassayni-header">
+                <i class="fas fa-paper-plane fa-lg" style="color:var(--gold); margin-bottom:5px;"></i>
+                <h3 style="color:var(--gold); font-size: 16px; margin:0;">خدمة وصيني 🦅</h3>
+                <p style="font-size:10px; color:#ccc; margin-top:3px;">اطلب أي غرض وسنتكفل بالباقي!</p>
+            </div>
+
+            <!-- [LOC-CHOICE] خيار تفعيل أو عدم تفعيل الموقع -->
+            <div class="card" style="margin-bottom:10px; border:1px solid var(--gold); padding:10px;">
+                <small style="color:var(--gold); font-weight:bold; font-size:11px; display:block; margin-bottom:8px;">📍 هل تريد تحديد الموقع؟</small>
+                <div style="display:flex; gap:8px;">
+                    <div id="loc-btn-yes" onclick="setWassayniLocChoice(true)" style="flex:1; border:2px solid var(--gold); border-radius:10px; padding:8px; text-align:center; cursor:pointer; background:var(--gold); color:#000; font-weight:bold; font-size:12px;">
+                        <i class="fas fa-map-marker-alt"></i> تفعيل الموقع
+                    </div>
+                    <div id="loc-btn-no" onclick="setWassayniLocChoice(false)" style="flex:1; border:2px solid #555; border-radius:10px; padding:8px; text-align:center; cursor:pointer; background:transparent; color:#aaa; font-size:12px;">
+                        <i class="fas fa-times-circle"></i> بدون موقع
+                    </div>
+                </div>
+            </div>
+            <!-- [END-LOC-CHOICE] -->
+
+            <div id="wassayni-map-section">
+            <div class="wassayni-step">
+                <div class="step-icon">1</div>
+                <div class="step-content">
+                    <small style="color:var(--gold); font-weight:bold; font-size:10px;">📍 من أين نستلم؟</small>
+                    <div id="map-pickup" class="wassayni-map-small" onclick="openFullMap('pickup')"></div>
+                    <button class="btn-gold" onclick="openFullMap('pickup')" style="font-size:9px; padding:5px; background:rgba(212,175,55,0.05); border:1px solid var(--gold); color:var(--gold); width:100%;">
+                        <i class="fas fa-search-location"></i> بحث وتحديد موقع الاستلام
+                    </button>
+                </div>
+            </div>
+
+            <div class="wassayni-step">
+                <div class="step-icon" style="background:#2ecc71;">2</div>
+                <div class="step-content">
+                    <small style="color:#2ecc71; font-weight:bold; font-size:10px;">📍 أين نسلمك؟</small>
+                    <div id="map-dropoff" class="wassayni-map-small" style="border-color:#2ecc71;" onclick="openFullMap('dropoff')"></div>
+                    <button class="btn-gold" onclick="openFullMap('dropoff')" style="font-size:9px; padding:5px; background:rgba(46,204,113,0.05); border:1px solid #2ecc71; color:#2ecc71; width:100%;">
+                        <i class="fas fa-search-location"></i> بحث وتحديد موقع التسليم
+                    </button>
+                </div>
+            </div>
+            </div><!-- end wassayni-map-section -->
+
+            <!-- [WASSAYNI-MULTI-LOC] قسم المكانات المتعددة -->
+            <div class="card" style="margin-bottom:10px; border:1px solid rgba(212,175,55,0.4); padding:10px;">
+                <small style="color:var(--gold); font-weight:bold; font-size:11px; display:block; margin-bottom:8px;">🗺️ المكانات التي سيزورها المندوب</small>
+                <div id="wassayni-locations-list">
+                    <!-- المكان الأول دائماً موجود -->
+                    <div class="wassayni-location-item" id="wassayni-loc-0">
+                        <small style="color:var(--gold); font-size:10px; font-weight:bold;">📍 المكان الأول (مشمول بالسعر الأساسي)</small>
+                        <input type="text" id="wassayni-loc-name-0" placeholder="اسم المكان / المحل (مثال: محل الورد)" style="font-size:11px; margin-top:6px; background:rgba(0,0,0,0.3); border:1px solid #444;">
+                    </div>
+                </div>
+                <button onclick="addWassayniLocation()" style="width:100%; background:rgba(212,175,55,0.1); border:1px dashed var(--gold); color:var(--gold); padding:8px; border-radius:10px; font-size:12px; cursor:pointer; margin-top:6px;">
+                    <i class="fas fa-plus-circle"></i> إضافة مكان آخر (+10,000 ل.س)
+                </button>
+            </div>
+            <!-- [END-WASSAYNI-MULTI-LOC] -->
+
+            <!-- [WASSAYNI-PRICE-DISPLAY] عرض سعر التوصيل المحسوب -->
+            <div class="wassayni-price-box" id="wassayni-price-box">
+                <span class="price-label">💰 سعر التوصيل الإجمالي</span>
+                <div class="price-value" id="wassayni-price-display">25,000 ل.س</div>
+                <div class="price-details" id="wassayni-price-details">مكان واحد — السعر الأساسي</div>
+            </div>
+            <!-- [END-WASSAYNI-PRICE-DISPLAY] -->
+
+            <div class="wassayni-step">
+                <div class="step-icon" style="background:#3498db;" id="wassayni-step3-icon">3</div>
+                <div class="step-content">
+                    <small style="color:#3498db; font-weight:bold; font-size:10px;">📝 تفاصيل طلبك</small>
+                    <textarea id="wassayni-task" placeholder="مثلاً: اذهب لمحل الورد واستلم باقة باسم محمد.." style="width:100%; background:rgba(0,0,0,0.3); color:#fff; border:1px solid #444; border-radius:10px; padding:8px; height:70px; resize: none; font-size: 12px;"></textarea>
+                    <input type="text" id="wassayni-addr" placeholder="🏢 وصف العنوان (الطابق / الشقة)" style="font-size: 11px; margin-top:8px; background:rgba(0,0,0,0.3); border:1px solid #444;">
+                </div>
+            </div>
+
+            <button class="btn-gold" style="margin-top:10px; height:50px; font-size:14px;" onclick="submitWassayni()">
+                🚀 إرسال المهمة الآن
+            </button>
+        </div>
+
+        <!-- ═══════════════════════════════════
+             [FAMILY-BIZ] قسم الأسر المنتجة — مستقل بالكامل
+        ═══════════════════════════════════ -->
+        <div id="view-family" class="category-view">
+            <div id="shahen-family-loader" class="shahen-data-loader" style="display:none;">
+                <div class="shahen-loader-circle"></div>
+                <div class="shahen-loader-text">جاري جلب الأسر المنتجة... 🦅</div>
+            </div>
+            <h2 style="color:var(--gold); font-size: 16px; margin-bottom: 10px;">الأسر المنتجة 🏠</h2>
+
+            <!-- [FAM-AI-SEARCH] البحث الذكي بمساعدة الذكاء الاصطناعي -->
+            <div class="card" style="padding:10px; margin-bottom:10px; border:1px solid var(--gold);">
+                <label style="font-size:11px; color:var(--gold); display:block; margin-bottom:6px;"><i class="fas fa-magic"></i> اسأل بطريقتك — مثلاً: "أريد حلويات لمناسبة"</label>
+                <div style="display:flex; gap:6px;">
+                    <input type="text" id="famAiQuery" placeholder="صف ما تبحث عنه..." style="flex:1; margin:0;" onkeydown="if(event.key==='Enter') runFamilyAiSearch()">
+                    <button onclick="runFamilyAiSearch()" class="btn-gold" style="width:auto; padding:0 16px; margin:0; height:38px;"><i class="fas fa-search"></i></button>
+                </div>
+                <div id="fam-ai-results" style="margin-top:10px;"></div>
+            </div>
+
+            <input type="text" id="familySearch" placeholder="🔍 أو ابحث بالاسم مباشرة..." onkeyup="searchFamily()">
+            <div id="family-list"></div>
+        </div>
+        <!-- ══ END [FAMILY-BIZ] view-family ══ -->
+    </div>
+
+    <div id="p-menu" class="page" style="padding:0; padding-bottom:90px;">
+        <!-- رأس المطعم -->
+        <div id="menu-header" style="background:linear-gradient(135deg,var(--purple),rgba(30,10,30,0.98)); border-bottom:2px solid var(--gold); padding:12px 15px; position:sticky; top:0; z-index:200;">
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+                <i class="fas fa-chevron-right" onclick="nav('p-home', event)" style="color:var(--gold); font-size:18px; cursor:pointer; flex-shrink:0;"></i>
+                <div style="flex:1; min-width:0;">
+                    <h2 id="menu-title" style="color:var(--gold); margin:0; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></h2>
+                    <div id="menu-sub-info" style="font-size:10px; color:#aaa; margin-top:2px;"></div>
+                </div>
+                <img id="menu-logo" src="" style="width:42px; height:42px; border-radius:10px; border:1px solid var(--gold); object-fit:cover; display:none;">
+            </div>
+            <!-- شريط بحث -->
+            <div style="position:relative;">
+                <input type="text" id="menuSearch" placeholder="🔍 ابحث في المنيو..." onkeyup="searchMenu()" style="margin:0; font-size:12px; padding:8px 35px 8px 12px;">
+                <i class="fas fa-search" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); color:#666; font-size:12px;"></i>
+            </div>
+        </div>
+
+        <!-- شريط الأقسام الثابت -->
+        <div id="menu-cats-bar"></div>
+
+        <!-- محتوى المنيو -->
+        <div id="menu-items" style="padding:12px;"></div>
+
+        <!-- زر التواصل مع المحل -->
+        <div id="menu-contact-btn" style="padding:0 12px 12px; display:none;">
+            <div class="card" style="cursor:pointer; padding:14px; border:2px solid var(--gold); background:rgba(212,175,55,0.08);" onclick="">
+                <div style="text-align:center;">
+                    <i class="fas fa-comments" style="color:var(--gold); font-size:24px; margin-bottom:8px; display:block;"></i>
+                    <b style="font-size:14px; color:var(--gold);" id="menu-contact-label">التواصل مع المحل</b>
+                    <p id="menu-contact-desc" style="font-size:11px; color:#ddd; margin:5px 0 0 0;"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════
+         [FAMILY-BIZ] صفحة تفاصيل الأسرة المنتجة — صفحة مستقلة بالكامل
+         لا تتشارك أي عنصر أو دالة مع p-menu لتجنب أي تعارض
+    ═══════════════════════════════════ -->
+    <div id="p-family-detail" class="page" style="padding:0; padding-bottom:90px;">
+        <div style="background:linear-gradient(135deg,var(--purple),rgba(30,10,30,0.98)); border-bottom:2px solid var(--gold); padding:12px 15px; position:sticky; top:0; z-index:200;">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <i class="fas fa-chevron-right" onclick="nav('p-home', event); switchCategory('family')" style="color:var(--gold); font-size:18px; cursor:pointer; flex-shrink:0;"></i>
+                <h2 id="fam-detail-title" style="color:var(--gold); margin:0; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">الأسرة المنتجة</h2>
+            </div>
+        </div>
+
+        <img id="fam-detail-image" src="" style="width:100%; height:170px; object-fit:cover; display:block;" onerror="this.style.display='none'">
+
+        <div style="padding:14px;">
+            <div id="fam-detail-status-badge" style="display:inline-block; padding:3px 12px; border-radius:20px; font-size:11px; font-weight:bold; margin-bottom:8px;"></div>
+            <span id="fam-detail-cat-badge" style="display:inline-block; padding:3px 12px; border-radius:20px; font-size:11px; font-weight:bold; margin-bottom:8px; margin-right:6px; background:rgba(212,175,55,0.15); color:var(--gold);"></span>
+            <!-- [FAM-RATING] شارة التقييم بجانب الاسم -->
+            <span id="fam-detail-rating-badge" onclick="_toggleFamRatingsPanel()" style="display:inline-flex; align-items:center; gap:4px; cursor:pointer; margin-bottom:8px;"></span>
+            <p id="fam-detail-desc" style="font-size:12px; color:#ddd; line-height:1.7; margin:0 0 12px;"></p>
+
+            <div class="card" style="padding:10px 14px; margin-bottom:14px;">
+                <div id="fam-detail-hours" style="font-size:11px; color:#aaa; margin-bottom:4px;"></div>
+                <div id="fam-detail-address" style="font-size:11px; color:#aaa;"></div>
+            </div>
+
+            <!-- [FAM-RATING] لوحة التقييمات الكاملة — تُفتح عند الضغط على شارة التقييم -->
+            <div id="fam-ratings-panel" style="display:none; margin-bottom:16px;">
+                <div class="card" style="padding:14px;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+                        <h3 style="color:var(--gold); font-size:13px; margin:0;"><i class="fas fa-star"></i> التقييمات</h3>
+                        <button onclick="_openSubmitFamRating()" style="background:var(--gold); color:#1a1a1a; border:none; border-radius:8px; padding:6px 12px; font-size:10px; font-weight:bold; cursor:pointer;">قيّم هذه الأسرة ⭐</button>
+                    </div>
+                    <div id="fam-ratings-summary" style="text-align:center; padding:10px; background:rgba(212,175,55,0.06); border-radius:10px; margin-bottom:12px;"></div>
+                    <div id="fam-ratings-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+                </div>
+            </div>
+
+            <!-- [FAM-RATING] نموذج إضافة تقييم -->
+            <div id="fam-submit-rating-box" style="display:none; margin-bottom:16px;">
+                <div class="card" style="padding:14px; border:1px solid var(--gold);">
+                    <h4 style="color:var(--gold); font-size:12px; margin:0 0 10px;">قيّم تجربتك مع هذه الأسرة</h4>
+                    <div id="fam-rating-stars-input" style="font-size:24px; text-align:center; margin-bottom:10px; letter-spacing:6px;">
+                        <i class="far fa-star fam-star-input" data-val="1" onclick="_setFamRatingStars(1)" style="color:#555; cursor:pointer;"></i>
+                        <i class="far fa-star fam-star-input" data-val="2" onclick="_setFamRatingStars(2)" style="color:#555; cursor:pointer;"></i>
+                        <i class="far fa-star fam-star-input" data-val="3" onclick="_setFamRatingStars(3)" style="color:#555; cursor:pointer;"></i>
+                        <i class="far fa-star fam-star-input" data-val="4" onclick="_setFamRatingStars(4)" style="color:#555; cursor:pointer;"></i>
+                        <i class="far fa-star fam-star-input" data-val="5" onclick="_setFamRatingStars(5)" style="color:#555; cursor:pointer;"></i>
+                    </div>
+                    <textarea id="fam-rating-comment-input" placeholder="اكتب تجربتك (اختياري)..." style="width:100%; min-height:50px; background:rgba(0,0,0,0.2); border:1px solid rgba(212,175,55,0.3); border-radius:8px; padding:8px; color:#fff; font-size:11px; resize:vertical; font-family:inherit; margin-bottom:10px;"></textarea>
+                    <div style="display:flex; gap:8px;">
+                        <button onclick="_submitFamRating()" style="flex:2; background:var(--gold); color:#1a1a1a; border:none; border-radius:8px; padding:9px; font-size:12px; font-weight:bold; cursor:pointer;">إرسال التقييم</button>
+                        <button onclick="document.getElementById('fam-submit-rating-box').style.display='none'" style="flex:1; background:transparent; border:1px solid #555; color:#aaa; border-radius:8px; padding:9px; font-size:12px; cursor:pointer;">إلغاء</button>
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="color:var(--gold); font-size:13px; margin-bottom:10px;">🛍️ المنتجات</h3>
+            <div id="fam-detail-products" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;"></div>
+
+            <div id="fam-order-box" style="display:none; margin-bottom:16px;"></div>
+
+            <!-- [FEATURE-FAMILY-CHAT] زر الدردشة الداخلية بدل واتساب -->
+            <button class="btn-gold" id="fam-detail-contact-btn" style="height:50px; font-size:14px;" onclick="openFamilyChat()">
+                <i class="fas fa-comment-dots"></i> دردشة مع صاحب النشاط
+            </button>
+        </div>
+
+    </div>
+    <!-- ══ END [FAMILY-BIZ] p-family-detail ══ -->
+
+    <div id="p-cart" class="page">
+        <div id="cart-res-header" style="text-align: center; padding: 12px; background: rgba(212,175,55,0.1); border-radius: 15px; margin-bottom: 12px; border: 1px solid var(--gold); display: none;">
+            <i class="fas fa-store" style="color: var(--gold); margin-left: 6px; font-size: 14px;"></i>
+            <b id="cart-res-name" style="color: white; font-size: 16px;">المطعم</b>
+        </div>
+        <h2 style="color:var(--gold); font-size: 16px;">سلة السقور 🛒</h2>
+        <div id="cart-content"></div>
+        <div id="cart-summary" class="card" style="margin-top:auto; display:none; background:rgba(0,0,0,0.5);"></div>
+    </div>
+
+    <div id="p-chat" class="page">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div style="text-align: right;">
+                <h2 id="driver-chat-name" style="color:var(--gold); margin:0; font-size:16px;">معلومات المندوب 🛵</h2>
+                <small id="driver-chat-phone" style="color:#25d366; font-size: 10px; display: block;"></small>
+                <small id="driver-chat-id" style="color:rgba(212,175,55,0.6); font-family:monospace; font-size: 9px;"></small>
+            </div>
+            <i class="fas fa-phone-alt" id="call-driver-btn" style="color:var(--gold); font-size: 18px; cursor: pointer;"></i>
+        </div>
+
+        <!-- [PROGRESS-TRACKER] شريط مراحل الطلب الاحترافي — يعتمد على حالة الطلب الفعلية من قاعدة البيانات -->
+        <div id="order-progress-tracker">
+            <div class="opt-step" data-step="0">
+                <div class="opt-circle"><i class="fas fa-receipt"></i></div>
+                <span class="opt-label">تم استلام<br>الطلب</span>
+            </div>
+            <div class="opt-line" data-line="0"></div>
+            <div class="opt-step" data-step="1">
+                <div class="opt-circle"><i class="fas fa-utensils"></i></div>
+                <span class="opt-label">جاري<br>التحضير</span>
+            </div>
+            <div class="opt-line" data-line="1"></div>
+            <div class="opt-step" data-step="2">
+                <div class="opt-circle"><i class="fas fa-box"></i></div>
+                <span class="opt-label">استلم المندوب<br>الطلب</span>
+            </div>
+            <div class="opt-line" data-line="2"></div>
+            <div class="opt-step" data-step="3">
+                <div class="opt-circle"><i class="fas fa-motorcycle"></i></div>
+                <span class="opt-label">في<br>الطريق</span>
+            </div>
+            <div class="opt-line" data-line="3"></div>
+            <div class="opt-step" data-step="4">
+                <div class="opt-circle"><i class="fas fa-flag-checkered"></i></div>
+                <span class="opt-label">تم<br>التسليم</span>
+            </div>
+        </div>
+
+        <!-- [DRIVER-STATUS-TIMELINE] خط زمني قديم — أُخفي نهائياً واستُبدل بشريط المراحل أعلاه -->
+        <div id="order-status-timeline" style="display:none; background:rgba(0,0,0,0.25); border:1px solid rgba(212,175,55,0.3); border-radius:12px; padding:10px 12px; margin-bottom:8px;">
+            <div style="display:flex; align-items:center; gap:6px; margin-bottom:6px;">
+                <i class="fas fa-route" style="color:var(--gold); font-size:12px;"></i>
+                <b style="color:var(--gold); font-size:11px;">حالة طلبك مباشرة</b>
+            </div>
+            <div id="order-status-list" style="display:flex; flex-direction:column; gap:4px;"></div>
+        </div>
+
+        <!-- ===== [INVOICE-REVISION] بطاقة طلب موافقة على تعديل فاتورة المطعم ===== -->
+        <div id="invoice-revision-card" style="display:none; background:rgba(155,89,182,0.12); border:2px solid #9b59b6; border-radius:14px; padding:14px; margin-bottom:10px;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                <i class="fas fa-file-invoice-dollar" style="color:#9b59b6; font-size:18px;"></i>
+                <b style="color:#9b59b6; font-size:13px;">⚠️ تعديل على فاتورة المطعم يحتاج موافقتك</b>
+            </div>
+            <p style="font-size:11.5px; color:#ddd; line-height:1.7; margin:0 0 10px;">قام المندوب بطلب تعديل قيمة فاتورة المطعم بسبب اختلاف السعر في المطعم. بعد التأكد من الفاتورة المرسلة عبر واتساب يمكنك الموافقة أو الرفض.</p>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;">
+                <div style="background:rgba(0,0,0,0.25); border-radius:8px; padding:8px; text-align:center;">
+                    <div style="font-size:9.5px; color:#aaa;">القيمة القديمة</div>
+                    <b id="inv-rev-card-old" style="font-size:13px; color:#fff;">--</b>
+                </div>
+                <div style="background:rgba(0,0,0,0.25); border-radius:8px; padding:8px; text-align:center;">
+                    <div style="font-size:9.5px; color:#aaa;">القيمة الجديدة</div>
+                    <b id="inv-rev-card-new" style="font-size:13px; color:var(--gold);">--</b>
+                </div>
+            </div>
+            <div id="inv-rev-card-diff" style="text-align:center; font-size:11.5px; font-weight:bold; margin-bottom:8px;"></div>
+            <div id="inv-rev-card-reason" style="font-size:10.5px; color:#ccc; background:rgba(0,0,0,0.2); border-radius:8px; padding:8px; margin-bottom:10px; display:none;"></div>
+            <div style="display:flex; gap:8px;">
+                <button onclick="rejectInvoiceRevision()" style="flex:1; background:rgba(231,76,60,0.15); border:1px solid #e74c3c; color:#e74c3c; padding:11px; border-radius:10px; font-size:12px; font-weight:bold; cursor:pointer;">
+                    <i class="fas fa-times"></i> رفض
+                </button>
+                <button onclick="approveInvoiceRevision()" style="flex:1; background:rgba(46,204,113,0.15); border:1px solid #2ecc71; color:#2ecc71; padding:11px; border-radius:10px; font-size:12px; font-weight:bold; cursor:pointer;">
+                    <i class="fas fa-check"></i> موافقة
+                </button>
+            </div>
+        </div>
+
+        <!-- [FIX-CHAT-ETA] الوقت المتبقي للمندوب — يعمل سواء كان متجهاً للمطعم أو للعميل -->
+        <div id="chat-eta-widget" style="display:none; background:rgba(212,175,55,0.08); border:1px solid var(--gold); border-radius:12px; padding:10px; margin-bottom:8px; text-align:center;">
+            <div id="chat-eta-label" style="font-size:11px; color:#ccc; margin-bottom:4px;">⏱ الوقت المتبقي للمندوب</div>
+            <b id="chat-eta-value" style="font-size:20px; color:var(--gold);">-- دقيقة</b>
+        </div>
+
+        <div id="client-code-notice" style="display:block; background:rgba(212,175,55,0.1); padding:10px; border-radius:12px; margin-top:18vh; border:1px dashed var(--gold); text-align:center;">
+            <!-- [FIX-CUSTOMER-ORDER-SUMMARY] بطاقة ملخص الطلب — انتقلت لداخل هذا الصندوق تحديداً لأنه
+                 الصندوق الوحيد المؤكَّد ظهوره دائماً (نفس مكان كود التحقق الذي يعمل بثبات) -->
+            <div id="customer-order-summary-card" style="display:none; text-align:right; margin-bottom:10px;"></div>
+            <p style="font-size:11px; color:var(--gold); margin:0 0 6px 0;">كود التحقق الخاص بك 🔑 (لا تغلق الطلب إلا بعد تسليمه):</p>
+            <b id="reveal-order-code" style="font-size:24px; color:#fff; letter-spacing:6px; display:block; margin-bottom:8px;">----</b>
+            <!-- [FIX-RELIABLE-WA] زر تواصل واتساب ثابت ومضمون الظهور دائماً — منفصل عن إعادة بناء صندوق الدردشة -->
+            <button id="persistent-wa-btn" class="btn-gold" style="background:#25d366; color:#fff; font-size:12px; padding:9px; width:100%;" onclick="openPersistentDriverWA()">
+                <i class="fab fa-whatsapp"></i> تواصل مع الصقر
+            </button>
+        </div>
+        <!-- ===== خريطة تتبع المندوب الحي للعميل — نُقل هنا ليكون بارزاً وواضحاً دائماً ===== -->
+        <button id="open-track-driver-btn" class="btn-gold" style="display:none; margin-top:10px; margin-bottom:4px; padding:13px; background:linear-gradient(135deg, var(--gold), #b8932e); color:#1a051a; font-weight:bold; font-size:14px; width:100%; border-radius:14px; box-shadow:0 4px 20px rgba(212,175,55,0.4); animation:pulse 2s infinite;" onclick="openDriverTrackingPage()">
+            <i class="fas fa-location-arrow"></i> تتبع المندوب 📍
+        </button>
+        <!-- ===== نهاية خريطة التتبع ===== -->
+
+        <div id="chat-box" style="flex:1; display:flex; flex-direction:column; overflow-y:auto; padding:8px; background: rgba(0,0,0,0.1); border-radius: 12px; position: relative;">
+        </div>
+        <div id="delivery-confirm-box" style="display:none; background:rgba(30, 10, 30, 0.95); padding:12px; border-radius:12px; margin-top:5px; border:1px solid var(--gold); text-align:center; box-shadow: 0 0 15px var(--gold);">
+            <p style="font-size:12px; margin-bottom:8px; font-weight: bold;">صقرنا بانتظارك.. هل تم توصيل الطلبية؟ 🦅</p>
+            <div style="display:flex; gap:8px;">
+                <button class="btn-gold" style="flex:1; padding:8px; font-size: 11px;" onclick="showVerifyCodeToClient()">نعم، استلمت ✅</button>
+                <button class="btn-gold" style="flex:1; padding:8px; background:#e74c3c; color:#fff; font-size: 11px;" onclick="sendComplaint('لم يتم التسليم رغم إشعار المندوب')">لا ❌</button>
+            </div>
+        </div>
+        <div id="restaurant-notif-area" style="display:none;">
+            <div class="restaurant-notif-box">
+                <div class="res-notif-icon"><i class="fas fa-utensils"></i></div>
+                <div class="res-notif-text">
+                    <b>تحديث من المطعم 👨‍🍳</b>
+                    <p id="res-notif-msg">بانتظار تأكيد المطعم للطلب...</p>
+                </div>
+            </div>
+        </div>
+        <div style="display:none; gap:8px; margin-top:8px; align-items: center; background: var(--purple); padding: 10px; border-top: 1px solid var(--gold);" id="chat-input-area">
+            <input type="text" id="m-inp" placeholder="اكتب رسالة..." style="margin:0; font-size: 12px; flex: 1;">
+            <button class="btn-gold" style="width:auto; padding:0 15px;" onclick="sendMsg()"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <!-- ===== [MAPBOX-TRACK] صفحة تتبع المندوب الحي الجديدة بالكامل ===== -->
+    <div id="p-track-driver">
+        <div id="track-map"></div>
+
+        <button class="track-back-btn" onclick="closeDriverTrackingPage()"><i class="fas fa-arrow-right"></i></button>
+
+        <div class="track-top-pill" id="track-status-pill"><i class="fas fa-circle-notch fa-spin"></i> جاري تحديد الموقع...</div>
+
+
+        <div id="track-dest-error" style="display:none; position:absolute; top:64px; left:16px; right:16px; background:rgba(231,76,60,0.94); color:#fff; padding:9px 14px; border-radius:12px; font-size:11.5px; text-align:center; z-index:21; font-weight:bold; box-shadow:0 2px 10px rgba(0,0,0,0.4);"></div>
+
+        <div id="track-map-placeholder" style="position:absolute; inset:0; background:var(--purple); display:flex; align-items:center; justify-content:center; flex-direction:column; text-align:center; z-index:15;">
+            <i class="fas fa-satellite-dish fa-spin" style="font-size:32px; color:var(--gold); margin-bottom:10px;"></i>
+            <span style="font-size:12px; color:#ccc;">جاري تحديد موقع المندوب...</span>
+        </div>
+
+        <button class="track-recenter-btn" id="track-recenter-btn" style="bottom:148px;" onclick="recenterOnDriver()"><i class="fas fa-location-arrow"></i></button>
+
+        <div class="track-success-overlay" id="track-success-overlay">
+            <i class="fas fa-check-circle"></i>
+            <b style="font-size:16px; color:#fff;">تم تسليم الطلب بنجاح 🦅</b>
+            <p style="font-size:11px; color:#ccc; margin-top:6px;">نوفي بعهدكم دائماً</p>
+        </div>
+
+        <div class="track-sheet" id="track-sheet">
+            <div class="track-sheet-handle-wrap" id="track-sheet-handle-wrap">
+                <div class="track-sheet-handle"></div>
+            </div>
+            <div class="track-sheet-body">
+                <div class="track-eta-row">
+                    <div class="track-eta-item"><b id="track-eta">--</b><span>الوقت المتوقع</span></div>
+                    <div class="track-eta-divider"></div>
+                    <div class="track-eta-item"><b id="track-distance">--</b><span>المسافة المتبقية</span></div>
+                </div>
+                <div class="track-status-line">
+                    <span class="dot"></span>
+                    <b id="track-order-status">--</b>
+                </div>
+                <div class="track-info-grid">
+                    <div class="cell">رقم الطلب <b id="track-order-id">--</b></div>
+                    <div class="cell">المطعم <b id="track-res-name">--</b></div>
+                    <div class="cell">المندوب <b id="track-driver-name">--</b></div>
+                    <div class="cell">الحالة <b id="track-order-status-2">--</b></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- ===== نهاية صفحة [MAPBOX-TRACK] ===== -->
+
+    <div id="p-history" class="page">
+
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+            <h2 style="color:var(--gold); font-size:16px; margin:0;">طلباتي ⚡</h2>
+            <button onclick="loadAllOrdersFromServer()" id="orders-refresh-btn" style="background:rgba(212,175,55,0.1); border:1px solid var(--gold); color:var(--gold); border-radius:8px; padding:5px 10px; font-size:10px; cursor:pointer;"><i class="fas fa-sync-alt"></i> تحديث</button>
+        </div>
+
+        <!-- تبويبات رئيسية -->
+        <div class="history-tabs" style="margin-bottom:12px;">
+            <div id="tab-active" class="h-tab active" onclick="switchHistoryTab('active')"><i class="fas fa-bolt"></i> نشطة</div>
+            <div id="tab-completed" class="h-tab" onclick="switchHistoryTab('completed')"><i class="fas fa-check-circle"></i> مكتملة</div>
+            <div id="tab-cancelled" class="h-tab" onclick="switchHistoryTab('cancelled')"><i class="fas fa-times-circle"></i> ملغية</div>
+        </div>
+
+        <!-- loading indicator -->
+        <div id="orders-loading" style="display:none; text-align:center; padding:20px; color:var(--gold);">
+            <i class="fas fa-spinner fa-spin" style="font-size:24px; margin-bottom:8px; display:block;"></i>
+            <small>جاري تحميل الطلبات...</small>
+        </div>
+
+        <div id="history-content"></div>
+    </div>
+
+    <div id="p-profile" class="page">
+        <h2 style="color:var(--gold); font-size: 16px;">حسابي الشخصي 👤</h2>
+        <!-- [FIX-CUSTOMER-INFO-COLLAPSE] زر واحد يخفي/يظهر كل معلومات الحساب الشخصية، بدل عرضها دائماً
+             مباشرة على الصفحة -->
+        <button class="btn-gold" style="width:100%; margin-bottom:10px; background:rgba(212,175,55,0.1); color:var(--gold); border:1px solid var(--gold);" onclick="_toggleMyAccountInfo()">
+            <i class="fas fa-id-card"></i> معلومات الحساب <i class="fas fa-chevron-down" id="my-account-info-chevron" style="margin-right:6px; transition:transform 0.2s;"></i>
+        </button>
+        <div id="my-account-info-card" class="card" style="display:none; border: 1px solid var(--gold); padding: 15px;">
+            <div style="border-bottom: 1px solid rgba(212,175,55,0.2); padding-bottom: 8px; font-size: 13px;"><b><i class="fas fa-user"></i> الاسم:</b> <span id="my-name">--</span></div>
+            <div style="border-bottom: 1px solid rgba(212,175,55,0.2); padding: 8px 0; font-size: 13px;"><b><i class="fas fa-phone"></i> الجوال:</b> <span id="my-phone">--</span></div>
+            <div style="border-bottom: 1px solid rgba(212,175,55,0.2); padding: 8px 0; font-size: 13px;"><b><i class="fas fa-envelope"></i> البريد الإلكتروني:</b> <span id="my-email" style="direction:ltr; display:inline-block;">--</span></div>
+            <div style="border-bottom: 1px solid rgba(212,175,55,0.2); padding: 8px 0; font-size: 13px;"><b><i class="fas fa-map-marker-alt"></i> العنوان:</b> <span id="my-address" style="color:var(--gold)">--</span></div>
+
+            <!-- [FIX-CUSTOMER-INFO-COLLAPSE] العناوين المحفوظة أصبحت داخل نفس البطاقة القابلة للطي -->
+            <h4 style="color:var(--gold); font-size:12.5px; margin:12px 0 8px; font-weight:bold;"><i class="fas fa-map-marked-alt"></i> عناويني المحفوظة (أساسي وفرعي فقط)</h4>
+            <div id="saved-addresses-list" style="margin-bottom:6px;">
+                <div style="text-align:center; padding:10px; color:#888; font-size:11px;"><i class="fas fa-spinner fa-spin"></i> جاري التحميل...</div>
+            </div>
+            <button id="add-address-btn" class="btn-gold" style="width:100%; margin-bottom:10px; font-size:12px;" onclick="openAddAddressModal()">
+                <i class="fas fa-plus-circle"></i> إضافة عنوان جديد
+            </button>
+
+            <!-- [FIX-CUSTOMER-INFO-COLLAPSE] مفتاح الوضع الليلي/النهاري أصبح أيضاً داخل نفس البطاقة -->
+            <h4 style="color:var(--gold); font-size:12.5px; margin:12px 0 8px; font-weight:bold; text-align:center;">🎨 مظهر التطبيق (ليلي/صباحي)</h4>
+            <div class="theme-switch-wrapper" onclick="toggleTheme(document.body.classList.contains('light-mode') ? 'dark' : 'light')">
+                <span class="theme-switch-label"><i class="fas fa-moon"></i> الوضع الليلي</span>
+                <div class="ios-toggle"></div>
+            </div>
+        </div>
+
+        <!-- ===== [FIX-MAX-2-ADDRESSES] قسم العناوين المحفوظة — عنوانان كحد أقصى: أساسي وفرعي ===== -->
+
+        <div class="card" style="background: linear-gradient(45deg, #1a051a, #2d0a2d); border: 1px solid var(--gold); padding: 12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size: 13px;">رصيد نقاط الشاهين 🦅</span>
+                <b id="shahen-points" style="color:var(--gold); font-size:18px;">0</b>
+            </div>
+            <!-- [POINTS-MONEY] القيمة النقدية لنقاطك -->
+            <div id="shahen-points-money" style="font-size: 11px; margin-top:4px; color:#2ecc71; font-weight:bold; text-align:left;"></div>
+            <div id="points-config-display" style="font-size: 9px; margin-top: 4px; opacity: 0.7; color: var(--gold);"></div>
+            <!-- [SPP-CLIENT] زر الدفع عبر نقاط شاهين إكسبريس -->
+            <button onclick="sppClientOpen()" style="width:100%; margin-top:12px; padding:12px; background:linear-gradient(135deg,#d4af37,#b8962e); color:#000; border:none; border-radius:12px; font-weight:bold; font-size:13px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
+                <i class="fas fa-qrcode" style="font-size:16px;"></i> الدفع عبر نقاط شاهين إكسبريس
+            </button>
+        </div>
+
+        <!-- ===== [FEATURE-MY-FAMILY-CHATS] محادثاتي مع الأسر المنتجة ===== -->
+        <h3 style="color:var(--gold); font-size:14px; margin-top:18px; font-weight:bold;"><i class="fas fa-comments"></i> محادثاتي مع الأسر المنتجة</h3>
+        <button onclick="_openMyFamilyChatsModal()" class="card" style="width:100%; display:flex; align-items:center; justify-content:space-between; padding:14px; cursor:pointer; background:rgba(212,175,55,0.06); border:1px solid var(--gold); border-radius:12px; color:#fff; font-size:13px;">
+            <span><i class="fas fa-comments" style="color:var(--gold);"></i> عرض محادثاتي</span>
+            <span id="my-fam-chats-badge" style="display:none; background:var(--danger); color:#fff; font-size:10px; font-weight:bold; min-width:18px; height:18px; border-radius:9px; display:flex; align-items:center; justify-content:center; padding:0 5px;"></span>
+        </button>
+
+        <h3 style="color:var(--gold); font-size: 14px; margin-top: 15px; font-weight: bold; text-align: center;">🖥️ إعدادات حجم الشاشة</h3>
+        <div class="size-dropdown-wrapper">
+            <div class="size-trigger" onclick="toggleSizeDropdown()">
+                <span><i class="fas fa-expand-arrows-alt"></i> اختر حجم العرض</span>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="size-options" id="size-dropdown-menu">
+                <div class="size-option-btn" onclick="resizeAppUI('mobile')"><i class="fas fa-mobile-alt"></i> وضع الجوال (صغير)</div>
+                <div class="size-option-btn" onclick="resizeAppUI('tablet')"><i class="fas fa-tablet-alt"></i> وضع الآيباد (متوسط)</div>
+                <div class="size-option-btn" onclick="resizeAppUI('desktop')"><i class="fas fa-laptop"></i> وضع اللابتوب (كبير)</div>
+                <div class="size-option-btn" onclick="resizeAppUI('full')"><i class="fas fa-desktop"></i> شاشة كاملة (عرض حر)</div>
+            </div>
+        </div>
+
+        <h3 style="color:var(--gold); font-size: 13px; margin-top: 15px;">تواصل مع الإدارة 🦅</h3>
+        <div class="card" style="display: flex; flex-direction: row; justify-content: space-around; gap: 10px; padding: 12px;">
+            <a id="admin-whatsapp-link-1" href="https://wa.me/966546083283" target="_blank" style="text-decoration: none;">
+                <i class="fab fa-whatsapp" style="color: #25d366; font-size: 30px;"></i>
+            </a>
+            <a id="admin-facebook-link" href="#" target="_blank" style="text-decoration: none;">
+                <i class="fab fa-facebook" style="color: #1877f2; font-size: 30px;"></i>
+            </a>
+            <a id="admin-instagram-link" href="https://www.instagram.com/shahe_enexpress?igsh=MWNhYjZqam8wOHEzMg%3D%3D&utm_source=qr" target="_blank" style="text-decoration: none;">
+                <i class="fab fa-instagram" style="color: #e4405f; font-size: 30px;"></i>
+            </a>
+            <!-- ===== FIX-TG-CLIENT-2: تم حذف أيقونة تيليجرام من واجهة العميل ===== -->
+        </div>
+        <!-- ===== زر قناة واتساب المناديب/العملاء (يظهر فقط إذا أعدّته الإدارة) ===== -->
+        <div id="admin-whatsapp-channel-wrap" style="display:none; margin-bottom:8px;">
+            <a id="admin-whatsapp-channel-link" href="#" target="_blank" rel="noopener noreferrer"
+               style="display:flex; align-items:center; justify-content:center; gap:8px; background:linear-gradient(135deg,#075e54,#25d366); color:#fff; padding:10px; border-radius:12px; text-decoration:none; font-size:12px; font-weight:bold;">
+                <i class="fab fa-whatsapp" style="font-size:16px;"></i> قناة واتساب الشاهين 📢
+            </a>
+        </div>
+        <!-- ===== نهاية زر قناة واتساب ===== -->
+        
+        <h3 style="color:var(--gold); font-size: 13px; margin-top: 8px;">تحديد موقعي الدقيق 📍</h3>
+        <div id="profile-map-view" style="width: 100%; height: 160px; border-radius: 12px; border: 2px solid var(--gold); margin-bottom: 12px;" onclick="openFullMap('profile')"></div>
+        
+        <div style="display:flex; gap:8px; margin-bottom: 12px;">
+            <button class="btn-gold" style="flex:1; font-size: 11px; background: rgba(212,175,55,0.1); border:1px solid var(--gold); color:var(--gold); padding: 10px;" onclick="openFullMap('profile')">فتح الخريطة والبحث 📡</button>
+            <button class="btn-gold" style="flex:1; font-size: 11px; padding: 10px;" onclick="saveMapSelection()">تحديث العنوان والبيانات ✅</button>
+        </div>
+        
+        <button class="btn-gold" style="background:#e74c3c; color:white; margin-top:auto; font-size: 12px;" onclick="logout()">تسجيل خروج من طلبات الشاهين</button>
+        <!-- ===== زر قناة التليجرام للمندوبين — تم حذفه من واجهة العميل ===== -->
+    </div>
+
+    <!-- ===== شاشة دردشة الطلب المخصص (بنفسجي) ===== -->
+    <div id="specialty-chat-screen">
+        <!-- الهيدر -->
+        <div class="sp-chat-header">
+            <div>
+                <div id="sp-chat-store-name" style="font-weight:bold; font-size:15px; color:#e8b4f8;">🛍️ ...</div>
+                <div id="sp-chat-order-ref" style="font-size:10px; opacity:0.6; margin-top:2px;"></div>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px;">
+                <div id="sp-chat-status-dot" style="width:8px; height:8px; border-radius:50%; background:#8e44ad; box-shadow:0 0 6px #8e44ad;"></div>
+                <button onclick="closeSpecialtyChat()" style="background:rgba(142,68,173,0.3); border:1px solid #8e44ad; color:#fff; border-radius:10px; padding:6px 12px; font-size:13px; cursor:pointer;">إغلاق ✕</button>
+            </div>
+        </div>
+
+        <!-- منطقة الرسائل -->
+        <div class="sp-chat-messages" id="sp-chat-flow"></div>
+
+        <!-- شريط الحالة -->
+        <div class="sp-status-bar" id="sp-chat-status-bar">جاري الانتظار...</div>
+
+        <!-- حقل الإدخال -->
+        <div class="sp-chat-input-area">
+            <input type="text" id="sp-chat-input" placeholder="اكتب رسالتك هنا..." onkeydown="if(event.key==='Enter') sendSpecialtyMsg()">
+            <button class="sp-btn-send" onclick="sendSpecialtyMsg()"><i class="fas fa-paper-plane"></i></button>
+        </div>
+
+        <!-- زر تأكيد الإرسال للمناديب (يظهر عند توفر مبلغ) -->
+        <div id="sp-dispatch-area" style="display:none; padding:12px 15px; background:rgba(0,0,0,0.4); border-top:1px solid rgba(142,68,173,0.3);">
+            <!-- تنبيه انتظار الفاتورة من المتجر (يظهر قبل وصول الفاتورة) -->
+            <div id="sp-waiting-invoice-notice" style="background:rgba(231,76,60,0.15); border:2px solid #e74c3c; border-radius:12px; padding:12px; text-align:center; margin-bottom:10px; display:none;">
+                <p style="color:#e74c3c; font-size:13px; font-weight:bold; margin:0;">⏳ انتظر حتى يرسل المتجر الفاتورة</p>
+            </div>
+            <div class="sp-order-card">
+                <div class="sp-card-title">💜 المبلغ المتفق عليه</div>
+                <div class="sp-card-amount" id="sp-agreed-amount">0 ل.س</div>
+            </div>
+            <button onclick="upgradeSpecialtyToDelivery()" style="width:100%; background:linear-gradient(135deg,#6c3483,#8e44ad); color:#fff; border:none; border-radius:14px; padding:14px; font-size:14px; font-weight:bold; cursor:pointer; margin-top:8px;">
+                🚀 إرسال للمناديب
+            </button>
+            <button onclick="closeSpecialtyChat()" style="width:100%; background:transparent; color:#c39bd3; border:1px solid rgba(142,68,173,0.3); border-radius:14px; padding:10px; font-size:12px; cursor:pointer; margin-top:6px;">
+                ❌ إلغاء الطلب
+            </button>
+        </div>
+    </div>
+
+    <!-- نافذة التواصل مع المحل -->
+    <div id="custom-order-modal" style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.88); z-index:20010; display:none; align-items:center; justify-content:center; padding:25px;">
+        <div style="background:var(--purple); border:2px solid var(--gold); border-radius:25px; width:100%; padding:20px; text-align:center; box-shadow:0 0 25px rgba(212,175,55,0.3);">
+            <i class="fas fa-comments fa-2x" style="color:var(--gold); margin-bottom:12px;"></i>
+            <h3 style="color:var(--gold); font-size:16px; margin:0 0 5px 0;">التواصل مع المحل</h3>
+            <p id="custom-order-store-name" style="color:#ddd; font-size:12px; margin-bottom:12px;"></p>
+            <p style="font-size:11px; color:rgba(212,175,55,0.7); margin-bottom:12px;">سيتم التواصل مع المحل مباشرة ويقوم بإعداد فاتورة لك</p>
+            <div style="display:flex; gap:10px;">
+                <button class="btn-gold" style="flex:1;" onclick="submitStoreConsult()">بدء التواصل 🦅</button>
+                <button class="btn-gold" style="flex:0.5; background:#555; color:#fff;" onclick="document.getElementById('custom-order-modal').style.display='none'">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="tab-bar" class="tab-bar">
+        <div class="tab-item active" onclick="nav('p-home', event)"><i class="fas fa-home"></i>الرئيسية</div>
+        <div class="tab-item" onclick="nav('p-cart', event)"><i class="fas fa-shopping-basket"></i><span id="badge" class="badge">0</span>السلة</div>
+        <div class="tab-item" onclick="nav('p-history', event)"><i class="fas fa-bolt"></i>طلباتي</div>
+        <div class="tab-item" onclick="nav('p-profile', event)"><i class="fas fa-user"></i>حسابي</div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+
+    <!-- [FIX-FAMILY-CHAT-OVERLAY-SCOPE] نُقلت خارج نظام الصفحات (.page) لتعمل من أي مكان بالتطبيق، بعد ما كانت تنكسر عند فتحها من صفحات غير "تفاصيل المحل" -->
+    <!-- [FEATURE-FAMILY-CHAT] شاشة الدردشة الداخلية — منفصلة تماماً عن أي نظام آخر -->
+    <div id="fam-chat-overlay" style="display:none; position:fixed; inset:0; max-width:480px; margin:0 auto; background:var(--p-dark,#0a010a); z-index:99999; flex-direction:column;">
+            <div style="padding:16px; background:rgba(255,255,255,0.05); display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(212,175,55,0.3);">
+                <div>
+                    <b id="fam-chat-title" style="color:var(--gold); font-size:14px;">دردشة</b>
+                </div>
+                <button onclick="closeFamilyChat()" style="background:none; border:none; color:#fff; font-size:20px;"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="fam-chat-messages" style="flex:1; overflow-y:auto; padding:14px; display:flex; flex-direction:column; justify-content:flex-end; gap:8px;"></div>
+            <div style="display:flex; gap:8px; padding:12px; background:rgba(255,255,255,0.05); border-top:1px solid rgba(212,175,55,0.3); align-items:flex-end;">
+                <input type="file" id="fam-chat-image-input" accept="image/*" style="display:none;" onchange="_handleFamChatImageSelected(event)">
+                <button onclick="document.getElementById('fam-chat-image-input').click()" style="width:42px; height:42px; border-radius:50%; background:rgba(212,175,55,0.15); border:1px solid var(--gold); color:var(--gold); font-size:16px; flex-shrink:0;"><i class="fas fa-image"></i></button>
+                <input type="text" id="fam-chat-input" placeholder="اكتب رسالتك..." style="flex:1; padding:10px; background:#000; border:1px solid var(--gold); border-radius:20px; color:#fff; font-size:13px;" onkeydown="if(event.key==='Enter') sendFamilyChatMessage()">
+                <button onclick="sendFamilyChatMessage()" style="width:42px; height:42px; border-radius:50%; background:var(--gold); border:none; color:#000; font-size:16px; flex-shrink:0;"><i class="fas fa-paper-plane"></i></button>
+            </div>
+            <div id="fam-chat-image-preview" style="display:none; padding:8px 12px; background:rgba(255,255,255,0.05);"></div>
+        </div>
+
+
+<!-- [CLEANUP] حُذف كود تسجيل الإشعارات المكرر من هنا — نظام Capacitor الأصلي الموجود مسبقاً
+     بالملف (يحفظ التوكن بعمود customers.fcm_token) هو الوحيد المستخدَم الآن، لتفادي أي
+     تسجيل مزدوج أو تعارض بين نظامين يحاولان تسجيل نفس الجهاز بنفس اللحظة. -->
+
+<!-- [CLEANUP] حُذف بانر الأخطاء التشخيصي بعد ما خلص دوره (لقينا وصلّحنا الأخطاء الحقيقية اللي كان يكشفها) -->
+
+</body>
+</html>
