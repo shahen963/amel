@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "616694890269",
+    "project_id": "shahinexpress-e843d",
+    "storage_bucket": "shahinexpress-e843d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:616694890269:android:0004c75123e6bb047cebf4",
+        "android_client_info": {
+          "package_name": "com.shahinexpress.customer"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBJULSIdyrtoH3Z3CagsvEbYeUM7JSq3cI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
