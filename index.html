@@ -833,6 +833,21 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
         
         /* إطار التطبيق باللون البنفسجي المطلب */
         .app-shell { width: 375px; height: 812px; max-height: 100vh; background: var(--purple); border: 2px solid rgba(212, 175, 55, 0.3); border-radius: 40px; position: relative; display: flex; flex-direction: column; overflow: hidden; z-index: 10; box-shadow: 0 20px 50px rgba(0,0,0,1); padding-top: 55px; transition: width 0.5s, height 0.5s, border-radius 0.5s; }
+        /* [FIX-IOS-PWA-SCROLL] على الشاشات الصغيرة (كل الهواتف الفعلية)، الإطار الثابت 375×812
+           يسبب قصّاً حقيقياً للمحتوى ويكسر التمرير على آيفونات أصغر (مثل SE) وخصوصاً بوضع PWA
+           المستقل (بعد الإضافة للشاشة الرئيسية)، حيث يختلف الارتفاع الفعلي المتاح عن 812px الثابت.
+           هذا التعديل يقتصر فقط على الشاشات الضيقة (الهواتف الفعلية) ولا يمس وضع المعاينة على
+           الحاسوب إطلاقاً، تفادياً لتكرار مشكلة سابقة أثّرت على كامل التخطيط. */
+        @media (max-width: 480px) {
+            .app-shell {
+                width: 100%;
+                height: 100vh;
+                height: 100dvh; /* يحسب الارتفاع الفعلي المتاح بدقة أكبر بوضع standalone على iOS */
+                max-height: 100vh;
+                max-height: 100dvh;
+                border-radius: 0;
+            }
+        }
         /* [REVERTED-BY-REQUEST] تم إلغاء تصغير الشاشة كاملة نهائياً — كان يؤثر على حجم الشاشة/التخطيط
            بالكامل بدل نص المحتوى فقط. النظام رجع لحجمه الطبيعي 100%. التصغير المطلوب الآن سيكون على
            نصوص بطاقات المطاعم/الأصناف تحديداً فقط، بدون أي تأثير على حجم الشاشة أو التخطيط العام. */
@@ -927,12 +942,12 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
         .h-tab.active { background: var(--gold); color: #000; font-weight: bold; border-color: var(--gold); }
 
         /* تنسيق شبكة المطاعم (تصغير الكروت) */
-        #res-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 2px; position: relative; min-height: 100px; }
-        .res-card { margin-bottom: 0; padding: 6px; display: flex; flex-direction: column; align-items: center; text-align: center; }
-        .res-card .flex-reverse { flex-direction: column; gap: 5px; }
-        .res-card img { margin: 0 auto; width: 65px; height: 65px; border-radius: 10px; }
-        .res-card .res-name { font-size: 9px; }
-        .res-card small { font-size: 8px; }
+        #res-list { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; padding: 2px; position: relative; min-height: 100px; }
+        .res-card { margin-bottom: 0; padding: 5px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+        .res-card .flex-reverse { flex-direction: column; gap: 4px; }
+        .res-card img { margin: 0 auto; width: 52px; height: 52px; border-radius: 9px; }
+        .res-card .res-name { font-size: 8px; line-height: 1.2; }
+        .res-card small { font-size: 7px; }
         
         /* اختيار طريقة الدفع */
         .pay-method-box { display: flex; gap: 10px; margin-top: 10px; }
@@ -1153,41 +1168,49 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
             white-space: nowrap;
             scrollbar-width: none;
             -ms-overflow-style: none;
-            padding: 10px 12px;
-            gap: 8px;
+            padding: 13px 12px;
+            gap: 10px;
             position: sticky;
             top: 0px; /* [FIX] ثابت في أعلى صفحة المنيو */
             z-index: 190;
             box-shadow: 0 6px 20px rgba(0,0,0,0.7);
             -webkit-overflow-scrolling: touch;
             will-change: transform;
+            /* [MENU-CATS-UX-POLISH] تمرير أكثر سلاسة + توقّف طبيعي عند كل قسم */
+            scroll-behavior: smooth;
+            scroll-snap-type: x proximity;
         }
         #menu-cats-bar::-webkit-scrollbar { display: none; }
 
         .menu-cat-chip {
             display: inline-flex;
             align-items: center;
-            gap: 5px;
-            padding: 8px 16px;
-            border-radius: 22px;
-            font-size: 12px;
+            gap: 8px;
+            padding: 13px 22px;
+            border-radius: 26px;
+            font-size: 15px;
             font-weight: bold;
             cursor: pointer;
-            transition: background 0.2s, color 0.2s, box-shadow 0.2s;
-            border: 1.5px solid rgba(212,175,55,0.35);
-            background: rgba(255,255,255,0.05);
-            color: #ccc;
+            transition: background 0.25s, color 0.25s, box-shadow 0.25s, transform 0.15s, border-color 0.25s;
+            border: 2px solid rgba(212,175,55,0.4);
+            background: rgba(255,255,255,0.06);
+            color: #ddd;
             white-space: nowrap;
             flex-shrink: 0;
             user-select: none;
             -webkit-tap-highlight-color: transparent;
+            /* [MENU-CATS-UX-POLISH] [MENU-CATS-ENLARGE] */
+            scroll-snap-align: start;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
         }
+        .menu-cat-chip span:first-child { font-size: 19px; }
         .menu-cat-chip.active {
-            background: var(--gold);
+            background: linear-gradient(135deg, var(--gold), #f1d98a);
             color: #000;
             border-color: var(--gold);
-            box-shadow: 0 0 12px rgba(212,175,55,0.5);
+            box-shadow: 0 0 14px rgba(212,175,55,0.55), 0 2px 8px rgba(0,0,0,0.35);
             font-weight: 900;
+            transform: translateY(-1px);
         }
         .menu-cat-chip:active { transform: scale(0.93); }
 
@@ -1409,6 +1432,11 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
     <p style="color:#888; font-size:11px; line-height:1.8;">
         بمجرد فتح التطبيق من الأيقونة المضافة، هذي الشاشة ما بتظهر مرة ثانية.
     </p>
+    <!-- [FIX-IOS-PWA-SKIP] زر تخطي — يسمح للمستخدم يكمل استخدام التطبيق من سفاري مباشرة بدون إجباره
+         على الإضافة للشاشة الرئيسية -->
+    <button onclick="_dismissIosPwaGate()" style="margin-top:6px; background:transparent; border:1px solid rgba(255,255,255,0.25); color:#ccc; border-radius:12px; padding:12px 20px; font-size:12.5px; width:100%; cursor:pointer;">
+        تخطي والمتابعة من سفاري ⏭️
+    </button>
 </div>
 <script>
     // [FEATURE-IOS-PWA-GATE] الفحص البرمجي الفعلي — نستخدم اكتشافين مستقلين مؤكدين:
@@ -1417,17 +1445,21 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
     (function() {
         var isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) && !window.MSStream;
         var isStandalone = (window.navigator.standalone === true) || window.matchMedia('(display-mode: standalone)').matches;
-        if (isIOS && !isStandalone) {
+        // [FIX-IOS-PWA-SKIP] تذكير مو حظر: لو المستخدم تخطّى قبل، ما نعيد إزعاجه
+        var _alreadySkipped = false;
+        try { _alreadySkipped = localStorage.getItem('shahen_ios_pwa_gate_skipped') === '1'; } catch(e) {}
+        if (isIOS && !isStandalone && !_alreadySkipped) {
             document.getElementById('ios-pwa-gate').style.display = 'block';
-            document.documentElement.style.overflow = 'hidden';
-            // نمنع أي محاولة وصول لبقية التطبيق حتى لو حاول كود آخر إظهاره لاحقاً
-            var _blockObserver = new MutationObserver(function() {
-                var shell = document.getElementById('main-app-shell');
-                if (shell) shell.style.display = 'none';
-            });
-            _blockObserver.observe(document.body, { childList: true, subtree: false });
+            // [FIX-IOS-PWA-SKIP] لم نعد نمنع التمرير أو نراقب/نخفي التطبيق بالقوة — الشاشة الآن
+            // مجرد تنبيه اختياري يظهر فوق التطبيق، والمستخدم حر يتخطاه فورًا لو رغب
         }
     })();
+    // [FIX-IOS-PWA-SKIP] إخفاء نهائي للشاشة + تذكّر القرار لعدم الإزعاج مرة أخرى
+    function _dismissIosPwaGate() {
+        var gate = document.getElementById('ios-pwa-gate');
+        if (gate) gate.style.display = 'none';
+        try { localStorage.setItem('shahen_ios_pwa_gate_skipped', '1'); } catch(e) {}
+    }
 </script>
 
 <!-- ════════════════════════════════════════════════════════════════════
@@ -1598,12 +1630,12 @@ setTimeout(() => {
             <i class="fas fa-times" onclick="closeSideMenu()" style="color:#ccc; font-size:16px; cursor:pointer; padding:4px;"></i>
         </div>
         <div style="flex:1; padding:10px 0;">
-            <div class="side-menu-item" onclick="switchCategory('restaurants'); closeSideMenu();"><i class="fas fa-utensils"></i> المطاعم</div>
-            <div class="side-menu-item" onclick="switchCategory('pharmacies'); closeSideMenu();"><i class="fas fa-handholding-medical"></i> الصيدليات</div>
-            <div class="side-menu-item" onclick="switchCategory('flowers'); closeSideMenu();"><i class="fas fa-seedling"></i> الورود</div>
-            <div class="side-menu-item" onclick="switchCategory('sweets'); closeSideMenu();"><i class="fas fa-cookie-bite"></i> الحلويات</div>
-            <div class="side-menu-item" onclick="switchCategory('wassayni'); closeSideMenu();"><i class="fas fa-paper-plane"></i> وصّيني 🦅</div>
-            <div class="side-menu-item" onclick="switchCategory('family'); closeSideMenu();"><i class="fas fa-home"></i> الأسر المنتجة</div>
+            <div class="side-menu-item" onclick="_navToCategory('restaurants')"><i class="fas fa-utensils"></i> المطاعم</div>
+            <div class="side-menu-item" onclick="_navToCategory('pharmacies')"><i class="fas fa-handholding-medical"></i> الصيدليات</div>
+            <div class="side-menu-item" onclick="_navToCategory('flowers')"><i class="fas fa-seedling"></i> الورود</div>
+            <div class="side-menu-item" onclick="_navToCategory('sweets')"><i class="fas fa-cookie-bite"></i> الحلويات</div>
+            <div class="side-menu-item" onclick="_navToCategory('wassayni')"><i class="fas fa-paper-plane"></i> وصّيني 🦅</div>
+            <div class="side-menu-item" onclick="_navToCategory('family')"><i class="fas fa-home"></i> الأسر المنتجة</div>
         </div>
         <div style="padding:14px 18px; border-top:1px solid rgba(212,175,55,0.25);">
             <div style="color:#888; font-size:11px; margin-bottom:10px;">التواصل مع الإدارة</div>
@@ -1680,8 +1712,11 @@ setTimeout(() => {
             </div>
             <p style="font-size:10.5px; color:#ddd; margin-bottom: 8px;">اكتب وصف حالتك وأرفق صوراً إن وُجدت (وصفة طبية، صورة الدواء، أو الحالة).</p>
 
+            <!-- [REQUIRED-CONSULT-TITLE] عنوان الاستشارة — إلزامي، يمنع الإرسال بدونه -->
+            <input id="consult-title" type="text" placeholder="عنوان الاستشارة (مثال: صداع مستمر منذ يومين) *" style="width:100%; background:#000; border:1px solid var(--gold); color:#fff; border-radius:10px; padding:8px; font-size:11px; margin-bottom:6px;">
+
             <!-- [FEATURE-CONSULT-REDESIGN] وصف المشكلة -->
-            <textarea id="consult-problem-desc" placeholder="اكتب وصف مشكلتك أو استفسارك هنا بالتفصيل..." style="width:100%; min-height:56px; background:#000; border:1px solid var(--gold); color:#fff; border-radius:10px; padding:8px; font-size:11px; margin-bottom:8px; resize:vertical;"></textarea>
+            <textarea id="consult-problem-desc" placeholder="اكتب وصف مشكلتك أو استفسارك هنا بالتفصيل... *" style="width:100%; min-height:56px; background:#000; border:1px solid var(--gold); color:#fff; border-radius:10px; padding:8px; font-size:11px; margin-bottom:8px; resize:vertical;"></textarea>
 
             <!-- [FEATURE-CONSULT-REDESIGN] إرفاق صور -->
             <label style="display:block; font-size:10px; color:var(--gold); margin-bottom:4px; text-align:right;"><i class="fas fa-camera"></i> إرفاق صور (اختياري)</label>
@@ -2243,6 +2278,8 @@ setTimeout(() => {
                 <div style="flex:1; min-width:0;">
                     <h2 id="menu-title" style="color:var(--gold); margin:0; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></h2>
                     <div id="menu-sub-info" style="font-size:10px; color:#aaa; margin-top:2px;"></div>
+                    <!-- [PREP-DELIVERY-TIME-INFO] وقت التحضير والتوصيل — خط صغير وأنيق -->
+                    <div id="menu-time-info" style="font-size:9px; color:var(--gold); margin-top:3px; display:none;"></div>
                 </div>
                 <img id="menu-logo" src="" style="width:42px; height:42px; border-radius:10px; border:1px solid var(--gold); object-fit:cover; display:none;">
             </div>
@@ -2956,7 +2993,18 @@ setTimeout(() => {
         PN.addListener('pushNotificationReceived', () => {
             if (typeof checkOrderAction === 'function' && currentOrderKey) checkOrderAction(currentOrderKey, '');
         });
-        PN.addListener('pushNotificationActionPerformed', () => {
+        PN.addListener('pushNotificationActionPerformed', (action) => {
+            // [BUGFIX-NOTIF-CLICK-WRONG-PAGE] كانت تفتح صفحة السجل العامة دائماً بغض النظر عن الإشعار
+            // — الآن نستخرج رقم الطلب من بيانات الإشعار ونفتح الطلب المحدد مباشرة، مطابقاً لما يتوقعه
+            // العميل فعلياً (نفس سلوك الضغط على إشعار الويب المُطبَّق أصلاً بـfirebase-messaging-sw.js)
+            try {
+                const _notifOrderId = action && action.notification && action.notification.data ? action.notification.data.order_id : null;
+                if (_notifOrderId && typeof checkOrderAction === 'function') {
+                    currentOrderKey = _notifOrderId;
+                    checkOrderAction(_notifOrderId, '');
+                    return;
+                }
+            } catch(e) { console.error('[BUGFIX-NOTIF-CLICK-WRONG-PAGE] خطأ أثناء فتح الطلب من الإشعار:', e); }
             if (typeof nav === 'function') nav('p-history');
         });
 
@@ -3295,11 +3343,45 @@ setTimeout(() => {
     // ───────────────────────────────────────────────────────────
     // تسجيل الدخول (بريد فقط — لا إنشاء تلقائي لأي حساب)
     // ───────────────────────────────────────────────────────────
+    // [DEV-LOGIN-BYPASS] بريد المطوّر الرسمي — يُستخدم أثناء مراجعة Google Play واختبار التطبيق فقط
+    const _DEV_BYPASS_EMAIL = 'yahya.sy723@gmail.com';
+
     async function loginSendCode() {
         if (_authSendInProgress) return;
         const email = document.getElementById('login-email-input').value.trim().toLowerCase();
         if (!email) return showNotify("يرجى إدخال البريد الإلكتروني", "error");
         if (!_emailIsValid(email)) return showNotify("صيغة البريد الإلكتروني غير صحيحة", "error");
+
+        // [DEV-LOGIN-BYPASS] تسجيل دخول مباشر بدون رمز تحقق لبريد المطوّر فقط — التحقق الفعلي
+        // من هوية البريد يتم من طرف الخادم (Edge Function) لا من هذا الكود، فلا يمكن لأي مستخدم
+        // آخر انتحال هذا الاستثناء مهما عدّل كود الواجهة
+        if (email === _DEV_BYPASS_EMAIL) {
+            const _sendBtn2 = document.getElementById('login-send-btn');
+            _authSendInProgress = true;
+            if (_sendBtn2) { _sendBtn2.disabled = true; _sendBtn2.innerText = '⏳ جاري الدخول...'; }
+            try {
+                const _res = await fetch(SB_URL + '/functions/v1/dev-login-bypass', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'apikey': SB_KEY },
+                    body: JSON.stringify({ email }),
+                });
+                const _json = await _res.json();
+                if (!_json.ok) { showNotify('تعذّر الدخول: ' + (_json.error || ''), 'error'); return; }
+                // [DEV-LOGIN-BYPASS-V2] كلمة مرور ثابتة بدل رابط سحري — أوثق وأبسط، صفر احتمال خطأ بنوع الرمز
+                const { error: _vErr } = await _supabase.auth.signInWithPassword({ email, password: _json.password });
+                if (_vErr) { showNotify('تعذّر الدخول: ' + _vErr.message, 'error'); return; }
+                showNotify('✅ تم تسجيل الدخول (حساب المطوّر)');
+                // [DEV-LOGIN-BYPASS] الجلسة الآن مخزَّنة فعلياً عبر Supabase SDK — إعادة تحميل
+                // الصفحة تكفي ليلتقطها مسار تهيئة التطبيق الاعتيادي (نفس مسار أي جلسة محفوظة)
+                setTimeout(() => location.reload(), 600);
+            } catch (_e) {
+                showNotify('حدث خطأ غير متوقع أثناء دخول المطوّر', 'error');
+            } finally {
+                _authSendInProgress = false;
+                if (_sendBtn2) { _sendBtn2.disabled = false; _sendBtn2.innerText = 'إرسال رمز الدخول 📧'; }
+            }
+            return;
+        }
 
         try {
             const { data: _banCheck } = await _supabase.from('banned_emails').select('email').eq('email', email).maybeSingle();
@@ -3417,6 +3499,8 @@ setTimeout(() => {
                 return;
             }
             currentUser = { uid: dbCust.id, name: dbCust.name, email: dbCust.email, phone: dbCust.phone, address: dbCust.address, points: dbCust.points, balance: dbCust.balance };
+            _startAccountStatusWatch(dbCust.id); // [FORCE-LOGOUT-ON-BLOCK]
+            _initNativePush(dbCust.id); // [NATIVE-PUSH-NOTIFICATIONS]
             localStorage.setItem('shahen_user', JSON.stringify(currentUser));
             _enterAppAfterLogin();
         } catch(_e) {
@@ -3430,13 +3514,87 @@ setTimeout(() => {
     // [FEATURE-PHONE-COUNTRY-VALIDATION] تحقق ذكي من رقم الهاتف حسب الدولة المختارة — يقبل كل
     // الصيغ الشائعة (بادئة 00، +، الرمز الدولي مكرراً بالرقم نفسه، أو رقم محلي عادي) ثم يطبّعها
     // لنفس الصيغة الدولية القياسية النهائية دائماً
+    // [FORCE-LOGOUT-ON-BLOCK] مراقبة لحظية لحالة حساب العميل — إذا حظرته أو حذفته الإدارة أثناء
+    // استخدامه الفعلي للتطبيق (مو بس عند فتحه من جديد)، يُسجَّل خروجه فوراً تلقائياً من كل جهاز
+    // مفتوح فيه التطبيق حاليًا، عبر الاستماع اللحظي (Realtime) لأي تغيير على صف حسابه بالذات
+    // [NATIVE-PUSH-NOTIFICATIONS] تسجيل الجهاز لاستقبال إشعارات حقيقية (يعمل فقط داخل تطبيق
+    // أندرويد الأصلي عبر Capacitor — لا يؤثر على نسخة الويب إطلاقًا، وتُستخدم نفس آلية الإرسال
+    // من الخادم (send-push) الموجودة أصلاً وتدعم push_tokens_v2 بالفعل)
+    async function _initNativePush(uid) {
+        try {
+            if (!uid) return;
+            if (!window.Capacitor || !window.Capacitor.isNativePlatform || !window.Capacitor.isNativePlatform()) return;
+            const { PushNotifications } = window.Capacitor.Plugins;
+            if (!PushNotifications) return;
+
+            let perm = await PushNotifications.checkPermissions();
+            if (perm.receive !== 'granted') {
+                perm = await PushNotifications.requestPermissions();
+            }
+            if (perm.receive !== 'granted') return;
+
+            await PushNotifications.register();
+
+            PushNotifications.addListener('registration', async (token) => {
+                try {
+                    await _supabase.from('push_tokens_v2').upsert(
+                        { user_id: String(uid), token: token.value, platform: 'android', app: 'customer', updated_at: new Date().toISOString() },
+                        { onConflict: 'token' }
+                    );
+                } catch (e) {}
+            });
+
+            PushNotifications.addListener('registrationError', (err) => {
+                console.log('Push registration error:', err);
+            });
+
+            // عند الضغط على الإشعار والتطبيق مغلق/بالخلفية — نفتح الطلب المعني مباشرة إن وُجد
+            PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
+                try {
+                    const orderId = action.notification?.data?.order_id;
+                    if (orderId) {
+                        localStorage.setItem('shahen_active_order_id', orderId);
+                        currentOrderKey = orderId;
+                        if (typeof nav === 'function') nav('p-home');
+                    }
+                } catch (e) {}
+            });
+        } catch (e) { /* لا نكسر تسجيل الدخول لو فشل تسجيل الإشعارات لأي سبب */ }
+    }
+
+    let _acctWatchChannel = null;
+    function _startAccountStatusWatch(uid) {
+        if (!uid) return;
+        if (_acctWatchChannel && _acctWatchChannel._watchedUid === uid) return;
+        if (_acctWatchChannel) { try { _supabase.removeChannel(_acctWatchChannel); } catch(e) {} }
+        _acctWatchChannel = _supabase.channel('acct-watch-' + uid)
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'customers', filter: `id=eq.${uid}` }, (payload) => {
+                if (payload.new && payload.new.account_status === 'blocked') _forceLogoutBlocked(false);
+            })
+            .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'customers', filter: `id=eq.${uid}` }, () => {
+                _forceLogoutBlocked(true);
+            })
+            .subscribe();
+        _acctWatchChannel._watchedUid = uid;
+    }
+    async function _forceLogoutBlocked(deleted) {
+        try { await _supabase.auth.signOut(); } catch(e) {}
+        try { if (_acctWatchChannel) { _supabase.removeChannel(_acctWatchChannel); _acctWatchChannel = null; } } catch(e) {}
+        localStorage.removeItem('shahen_user');
+        localStorage.removeItem('shahen_active_order_id');
+        alert(deleted ? '⛔ تم حذف حسابك من قبل الإدارة.' : '⛔ تم حظر حسابك من قبل الإدارة.');
+        location.reload();
+    }
+
+    // [PHONE-PREFIX-VALIDATION] بالإضافة لعدد الأرقام، نتحقق من بداية الرقم المحلي الحقيقية
+    // لكل دولة (بعد إزالة الصفر البادئ) — يمنع أرقاماً بعدد أرقام صحيح لكن بداية غير موجودة أصلاً
     const _PHONE_RULES = {
-        '963': { minLen: 9, maxLen: 9, name: 'سوريا' },   // 9XXXXXXXX
-        '966': { minLen: 9, maxLen: 9, name: 'السعودية' }, // 5XXXXXXXX
-        '971': { minLen: 9, maxLen: 9, name: 'الإمارات' }, // 5XXXXXXXX
-        '49':  { minLen: 10, maxLen: 11, name: 'ألمانيا' }, // 1XXXXXXXXX(X)
-        '61':  { minLen: 9, maxLen: 9, name: 'أستراليا' },  // 4XXXXXXXX
-        '90':  { minLen: 10, maxLen: 10, name: 'تركيا' },   // 5XXXXXXXXX
+        '963': { minLen: 9, maxLen: 9, name: 'سوريا',    prefixPattern: /^9[345689]/ }, // 09X: 093,094,095,096,098,099
+        '966': { minLen: 9, maxLen: 9, name: 'السعودية', prefixPattern: /^5[03456789]/ }, // 05X: 050,053,054,055,056,057,058,059
+        '971': { minLen: 9, maxLen: 9, name: 'الإمارات', prefixPattern: /^5[024568]/ }, // 05X: 050,052,054,055,056,058
+        '49':  { minLen: 10, maxLen: 11, name: 'ألمانيا', prefixPattern: /^1[567]/ },   // 015X / 016X / 017X
+        '61':  { minLen: 9, maxLen: 9, name: 'أستراليا', prefixPattern: /^4/ },         // 04X
+        '90':  { minLen: 10, maxLen: 10, name: 'تركيا',  prefixPattern: /^5/ },         // 05X
     };
     function _normalizePhoneForCountry(rawInput, countryCode) {
         if (!rawInput) return { valid: false, message: 'رقم الجوال مطلوب' };
@@ -3452,6 +3610,10 @@ setTimeout(() => {
         if (!rule) return { valid: false, message: 'دولة غير مدعومة' };
         if (digits.length < rule.minLen || digits.length > rule.maxLen) {
             return { valid: false, message: `رقم الجوال غير مطابق لصيغة ${rule.name} — تأكد من عدد الأرقام` };
+        }
+        // [PHONE-PREFIX-VALIDATION] عدد الأرقام صحيح، لكن لازم كمان تبدأ ببادئة محلية حقيقية موجودة فعلاً بهذي الدولة
+        if (rule.prefixPattern && !rule.prefixPattern.test(digits)) {
+            return { valid: false, message: `رقم الجوال لا يبدأ ببادئة صحيحة لـ${rule.name} — تأكد من الرقم` };
         }
         return { valid: true, local: digits, full: '+' + countryCode + digits };
     }
@@ -3590,6 +3752,8 @@ setTimeout(() => {
             }
             document.getElementById('register-otp-status-msg').innerText = '✅ تم تفعيل حسابك بنجاح';
             currentUser = { uid: data.user.id, name: p.name, email: p.email || data.user.email, phone: p.phone, address: p.address, points: 0, balance: 0 };
+            _startAccountStatusWatch(data.user.id); // [FORCE-LOGOUT-ON-BLOCK]
+            _initNativePush(data.user.id); // [NATIVE-PUSH-NOTIFICATIONS]
             localStorage.setItem('shahen_user', JSON.stringify(currentUser));
             showNotify("🎉 تم إنشاء حسابك وتفعيله بنجاح");
             _enterAppAfterLogin();
@@ -3681,6 +3845,8 @@ setTimeout(() => {
             } else {
                 // مستخدم موجود — حدّث currentUser بالبيانات الكاملة من DB
                 currentUser = { uid: dbCust.id, name: dbCust.name, email: dbCust.email, phone: dbCust.phone, address: dbCust.address, points: dbCust.points, balance: dbCust.balance };
+            _startAccountStatusWatch(dbCust.id); // [FORCE-LOGOUT-ON-BLOCK]
+            _initNativePush(dbCust.id); // [NATIVE-PUSH-NOTIFICATIONS]
                 localStorage.setItem('shahen_user', JSON.stringify(currentUser));
                 // تحديث الواجهة بالبيانات الحقيقية من DB
                 document.getElementById('my-name').innerText = currentUser.name || "--";
@@ -3760,6 +3926,7 @@ setTimeout(() => {
 
         const { data: config } = await _supabase.from('app_config').select('*').eq('id', 1).single();
         if(config) {
+            window._appTimeFormat = config.time_format || '12'; // [WORK-HOURS-FORMAT] '12' أو '24'
             pointsConfig = { 
                 pointsPerOrder: config.points_per_order, 
                 moneyPerPoint: config.money_per_point,
@@ -4471,6 +4638,19 @@ setTimeout(() => {
     let _resFilterFeatured = false;
     let _resFilterOpen = false;
 
+    // [WORK-HOURS-FORMAT] يحوّل وقتاً بصيغة "HH:MM" (24 ساعة كما مخزَّن بقاعدة البيانات) لعرضه
+    // بصيغة 12 ساعة (ص/م) أو يبقيه 24 ساعة، حسب إعداد window._appTimeFormat ('12' افتراضياً)
+    function _fmtWorkHour(t) {
+        if (!t) return '';
+        const m = String(t).match(/^(\d{1,2}):(\d{2})/);
+        if (!m) return t;
+        const h24 = parseInt(m[1], 10), min = m[2];
+        if ((window._appTimeFormat || '12') === '24') return `${String(h24).padStart(2,'0')}:${min}`;
+        const period = h24 >= 12 ? 'م' : 'ص';
+        let h12 = h24 % 12; if (h12 === 0) h12 = 12;
+        return `${h12}:${min} ${period}`;
+    }
+
     function _isResOpenNow(r) {
         if (!r.open_time || !r.close_time) return true; // لا نعرف أوقات العمل — نعتبره متاحاً افتراضياً
         try {
@@ -4628,7 +4808,7 @@ setTimeout(() => {
                     <img src="${r.logo||'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect width=%22100%22 height=%22100%22 fill=%22%232a1a2e%22/%3E%3Ctext x=%2250%22 y=%2258%22 font-size=%2240%22 text-anchor=%22middle%22%3E%F0%9F%8D%BD%EF%B8%8F%3C/text%3E%3C/svg%3E'}" style="border-radius:8px;border:1px solid var(--gold);object-fit:cover;width:52px;height:52px;" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect width=%22100%22 height=%22100%22 fill=%22%232a1a2e%22/%3E%3Ctext x=%2250%22 y=%2258%22 font-size=%2240%22 text-anchor=%22middle%22%3E%F0%9F%8D%BD%EF%B8%8F%3C/text%3E%3C/svg%3E'">
                     <div style="flex:1;text-align:right;margin-right:8px;">
                         <b class="res-name" style="font-size:11px;">${escHtml(r.name)}</b>
-                        <br><small style="font-size:9px;">${window._deliveryPricingMode === 'distance' ? '🚗 حسب المسافة' : fmtSYP(r.delivery_fee||0,{inline:true,size:9})} • ${r.open_time||''}</small>
+                        <br><small style="font-size:9px;">${window._deliveryPricingMode === 'distance' ? '🚗 حسب المسافة' : fmtSYP(r.delivery_fee||0,{inline:true,size:9})} • ${_fmtWorkHour(r.open_time)}</small>
                     </div>
                 </div>
                 ${_featuredBadge}
@@ -4638,6 +4818,16 @@ setTimeout(() => {
     // ============================================================
     // نهاية نظام الكاش الموحّد
     // ============================================================
+
+    // [BUGFIX-SIDEMENU-NAV] إصلاح جذري: عناصر القائمة الجانبية كانت تستدعي switchCategory مباشرة،
+    // وهذي الدالة تبدّل فقط بين تبويبات داخل صفحة الرئيسية (p-home) نفسها — لو المستخدم بصفحة
+    // تانية (حسابي/السلة/الطلبات) ما كان يصير أي تنقّل فعلي لأن p-home أصلاً مو الصفحة الظاهرة.
+    // الحل: ننتقل لصفحة الرئيسية أولاً عبر nav()، ثم نبدّل القسم المطلوب فوراً بعدها
+    function _navToCategory(cat) {
+        closeSideMenu();
+        nav('p-home');
+        switchCategory(cat);
+    }
 
     function switchCategory(cat) {
         // [FIX-PERF-CHAT-LEAK] تنظيف احتياطي لأي قناة دردشة لحظية عالقة لو غادر العميل الصفحة
@@ -4889,7 +5079,7 @@ setTimeout(() => {
 
         const hoursEl = document.getElementById('fam-detail-hours');
         hoursEl.innerHTML = (biz.open_time || biz.close_time)
-            ? `<i class="fas fa-clock" style="color:var(--gold);"></i> ${escHtml(biz.open_time||'')}${biz.close_time?(' - '+escHtml(biz.close_time)):''}`
+            ? `<i class="fas fa-clock" style="color:var(--gold);"></i> ${escHtml(_fmtWorkHour(biz.open_time))}${biz.close_time?(' - '+escHtml(_fmtWorkHour(biz.close_time))):''}`
             : '';
         const addrEl = document.getElementById('fam-detail-address');
         addrEl.innerHTML = biz.address ? `<i class="fas fa-map-marker-alt" style="color:var(--gold);"></i> ${escHtml(biz.address)}` : '';
@@ -5984,6 +6174,8 @@ setTimeout(() => {
         _consultType = 'voice';
         const descEl = document.getElementById('consult-problem-desc');
         if (descEl) descEl.value = '';
+        const titleEl = document.getElementById('consult-title'); // [REQUIRED-CONSULT-TITLE]
+        if (titleEl) titleEl.value = '';
         _renderConsultImagesPreview();
         selectConsultType('voice');
     }
@@ -6012,6 +6204,13 @@ setTimeout(() => {
                 return;
             }
         } catch(e) { /* لا نمنع الاستشارة لو فشل الفحص نفسه لأي سبب تقني */ }
+        // [REQUIRED-CONSULT-TITLE] يمنع إنشاء أي استشارة (صوتية أو كتابية) بدون عنوان ووصف كاملين
+        const _consultTitleVal = (document.getElementById('consult-title')?.value || '').trim();
+        const _consultDescVal = (document.getElementById('consult-problem-desc')?.value || '').trim();
+        if (!_consultTitleVal || !_consultDescVal) {
+            showNotify('⚠️ يرجى تعبئة عنوان الاستشارة ووصفها قبل الإرسال', 'error');
+            return;
+        }
         // [SEC-FIX-ADDRESS-REQUIRED-ALL-PATHS] استشارة الصيدلية تنتهي بتوصيل الدواء — تتطلب عنواناً
         if (!(await _verifyCustomerAddressLive(true))) return;
         
@@ -6080,6 +6279,7 @@ setTimeout(() => {
             is_consultation: true,
             // [FEATURE-CONSULT-REDESIGN] وصف المشكلة + الصور + نوع الاستشارة — يقرأها الصيدلي
             // بدل نظام الدردشة القديم الملغى بالكامل
+            consultation_title: _consultTitleVal, // [REQUIRED-CONSULT-TITLE]
             problem_description: document.getElementById('consult-problem-desc') ? document.getElementById('consult-problem-desc').value.trim() : null,
             attached_images: _consultImages.length > 0 ? JSON.stringify(_consultImages) : null,
             consultation_type: _consultType
@@ -6157,9 +6357,18 @@ setTimeout(() => {
         document.getElementById('menu-title').innerText = res.name || 'قائمة المنيو';
         document.getElementById('menu-sub-info').innerHTML = `
             <span>${window._deliveryPricingMode === 'distance' ? '🚗 سعر التوصيل يُحسَب حسب المسافة' : fmtSYP(res.delivery_fee||0,{inline:true,size:11}) + ' توصيل'}</span>
-            ${res.open_time ? ' | ' + res.open_time + ' - ' + (res.close_time || '') : ''}
+            ${res.open_time ? ' | ' + _fmtWorkHour(res.open_time) + ' - ' + _fmtWorkHour(res.close_time || '') : ''}
             ${res.maps_url ? ' | <a href="' + res.maps_url + '" target="_blank" style="color:#4285F4;text-decoration:none;"><i class="fas fa-map-marker-alt"></i> الموقع</a>' : ''}
         `;
+        // [PREP-DELIVERY-TIME-INFO] وقت التحضير والتوصيل — بخط صغير وأنيق أسفل معلومات المطعم مباشرة
+        const _timeInfoEl = document.getElementById('menu-time-info');
+        if (_timeInfoEl) {
+            const _parts = [];
+            if (res.prep_time) _parts.push(`<i class="fas fa-utensils"></i> التحضير: ~${escHtml(String(res.prep_time))} د`);
+            if (res.delivery_time_estimate) _parts.push(`<i class="fas fa-motorcycle"></i> التوصيل: ${escHtml(res.delivery_time_estimate)}`);
+            _timeInfoEl.innerHTML = _parts.length ? _parts.join(' &nbsp;•&nbsp; ') : '';
+            _timeInfoEl.style.display = _parts.length ? 'block' : 'none';
+        }
         const logoEl = document.getElementById('menu-logo');
         if(res.logo) { logoEl.src = res.logo; logoEl.style.display = 'block'; logoEl.onerror = () => logoEl.style.display = 'none'; }
         else logoEl.style.display = 'none';
@@ -6378,7 +6587,10 @@ setTimeout(() => {
                         <div class="menu-qty-stepper" id="qty-stepper-${_itemKey.replace(/[^a-zA-Z0-9]/g,'_')}" style="display:flex; align-items:center; gap:6px;">
                             <button class="add-btn" style="display:none;" onclick="decrementMenuItemQty('${escJsAttr(_currentMenuRes?.id)}','${escJsAttr(item.n)}',${item.p || 0})">−</button>
                             <span class="menu-qty-count" style="display:none; min-width:16px; text-align:center; font-weight:bold; color:var(--gold); font-size:13px;">0</span>
-                            <button class="add-btn" onclick="${item.extras ? `_showExtrasConfirmPopup('${escJsAttr(_currentMenuRes?.id)}','${escJsAttr(item.n)}',${item.p || 0},'${escJsAttr(item.extras)}')` : `addToCart('${escJsAttr(_currentMenuRes?.id)}','${escJsAttr(item.n)}',${item.p || 0})`}">+</button>
+                            <div style="display:flex; flex-direction:column; align-items:center; gap:2px;">
+                                <button class="add-btn" onclick="${(item.optionGroups && item.optionGroups.length) ? `_showOptionGroupsPopup('${escJsAttr(_currentMenuRes?.id)}', ${(_currentMenuRes.restaurant_menu||[]).indexOf(item)})` : (item.extras ? `_showExtrasConfirmPopup('${escJsAttr(_currentMenuRes?.id)}','${escJsAttr(item.n)}',${item.p || 0},'${escJsAttr(item.extras)}')` : `addToCart('${escJsAttr(_currentMenuRes?.id)}','${escJsAttr(item.n)}',${item.p || 0})`)}">+</button>
+                                ${(item.optionGroups && item.optionGroups.length) ? '<span style="color:#e74c3c; font-size:8px; font-weight:bold; white-space:nowrap;">تخصيص</span>' : (item.extras ? '<span style="color:#e74c3c; font-size:8px; font-weight:bold; white-space:nowrap;">تخصيص</span>' : '')}
+                            </div>
                         </div>
                     `;
                     block.appendChild(card);
@@ -6870,7 +7082,150 @@ setTimeout(() => {
     // [FEATURE-MENU-ITEM-CUSTOMIZATION] نافذة صغيرة تعرض خيارات التخصيص/الإضافات المسجَّلة من
     // المطعم أو الإدارة لهذا الصنف تحديداً — تحلّل النص لخيارات مفردة قابلة للاختيار (لو كانت
     // مفصولة بفواصل)، وتضيف الصنف للسلة مع ملاحظة توضّح اختيار العميل بالضبط
+    // ============================================================================
+    // [OPTION-GROUPS] نظام تخصيصات متعدد المجموعات (نوع الخبز، الحجم، الشطة، الإضافات...)
+    // كل مجموعة تظهر كسطر مستقل بفاصل بينها وبين التالية، تماماً كتصميم تطبيقات التوصيل المعروفة
+    // ============================================================================
+    let _currentOptionGroupsItem = null;
+    let _currentOptionGroupsResId = null;
+    let _optionGroupsSelections = {}; // { groupId: 'optionName' | ['optionName1','optionName2'] }
+
+    function _showOptionGroupsPopup(resId, itemIndex) {
+        const item = (_currentMenuRes.restaurant_menu || [])[itemIndex];
+        if (!item || !item.optionGroups || !item.optionGroups.length) return;
+        _currentOptionGroupsItem = item;
+        _currentOptionGroupsResId = resId;
+        _optionGroupsSelections = {};
+        // تحديد الاختيار الافتراضي لأول خيار بكل مجموعة إجبارية أحادية الاختيار (تسهيلاً على العميل)
+        item.optionGroups.forEach(g => {
+            if (g.required && !g.multiSelect && g.options && g.options.length) {
+                _optionGroupsSelections[g.id] = g.options[0].name;
+            } else if (g.multiSelect) {
+                _optionGroupsSelections[g.id] = [];
+            }
+        });
+
+        let modal = document.getElementById('option-groups-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'option-groups-modal';
+            modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:999600; display:flex; align-items:flex-end; justify-content:center;';
+            document.body.appendChild(modal);
+        }
+        modal.innerHTML = `
+            <div style="background:var(--purple); border-radius:22px 22px 0 0; width:100%; max-width:420px; max-height:88vh; display:flex; flex-direction:column; box-shadow:0 -8px 30px rgba(0,0,0,0.6);">
+                <div style="display:flex; align-items:center; justify-content:space-between; padding:16px 18px 10px;">
+                    <h3 style="color:var(--gold); font-size:16px; margin:0;">التخصيصات</h3>
+                    <button onclick="_closeOptionGroupsModal()" style="background:none; border:none; color:#aaa; font-size:20px; cursor:pointer; line-height:1;">✕</button>
+                </div>
+                <div style="border-bottom:1px solid rgba(212,175,55,0.2); margin-bottom:4px;"></div>
+                <div id="option-groups-body" style="overflow-y:auto; padding:4px 18px 14px; flex:1;"></div>
+                <div style="padding:12px 18px; border-top:1px solid rgba(212,175,55,0.2);">
+                    <button id="option-groups-confirm-btn" onclick="_confirmOptionGroupsAndAdd()" style="width:100%; background:var(--gold); color:#000; border:none; border-radius:12px; padding:14px; font-size:14px; font-weight:bold; cursor:pointer;">المتابعة</button>
+                </div>
+            </div>`;
+        _renderOptionGroupsBody();
+    }
+
+    function _closeOptionGroupsModal() {
+        const modal = document.getElementById('option-groups-modal');
+        if (modal) modal.remove();
+        _currentOptionGroupsItem = null;
+    }
+
+    function _renderOptionGroupsBody() {
+        const body = document.getElementById('option-groups-body');
+        if (!body || !_currentOptionGroupsItem) return;
+        const groups = _currentOptionGroupsItem.optionGroups || [];
+        body.innerHTML = groups.map((g, gi) => {
+            const optionsHtml = (g.options || []).map((opt, oi) => {
+                const inputType = g.multiSelect ? 'checkbox' : 'radio';
+                const isChecked = g.multiSelect
+                    ? (_optionGroupsSelections[g.id] || []).includes(opt.name)
+                    : _optionGroupsSelections[g.id] === opt.name;
+                return `
+                    <label style="display:flex; align-items:center; justify-content:space-between; padding:12px 2px; cursor:pointer; border-bottom:1px solid rgba(255,255,255,0.06);">
+                        <span style="font-size:13px; color:#eee;">${escHtml(opt.name)}${opt.price ? ` <span style="color:var(--gold); font-size:11px;">(+${Number(opt.price).toLocaleString()})</span>` : ''}</span>
+                        <input type="${inputType}" name="opt-group-${g.id}" ${isChecked ? 'checked' : ''}
+                            onchange="_onOptionGroupChange('${escJsAttr(g.id)}','${escJsAttr(opt.name)}',${g.multiSelect ? 'true' : 'false'},this.checked)"
+                            style="width:19px; height:19px; accent-color:#2ecc71; cursor:pointer;">
+                    </label>`;
+            }).join('');
+
+            return `
+                <div style="padding-top:14px;">
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                        <button type="button" style="background:transparent; border:1px solid rgba(212,175,55,0.4); color:var(--gold); border-radius:8px; padding:6px 12px; font-size:12px; cursor:default;">${escHtml(g.name)}</button>
+                        ${g.required ? '<span style="color:#e74c3c; font-size:10px; font-weight:bold;">إجباري</span>' : '<span style="color:#888; font-size:10px;">اختياري</span>'}
+                    </div>
+                    <div>${optionsHtml}</div>
+                </div>
+                ${gi < groups.length - 1 ? '<div style="border-bottom:1px solid rgba(212,175,55,0.15); margin:6px 0;"></div>' : ''}
+            `;
+        }).join('');
+    }
+
+    function _onOptionGroupChange(groupId, optionName, isMulti, checked) {
+        if (isMulti) {
+            if (!Array.isArray(_optionGroupsSelections[groupId])) _optionGroupsSelections[groupId] = [];
+            if (checked) {
+                if (!_optionGroupsSelections[groupId].includes(optionName)) _optionGroupsSelections[groupId].push(optionName);
+            } else {
+                _optionGroupsSelections[groupId] = _optionGroupsSelections[groupId].filter(n => n !== optionName);
+            }
+        } else {
+            _optionGroupsSelections[groupId] = optionName;
+        }
+    }
+
+    function _confirmOptionGroupsAndAdd() {
+        const item = _currentOptionGroupsItem;
+        if (!item) return;
+        const groups = item.optionGroups || [];
+
+        // [VALIDATION] لازم كل مجموعة إجبارية تكون فيها اختيار واحد على الأقل قبل المتابعة
+        for (const g of groups) {
+            if (!g.required) continue;
+            const sel = _optionGroupsSelections[g.id];
+            const hasSelection = g.multiSelect ? (Array.isArray(sel) && sel.length > 0) : !!sel;
+            if (!hasSelection) {
+                showNotify(`⚠️ يرجى اختيار "${g.name}" — هذي المجموعة إجبارية`, 'error');
+                return;
+            }
+        }
+
+        // حساب السعر النهائي وبناء وصف الاختيارات
+        let finalPrice = Number(item.p) || 0;
+        const chosenParts = [];
+        groups.forEach(g => {
+            const sel = _optionGroupsSelections[g.id];
+            if (g.multiSelect) {
+                (sel || []).forEach(name => {
+                    const opt = g.options.find(o => o.name === name);
+                    if (opt) { finalPrice += Number(opt.price) || 0; chosenParts.push(opt.name); }
+                });
+            } else if (sel) {
+                const opt = g.options.find(o => o.name === sel);
+                if (opt) { finalPrice += Number(opt.price) || 0; chosenParts.push(opt.name); }
+            }
+        });
+
+        const finalName = chosenParts.length ? `${item.n} (${chosenParts.join('، ')})` : item.n;
+        addToCart(_currentOptionGroupsResId, finalName, finalPrice);
+        _closeOptionGroupsModal();
+    }
+
     function _showExtrasConfirmPopup(resId, name, price, extrasText) {
+        // [SIZE-PRICE-VARIANTS] تحقق أولاً: هل extrasText يصف خيارات أحجام/أنواع منفصلة، كل خيار
+        // بسعر مختلف (مفصولة بـ "/" وبصيغة "اسم رقم")؟ إن نعم، نعرضها كاختيار وحيد (Radio) مع
+        // تحديث السعر تلقائياً حسب الخيار، ونسجّل الخيار المُختار باسم الصنف بالفاتورة مباشرة.
+        // إن لم تكن بهذي الصيغة (مثلاً إضافات عادية مفصولة بفاصلة)، نستخدم السلوك القديم كما هو.
+        const priceVariants = _parsePriceVariants(extrasText);
+        if (priceVariants) {
+            _showPriceVariantsPopup(resId, name, priceVariants);
+            return;
+        }
+
         const options = extrasText.split(/[،,]/).map(s => s.trim()).filter(Boolean);
         let modal = document.getElementById('extras-confirm-modal');
         if (!modal) {
@@ -6897,6 +7252,80 @@ setTimeout(() => {
                     <button onclick="_confirmExtrasAndAdd('${escJsAttr(resId)}','${escJsAttr(name)}',${price})" class="btn-gold" style="flex:2; padding:10px; font-size:12px;">إضافة للسلة ✅</button>
                 </div>
             </div>`;
+    }
+
+    // [SIZE-PRICE-VARIANTS] يحلّل نص "extras" ليكتشف خيارات أحجام/أسعار منفصلة، كل خيار بصيغة
+    // "اسم رقم" مفصولة بـ "/" (مثال: "عادي 160 / دبل 190 / صومن 250"). يُرجع مصفوفة الخيارات
+    // إن كانت كل الأجزاء مطابقة للصيغة، وإلا يُرجع null (فيُستخدم السلوك القديم للإضافات العادية).
+    function _parsePriceVariants(text) {
+        if (!text) return null;
+        const parts = text.split('/').map(s => s.trim()).filter(Boolean);
+        if (parts.length < 2) return null;
+        const variants = [];
+        for (const part of parts) {
+            const m = part.match(/^(.+?)\s+([\d,]+)\s*(?:ل\.?\s*س)?$/);
+            if (!m) return null;
+            const label = m[1].trim();
+            const priceNum = parseFloat(m[2].replace(/,/g, ''));
+            if (!label || isNaN(priceNum) || priceNum <= 0) return null;
+            variants.push({ label, price: priceNum });
+        }
+        return variants;
+    }
+
+    let _currentPriceVariants = null;
+    let _currentPriceVariantResId = null;
+    let _currentPriceVariantName = null;
+
+    // [SIZE-PRICE-VARIANTS] نافذة اختيار وحيد (Radio) بين خيارات الحجم/النوع، مع تحديث السعر
+    // المعروض تلقائياً حسب الخيار المختار
+    function _showPriceVariantsPopup(resId, name, variants) {
+        _currentPriceVariants = variants;
+        _currentPriceVariantResId = resId;
+        _currentPriceVariantName = name;
+
+        let modal = document.getElementById('extras-confirm-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'extras-confirm-modal';
+            modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:999500; display:flex; align-items:center; justify-content:center; padding:20px;';
+            document.body.appendChild(modal);
+        }
+
+        const optionsHtml = variants.map((v, i) => `
+            <label style="display:flex; align-items:center; justify-content:space-between; gap:8px; background:rgba(255,255,255,0.05); padding:10px 12px; border-radius:10px; margin-bottom:6px; cursor:pointer; font-size:12px;">
+                <span style="display:flex; align-items:center; gap:8px;">
+                    <input type="radio" name="price-variant-radio" class="price-variant-radio" value="${i}" ${i === 0 ? 'checked' : ''} style="width:16px; height:16px;">
+                    ${escHtml(v.label)}
+                </span>
+                <b style="color:var(--gold);">${fmtSYP(v.price, {inline:true, size:12})}</b>
+            </label>`).join('');
+
+        modal.innerHTML = `
+            <div style="background:var(--purple); border:1px solid var(--gold); border-radius:18px; padding:20px; width:100%; max-width:340px; max-height:80vh; overflow-y:auto;">
+                <h3 style="color:var(--gold); font-size:14px; margin:0 0 4px;"><i class="fas fa-sliders"></i> اختر الحجم/النوع</h3>
+                <p style="font-size:11px; color:#aaa; margin:0 0 12px;">${escHtml(name)}</p>
+                <div id="extras-opts-container">${optionsHtml}</div>
+                <div style="display:flex; gap:8px; margin-top:16px;">
+                    <button onclick="document.getElementById('extras-confirm-modal').remove()" style="flex:1; background:rgba(255,255,255,0.08); color:#ccc; border:none; border-radius:10px; padding:10px; font-size:12px;">إلغاء</button>
+                    <button onclick="_confirmPriceVariantAndAdd()" class="btn-gold" style="flex:2; padding:10px; font-size:12px;">إضافة للسلة ✅</button>
+                </div>
+            </div>`;
+    }
+
+    // [SIZE-PRICE-VARIANTS] تأكيد الخيار المختار: يضيف للسلة باسم "الصنف - الخيار" وبسعر الخيار
+    // المحدد بالضبط (وليس السعر الأساسي)، فيظهر بشكل صحيح بالسلة والفاتورة وشاشة المندوب تلقائياً
+    function _confirmPriceVariantAndAdd() {
+        if (!_currentPriceVariants) return;
+        const selectedIdx = parseInt(document.querySelector('#extras-confirm-modal .price-variant-radio:checked')?.value ?? 0, 10);
+        const variant = _currentPriceVariants[selectedIdx];
+        const finalName = _currentPriceVariantName + ' - ' + variant.label;
+        addToCart(_currentPriceVariantResId, finalName, variant.price);
+        const modal = document.getElementById('extras-confirm-modal');
+        if (modal) modal.remove();
+        _currentPriceVariants = null;
+        _currentPriceVariantResId = null;
+        _currentPriceVariantName = null;
     }
 
     function _confirmExtrasAndAdd(resId, name, price) {
@@ -9057,15 +9486,62 @@ setTimeout(() => {
                 return;
             }
         } catch(e) { console.error('[BUGFIX-CANCEL-NO-STATUS-CHECK] خطأ أثناء التحقق من حالة الطلب قبل الإلغاء:', e); }
-        // [FIX-RECORDS-1] طلب سبب الإلغاء (اختياري) ليظهر في سجلات الإدارة
-        let _cancelReason = null;
-        try { _cancelReason = prompt('سبب الإلغاء (اختياري) — اتركه فارغاً للتخطي:'); } catch(e) {}
+        // [BUGFIX-CANCEL-PROMPT-UI] كانت تستخدم prompt() من المتصفح (شكل غير متسق وغير احترافي بين
+        // المتصفحات)، والأخطر: كانت تُتابع الإلغاء دائماً بغض النظر عن رد العميل الفعلي بالنافذة
+        // (حتى لو ضغط "إلغاء" بنافذة المتصفح نفسها، الطلب كان يُلغى بأي حال!). الآن نفتح نافذة
+        // داخلية بالتطبيق، ونطلب سبباً إجبارياً طالما تم تعيين مندوب فعلياً للطلب، ولا نُلغي الطلب
+        // إطلاقاً إلا بعد تأكيد صريح من العميل داخل هذي النافذة
+        _openCustomerCancelReasonModal(freshOrder && freshOrder.driver_id);
+    }
+
+    // [BUGFIX-CANCEL-PROMPT-UI] نافذة داخلية لسبب الإلغاء — سبب إجباري لو فيه مندوب معيَّن فعلياً
+    function _openCustomerCancelReasonModal(hasDriverAssigned) {
+        const existing = document.getElementById('customer-cancel-reason-modal');
+        if (existing) existing.remove();
+        const modal = document.createElement('div');
+        modal.id = 'customer-cancel-reason-modal';
+        modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:35000;display:flex;align-items:center;justify-content:center;padding:20px;';
+        const _mandatoryNote = hasDriverAssigned
+            ? '<p style="font-size:11.5px;color:#e74c3c;margin-bottom:10px;">⚠️ يجب كتابة سبب الإلغاء — تم تعيين مندوب لطلبك بالفعل</p>'
+            : '<p style="font-size:11px;color:#ccc;margin-bottom:10px;">اذكر السبب (اختياري)</p>';
+        modal.innerHTML = `
+            <div style="background:var(--purple);border:2px solid #e74c3c;border-radius:20px;padding:20px;width:100%;max-width:360px;text-align:center;">
+                <i class="fas fa-times-circle" style="font-size:30px;color:#e74c3c;margin-bottom:10px;"></i>
+                <h3 style="color:#e74c3c;margin:0 0 8px;font-size:14px;">إلغاء الطلب</h3>
+                ${_mandatoryNote}
+                <textarea id="customer-cancel-reason-input" placeholder="اكتب سبب الإلغاء هنا..." style="width:100%;background:#000;color:#fff;border:1px solid #e74c3c;border-radius:10px;padding:10px;height:75px;resize:none;font-size:12px;font-family:inherit;margin-bottom:8px;box-sizing:border-box;"></textarea>
+                <p style="font-size:9.5px;color:#888;margin-bottom:12px;">💡 ملاحظة: الإلغاء بدون سبب واضح قد يؤثر سلباً على تقييم وأرباح المندوب اللي كان بالطريق لطلبك</p>
+                <div style="display:flex;gap:8px;">
+                    <button class="btn-gold" style="background:#e74c3c;color:#fff;flex:1;" onclick="_confirmCustomerCancelWithReason(${hasDriverAssigned ? 'true' : 'false'})"><i class="fas fa-times"></i> تأكيد الإلغاء</button>
+                    <button class="btn-gold" style="background:#555;color:#fff;flex:1;" onclick="document.getElementById('customer-cancel-reason-modal').remove()"><i class="fas fa-arrow-right"></i> تراجع</button>
+                </div>
+            </div>`;
+        document.body.appendChild(modal);
+    }
+
+    // [BUGFIX-CANCEL-PROMPT-UI] الإلغاء الفعلي — يصير فقط بعد ضغط صريح على "تأكيد الإلغاء" داخل
+    // النافذة، وليس بشكل تلقائي بغض النظر عن رد المستخدم كما كان بالسابق
+    async function _confirmCustomerCancelWithReason(hasDriverAssigned) {
+        const input = document.getElementById('customer-cancel-reason-input');
+        const reason = input ? input.value.trim() : '';
+        if (hasDriverAssigned && !reason) {
+            showNotify('⚠️ يرجى كتابة سبب الإلغاء — مطلوب لأن مندوباً تم تعيينه لطلبك', 'error');
+            return;
+        }
+        const btn = document.querySelector('#customer-cancel-reason-modal .btn-gold');
+        if (btn) { btn.disabled = true; btn.innerText = 'جاري الإلغاء...'; }
         const _updatePayload = { status: 'cancelled' };
-        if (_cancelReason && _cancelReason.trim()) _updatePayload.cancel_reason = _cancelReason.trim();
-        await _supabase.from('orders').update(_updatePayload).eq('id', currentOrderKey);
-        // [FIX-RECORDS-1b] لا نحذف السجل من sh_public_orders بعد الآن — فقط نحدّث حالته
-        // (المناديب يفلترون بالحالة لرؤية الطلبات الجديدة، فلا تأثير وظيفي، لكن السجل يبقى محفوظاً للأرشيف)
-        await _supabase.from('sh_public_orders').update(_updatePayload).eq('id', currentOrderKey);
+        if (reason) _updatePayload.cancel_reason = reason;
+        try {
+            await _supabase.from('sh_public_orders').update(_updatePayload).eq('id', currentOrderKey);
+        } catch(e) { console.error('[BUGFIX-CANCEL-PROMPT-UI] خطأ أثناء تحديث حالة الإلغاء:', e); }
+        const modal = document.getElementById('customer-cancel-reason-modal');
+        if (modal) modal.remove();
+        await _finishCustomerCancelOrder();
+    }
+
+    // [BUGFIX-CANCEL-PROMPT-UI] استكمال باقي خطوات الإلغاء (تنظيف الحالة المحلية والانتقال للسجل)
+    async function _finishCustomerCancelOrder() {
         let orders = getStorage('orders');
         orders = orders.map(o => String(o.id) === String(currentOrderKey) ? {...o, status: 'cancelled'} : o);
         setStorage('orders', orders);
@@ -9655,6 +10131,17 @@ setTimeout(() => {
         // جلب الحالة الحقيقية من السيرفر عند الضغط على الطلب
         const { data: serverOrder } = await _supabase.from('sh_public_orders').select('*').eq('id', id).single();
 
+        // [BUGFIX-ORDER-NUMBER-DISAPPEARS] السبب الجذري المؤكَّد: تحديث رقم الطلب كان موضوعاً بفرع
+        // "بعد تعيين مندوب" فقط — أثناء انتظار تعيين مندوب (حتى لو المطعم قبل الطلب فعلاً)، الكود
+        // كان يرجع مبكراً (return) قبل الوصول لسطر التحديث، فيبقى الرقم فاضياً بهذي الفترة بالذات.
+        // الحل: ننقل التحديث هنا، أول شي بالدالة، بمعزل عن أي فرع شرطي لاحق — يشتغل دائماً 100%
+        try {
+            const _orderNumBadge = document.getElementById('persistent-order-number-badge');
+            if (_orderNumBadge && serverOrder && serverOrder.id) {
+                _orderNumBadge.innerText = 'طلب #' + String(serverOrder.id).slice(-6).toUpperCase();
+            }
+        } catch(_orderNumErr) { console.error('[BUGFIX-ORDER-NUMBER-DISAPPEARS] خطأ:', _orderNumErr); }
+
         // [FIX-EARLIEST-TRACK-BTN] تحديث زر التتبع هنا فوراً، أول شيء بعد جلب الطلب، بمعزل تام (try/catch
         // خاص به) عن أي كود لاحق قد يرمي استثناءً صامتاً ويوقف باقي الدالة قبل الوصول لتحديث الزر
         try {
@@ -10169,54 +10656,102 @@ setTimeout(() => {
 
     function setStars(s) { currentRating = s; document.querySelectorAll('#main-rating-stars i').forEach((st, i) => st.className = i < s ? 'fas fa-star star-active' : 'fas fa-star'); }
 
-    function submitMandatoryRating() {
+    let _ratingSubmitPending = false; // [BUGFIX-RATING-DUPLICATE] يمنع الضغط المتكرر/المزدوج على زر التقييم
+    async function submitMandatoryRating() {
         if(currentRating === 0) return showNotify("التقييم إجباري", "error");
-        // نحفظ ID الطلب قبل تصفيره لأن updateOrderStatus يحتاجه
+        // [BUGFIX-RATING-DUPLICATE] منع أي محاولة إرسال ثانية أثناء معالجة الأولى
+        if (_ratingSubmitPending) return;
+        _ratingSubmitPending = true;
+        const _rateBtnEl = document.getElementById('final-rate-btn');
+        if (_rateBtnEl) { _rateBtnEl.disabled = true; _rateBtnEl.innerText = '⏳ جاري الحفظ...'; }
+
         const _completedOrderId = currentOrderKey;
-        // تحديث الحالة للطلب المكتمل في السجل المحلي وفي قاعدة البيانات
-        if (_completedOrderId) {
-            // تحديث السجل المحلي مباشرة بدون الانتظار
+        if (!_completedOrderId) { _ratingSubmitPending = false; if(_rateBtnEl){_rateBtnEl.disabled=false;} return; }
+
+        try {
+            // [BUGFIX-RATING-DUPLICATE] تحقق مباشر من القاعدة: هل هذا الطلب مُقيَّم فعلاً؟ يمنع
+            // تكرار التقييم حتى لو انفتحت نافذة التقييم مرتين لنفس الطلب بالخطأ
+            const { data: _existingOrder } = await _supabase.from('sh_public_orders').select('customer_rating, driver_id').eq('id', _completedOrderId).maybeSingle();
+            if (_existingOrder && _existingOrder.customer_rating) {
+                showNotify('تم تقييم هذا الطلب مسبقاً ✅');
+                _closeRatingOverlayAndReset(_completedOrderId);
+                return;
+            }
+            const _ratedDriverId = _existingOrder ? _existingOrder.driver_id : null;
+            const _ratingCommentVal = (document.getElementById('rating-comment')?.value || '').trim();
+
+            // [BUGFIX-RATING-WRONG-TABLE] كانت تُحدِّث جدول 'orders' غير الصحيح — الجدول الفعلي
+            // المستخدم بكل النظام هو sh_public_orders. هذا كان يمنع تحديث الحالة والتقييم فعلياً
+            // بمصدر الحقيقة الحقيقي، ويشرح "التأخير الظاهري" (الحفظ الفعلي ما كان يصير أصلاً بالمكان
+            // الصحيح، فيبدو للمستخدم إن التقييم "ضاع" أو تأخر عند أي محاولة تحقق لاحقة)
+            // [BUGFIX-RATING-NO-AWAIT] الأهم: كل هذي التحديثات صارت await حقيقي الآن — الواجهة ما
+            // تُغلَق ولا تظهر رسالة النجاح إلا بعد التأكد الفعلي من نجاح الحفظ بالقاعدة
+            const { error: _statusErr } = await _supabase.from('sh_public_orders').update({
+                status: 'completed',
+                customer_rating: currentRating,
+                customer_rating_comment: _ratingCommentVal || null
+            }).eq('id', _completedOrderId);
+
+            if (_statusErr) {
+                showNotify('⚠️ تعذّر حفظ التقييم، حاول مجدداً', 'error');
+                _ratingSubmitPending = false;
+                if (_rateBtnEl) { _rateBtnEl.disabled = false; _rateBtnEl.innerText = 'تأكيد التقييم وإنهاء الرحلة'; }
+                return;
+            }
+
+            // تحديث السجل المحلي بعد تأكد نجاح الحفظ بالقاعدة
             let orders = getStorage('orders');
-            let _ratedDriverId = null;
             orders = orders.map(o => {
                 if(String(o.id) === String(_completedOrderId)) {
-                    _ratedDriverId = o.driver_id;
                     if(currentUser) {
                         currentUser.points = (currentUser.points - (o.points_spent || 0)) + (o.points_earned || 0);
                         localStorage.setItem('shahen_user', JSON.stringify(currentUser));
                     }
-                    return {...o, status: 'completed'};
+                    return {...o, status: 'completed', customer_rating: currentRating};
                 }
                 return o;
             });
             setStorage('orders', orders);
-            // تحديث قاعدة البيانات بشكل غير متزامن
-            _supabase.from('orders').update({ status: 'completed' }).eq('id', _completedOrderId).then();
-            // ===== حفظ التقييم في قاعدة البيانات =====
+
+            // حفظ التقييم بجدول driver_ratings + تحديث متوسط تقييم المندوب (نفس المنطق، awaited الآن)
             if (_ratedDriverId && currentRating > 0) {
-                // حفظ التقييم في جدول driver_ratings
-                _supabase.from('driver_ratings').insert({
+                const { error: _ratingInsertErr } = await _supabase.from('driver_ratings').insert({
                     driver_id: _ratedDriverId,
                     order_id: _completedOrderId,
                     rating: currentRating,
                     customer_id: currentUser ? currentUser.uid : null
-                }).then(async () => {
-                    // تحديث متوسط التقييم في جدول drivers
-                    const { data: allRatings } = await _supabase.from('driver_ratings').select('rating').eq('driver_id', _ratedDriverId);
-                    if (allRatings && allRatings.length > 0) {
-                        const avgRating = allRatings.reduce((s, r) => s + Number(r.rating), 0) / allRatings.length;
-                        await _supabase.from('drivers').update({
-                            avg_rating: Math.round(avgRating * 10) / 10,
-                            rating_count: allRatings.length
-                        }).eq('id', _ratedDriverId);
-                    }
                 });
-                // حفظ التقييم في الطلب نفسه + التعليق النصي (كان موجوداً بالواجهة فقط بدون حفظ فعلي)
-                const _ratingCommentVal = (document.getElementById('rating-comment')?.value || '').trim();
-                _supabase.from('sh_public_orders').update({ customer_rating: currentRating, customer_rating_comment: _ratingCommentVal || null }).eq('id', _completedOrderId).then();
+                // [FEATURE-RATING-ONE-TIME] لو فشل الإدخال بسبب القيد الفريد (تسابق نادر جداً)، هذا
+                // يعني تقييم آخر سبق ونجح لنفس الطلب — نتجاهل الخطأ بهدوء (مو خطأ حقيقي، النتيجة
+                // المطلوبة أصلاً محقَّقة) ونكمل باقي الإغلاق بشكل طبيعي بدل إظهار رسالة فشل مربكة
+                if (_ratingInsertErr && _ratingInsertErr.code !== '23505') {
+                    console.error('[BUGFIX-RATING-WRONG-TABLE] خطأ أثناء إدخال التقييم بجدول driver_ratings:', _ratingInsertErr);
+                }
+                const { data: allRatings } = await _supabase.from('driver_ratings').select('rating').eq('driver_id', _ratedDriverId);
+                if (allRatings && allRatings.length > 0) {
+                    const avgRating = allRatings.reduce((s, r) => s + Number(r.rating), 0) / allRatings.length;
+                    await _supabase.from('drivers').update({
+                        avg_rating: Math.round(avgRating * 10) / 10,
+                        rating_count: allRatings.length
+                    }).eq('id', _ratedDriverId);
+                }
             }
+
+            // [FEATURE-RATING-ONE-TIME] بعد نجاح الحفظ المؤكَّد فقط، نظهر رسالة النجاح ونُغلق نهائياً
+            showNotify("شكراً لتقييمك يا شاهين 🦅 ✅");
+            _closeRatingOverlayAndReset(_completedOrderId);
+        } catch(e) {
+            console.error('[BUGFIX-RATING-WRONG-TABLE] خطأ أثناء حفظ التقييم:', e);
+            showNotify('⚠️ حدث خطأ أثناء حفظ التقييم، حاول مجدداً', 'error');
+            _ratingSubmitPending = false;
+            if (_rateBtnEl) { _rateBtnEl.disabled = false; _rateBtnEl.innerText = 'تأكيد التقييم وإنهاء الرحلة'; }
         }
-        cart = []; currentResId = null; try{localStorage.removeItem('shahen_saved_cart');}catch(e){} 
+    }
+
+    // [FEATURE-RATING-ONE-TIME] إغلاق نهائي لنافذة التقييم وتصفير الحالة — يُستدعى فقط بعد تأكد
+    // الحفظ الفعلي (أو لو كان الطلب مُقيَّماً مسبقاً)، لا يمكن فتح نفس نافذة التقييم لنفس الطلب بعدها
+    function _closeRatingOverlayAndReset(orderId) {
+        cart = []; currentResId = null; try{localStorage.removeItem('shahen_saved_cart');}catch(e){}
         document.getElementById('badge').innerText = 0;
         document.getElementById('badge').style.display = 'none';
         localStorage.removeItem('shahen_active_order_id');
@@ -10228,7 +10763,10 @@ setTimeout(() => {
         currentOrderKey = null;
         document.getElementById('rating-overlay').style.display = 'none';
         const _rc = document.getElementById('rating-comment'); if (_rc) _rc.value = '';
-        showNotify("شكراً لتقييمك يا شاهين 🦅");
+        currentRating = 0;
+        _ratingSubmitPending = false;
+        const _rateBtnEl2 = document.getElementById('final-rate-btn');
+        if (_rateBtnEl2) { _rateBtnEl2.disabled = false; _rateBtnEl2.innerText = 'تأكيد التقييم وإنهاء الرحلة'; }
         _historyTab = 'completed';
         historyTab = 'past';
         nav('p-history');
@@ -10681,6 +11219,12 @@ setTimeout(() => {
             created_at: new Date().toISOString(),
             lat: _locEnabled ? dropoffLoc.lat : ((userLoc && userLoc.lat) ? userLoc.lat : ((currentUser && currentUser.lat) || 0)),
             lng: _locEnabled ? dropoffLoc.lng : ((userLoc && userLoc.lng) ? userLoc.lng : ((currentUser && currentUser.lng) || 0)),
+            // [BUGFIX-WASSAYNI-NO-PICKUP-SAVED] السبب الجذري لمشكلة "يظهر موقع العميل فقط عند
+            // المندوب" — موقع الاستلام (pickupLoc) اللي يحدّده العميل بعناية كان يُهمَل بالكامل ولا
+            // يُحفظ بالقاعدة إطلاقاً! يستخدم تطبيق المندوب عمودي pickup_lat/pickup_lng لتحديد نقطة
+            // الاستلام (نفس الأعمدة المستخدمة لموقع المطاعم) — نحفظهم الآن فعلياً لطلبات وصّيني
+            pickup_lat: _locEnabled ? pickupLoc.lat : 0,
+            pickup_lng: _locEnabled ? pickupLoc.lng : 0,
             order_details: _fullTask
         };
         
@@ -10942,6 +11486,8 @@ setTimeout(() => {
                     return;
                 }
                 currentUser = { uid: dbCust.id, name: dbCust.name, email: dbCust.email, phone: dbCust.phone, address: dbCust.address, points: dbCust.points || 0, balance: dbCust.balance || 0 };
+                _startAccountStatusWatch(dbCust.id); // [FORCE-LOGOUT-ON-BLOCK]
+                _initNativePush(dbCust.id); // [NATIVE-PUSH-NOTIFICATIONS]
 
                 // ===== تحديث الواجهة فوراً بدون refresh =====
                 localStorage.setItem('shahen_user', JSON.stringify(currentUser));
