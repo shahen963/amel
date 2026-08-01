@@ -945,7 +945,7 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
         #res-list { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; padding: 2px; position: relative; min-height: 100px; }
         .res-card { margin-bottom: 0; padding: 5px; display: flex; flex-direction: column; align-items: center; text-align: center; }
         .res-card .flex-reverse { flex-direction: column; gap: 4px; }
-        .res-card img { margin: 0 auto; width: 52px; height: 52px; border-radius: 9px; }
+        .res-card img { margin: 0 auto; width: 68px; height: 68px; border-radius: 10px; }
         .res-card .res-name { font-size: 8px; line-height: 1.2; }
         .res-card small { font-size: 7px; }
         
@@ -1498,6 +1498,10 @@ function _restoreSavedCart() {
 }
 setTimeout(() => {
     try {
+        // [FIX-CART-REMINDER-LOGIN-CHECK] كان يظهر حتى قبل تسجيل الدخول (بمجرد وجود سلة محفوظة
+        // بالمتصفح) — نتحقق الآن من وجود جلسة دخول فعلية أولاً عبر نفس المفتاح المستخدم بكل التطبيق
+        const isLoggedIn = !!localStorage.getItem('shahen_user');
+        if (!isLoggedIn) return;
         const saved = JSON.parse(localStorage.getItem('shahen_saved_cart') || 'null');
         if (saved && saved.cart && saved.cart.length > 0 && (Date.now() - (saved.savedAt || 0)) < 48 * 60 * 60 * 1000) {
             const banner = document.getElementById('cart-reminder-banner');
@@ -2884,7 +2888,7 @@ setTimeout(() => {
     //  [CURRENCY-SYS] نظام دعم العملة السورية (قديمة/جديدة)
     //  مطابق تماماً لنفس النظام في لوحة الإدارة وتطبيق المندوب
     // ════════════════════════════════════════════════════
-    window._currSettings = { mode:'both', newColor:'#22c55e', oldColor:'#ef4444' };
+    window._currSettings = { mode:'both', newColor:'#22c55e', oldColor:'#ef4444', isEnabled:true };
     window._loadCurrencySettings = async function(){
         try{
             const r = await fetch(SB_URL+'/rest/v1/app_currency_settings?select=*&id=eq.1&limit=1', {
@@ -2897,20 +2901,28 @@ setTimeout(() => {
                 window._currSettings = {
                     mode: row.display_mode || 'both',
                     newColor: row.new_color || '#22c55e',
-                    oldColor: row.old_color || '#ef4444'
+                    oldColor: row.old_color || '#ef4444',
+                    // [FIX-CURRENCY-TOGGLE] العمود "is_enabled" كان موجوداً بقاعدة البيانات لكن التطبيق
+                    // ما كان يقرأه إطلاقاً — هذا سبب استمرار عرض العملتين حتى بعد إيقاف النظام من الإدارة
+                    isEnabled: row.is_enabled !== false,
                 };
             }
         }catch(e){ /* استخدام الإعدادات الافتراضية بصمت لو فشل الجلب */ }
     };
     window.fmtSYP = function(oldAmount, opts){
         opts = opts || {};
-        const s = window._currSettings || {mode:'both',newColor:'#22c55e',oldColor:'#ef4444'};
+        const s = window._currSettings || {mode:'both',newColor:'#22c55e',oldColor:'#ef4444',isEnabled:true};
         const oldVal = Math.round(parseFloat(oldAmount)||0);
         const newVal = Math.round(oldVal/100);
         const oldStr = oldVal.toLocaleString('en-US') + ' ل.س';
         const newStr = newVal.toLocaleString('en-US') + ' ل.س';
         const sizeStyle = opts.size ? `font-size:${opts.size}px;` : '';
         const sep = opts.inline ? ' &nbsp; ' : '<br>';
+        // [FIX-CURRENCY-TOGGLE] عند إيقاف النظام بالكامل من الإدارة: نعرض الرقم كما هو بقاعدة
+        // البيانات فقط، بدون أي تلوين أو عملة ثانية — نفس الرقم لجميع المستخدمين بدون استثناء
+        if (s.isEnabled === false) {
+            return `<span style="${sizeStyle}">${oldStr}</span>`;
+        }
         let html = '';
         // [UX-FIX-CURRENCY-EMPHASIS] الأخضر (العملة الجديدة) دائماً هو البارز بالحجم الكامل المطلوب،
         // والأحمر (العملة القديمة) دائماً أصغر وثانوي — بغض النظر عن وضع inline، بناءً على طلب المستخدم
@@ -4805,10 +4817,10 @@ setTimeout(() => {
                 ${_featuredStar}
                 ${_closedBadge}
                 <div class="flex-reverse">
-                    <img src="${r.logo||'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect width=%22100%22 height=%22100%22 fill=%22%232a1a2e%22/%3E%3Ctext x=%2250%22 y=%2258%22 font-size=%2240%22 text-anchor=%22middle%22%3E%F0%9F%8D%BD%EF%B8%8F%3C/text%3E%3C/svg%3E'}" style="border-radius:8px;border:1px solid var(--gold);object-fit:cover;width:52px;height:52px;" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect width=%22100%22 height=%22100%22 fill=%22%232a1a2e%22/%3E%3Ctext x=%2250%22 y=%2258%22 font-size=%2240%22 text-anchor=%22middle%22%3E%F0%9F%8D%BD%EF%B8%8F%3C/text%3E%3C/svg%3E'">
+                    <img src="${r.logo||'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect width=%22100%22 height=%22100%22 fill=%22%232a1a2e%22/%3E%3Ctext x=%2250%22 y=%2258%22 font-size=%2240%22 text-anchor=%22middle%22%3E%F0%9F%8D%BD%EF%B8%8F%3C/text%3E%3C/svg%3E'}" style="border-radius:10px;border:1px solid var(--gold);object-fit:cover;width:68px;height:68px;" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect width=%22100%22 height=%22100%22 fill=%22%232a1a2e%22/%3E%3Ctext x=%2250%22 y=%2258%22 font-size=%2240%22 text-anchor=%22middle%22%3E%F0%9F%8D%BD%EF%B8%8F%3C/text%3E%3C/svg%3E'">
                     <div style="flex:1;text-align:right;margin-right:8px;">
                         <b class="res-name" style="font-size:11px;">${escHtml(r.name)}</b>
-                        <br><small style="font-size:9px;">${window._deliveryPricingMode === 'distance' ? '🚗 حسب المسافة' : fmtSYP(r.delivery_fee||0,{inline:true,size:9})} • ${_fmtWorkHour(r.open_time)}</small>
+                        <br><small style="font-size:9px;"><i class="fas fa-motorcycle"></i> ${r.delivery_time_estimate ? escHtml(r.delivery_time_estimate) : _fmtWorkHour(r.open_time)}</small>
                     </div>
                 </div>
                 ${_featuredBadge}
@@ -5778,7 +5790,7 @@ setTimeout(() => {
                 fullMap.setView([loc.lat, loc.lng], 17);
                 fullMapMarker.setLatLng(loc);
                 reverseGeocode(loc);
-            }, () => showNotify("فشل جلب الموقع", "error"), { enableHighAccuracy: true });
+            }, () => showNotify("فشل جلب الموقع، تأكد من تفعيل GPS وحاول مجدداً", "error"), { enableHighAccuracy: true, timeout: 10000, maximumAge: 15000 });
         }
     }
 
@@ -5851,7 +5863,7 @@ setTimeout(() => {
             if(markerDropoff) mapDropoff.removeLayer(markerDropoff);
             markerDropoff = L.marker(loc).addTo(mapDropoff);
           }
-        });
+        }, () => showNotify("فشل جلب الموقع، تأكد من تفعيل GPS وحاول مجدداً", "error"), { enableHighAccuracy: true, timeout: 10000, maximumAge: 15000 });
       }
     }
 
@@ -6569,9 +6581,20 @@ setTimeout(() => {
                     const extrasHtml = item.extras
                         ? `<div class="item-extras"><i class="fas fa-plus-circle"></i> ${escHtml(item.extras)}</div>`
                         : '';
+                    // [SHAHEEN-OFFERS] لو الصنف مفعّل عليه "عرض شاهين"، نستخدم سعر العرض كسعر فعلي
+                    // للبيع، ونعرض السعر الأصلي مشطوباً بجانبه + شارة مميزة
+                    const _isOffer = item.offer_active === true && item.offer_price > 0;
+                    const _effectivePrice = _isOffer ? item.offer_price : (item.p || 0);
+                    const priceHtml = _isOffer
+                        ? `<div class="item-price" style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                             <span style="background:linear-gradient(135deg,#9b59b6,#c39bd3); color:#fff; font-size:8px; font-weight:bold; padding:2px 7px; border-radius:8px;">🏷️ عرض شاهين</span>
+                             <span style="text-decoration:line-through; color:#888; font-size:10px;">${(item.p||0).toLocaleString()} ل.س</span>
+                             ${fmtSYP(_effectivePrice,{inline:true,size:12})}
+                           </div>`
+                        : `<div class="item-price">${fmtSYP(item.p||0,{inline:true,size:12})}</div>`;
                     // [FIX-MENU-QTY-STEPPER] معرّف فريد للصنف (اسم+سعر) لربط شريط الكمية بهذا العنصر
                     // تحديداً، حتى لو كان هناك أصناف بنفس الاسم من أقسام مختلفة
-                    const _itemKey = (item.n + '|' + (item.p||0)).replace(/'/g, "\\'");
+                    const _itemKey = (item.n + '|' + (_effectivePrice||0)).replace(/'/g, "\\'");
                     card.setAttribute('data-item-key', _itemKey);
                     // [SEC-FIX-MENU-XSS] escHtml على اسم/وصف الصنف قبل إدراجه في innerHTML، وعلى القيمة
                     // المستخدمة داخل سمات onclick — اسم الصنف يأتي من بيانات المطعم (بما فيها مطاعم شريكة
@@ -6582,13 +6605,13 @@ setTimeout(() => {
                             <div class="item-name">${escHtml(item.n)}</div>
                             ${item.desc ? '<div class="item-desc">' + escHtml(item.desc) + '</div>' : ''}
                             ${extrasHtml}
-                            <div class="item-price">${fmtSYP(item.p||0,{inline:true,size:12})}</div>
+                            ${priceHtml}
                         </div>
                         <div class="menu-qty-stepper" id="qty-stepper-${_itemKey.replace(/[^a-zA-Z0-9]/g,'_')}" style="display:flex; align-items:center; gap:6px;">
-                            <button class="add-btn" style="display:none;" onclick="decrementMenuItemQty('${escJsAttr(_currentMenuRes?.id)}','${escJsAttr(item.n)}',${item.p || 0})">−</button>
+                            <button class="add-btn" style="display:none;" onclick="decrementMenuItemQty('${escJsAttr(_currentMenuRes?.id)}','${escJsAttr(item.n)}',${_effectivePrice || 0})">−</button>
                             <span class="menu-qty-count" style="display:none; min-width:16px; text-align:center; font-weight:bold; color:var(--gold); font-size:13px;">0</span>
                             <div style="display:flex; flex-direction:column; align-items:center; gap:2px;">
-                                <button class="add-btn" onclick="${(item.optionGroups && item.optionGroups.length) ? `_showOptionGroupsPopup('${escJsAttr(_currentMenuRes?.id)}', ${(_currentMenuRes.restaurant_menu||[]).indexOf(item)})` : (item.extras ? `_showExtrasConfirmPopup('${escJsAttr(_currentMenuRes?.id)}','${escJsAttr(item.n)}',${item.p || 0},'${escJsAttr(item.extras)}')` : `addToCart('${escJsAttr(_currentMenuRes?.id)}','${escJsAttr(item.n)}',${item.p || 0})`)}">+</button>
+                                <button class="add-btn" onclick="${(item.optionGroups && item.optionGroups.length) ? `_showOptionGroupsPopup('${escJsAttr(_currentMenuRes?.id)}', ${(_currentMenuRes.restaurant_menu||[]).indexOf(item)})` : (item.extras ? `_showExtrasConfirmPopup('${escJsAttr(_currentMenuRes?.id)}','${escJsAttr(item.n)}',${_effectivePrice || 0},'${escJsAttr(item.extras)}')` : `addToCart('${escJsAttr(_currentMenuRes?.id)}','${escJsAttr(item.n)}',${_effectivePrice || 0},null,${_isOffer})`)}">+</button>
                                 ${(item.optionGroups && item.optionGroups.length) ? '<span style="color:#e74c3c; font-size:8px; font-weight:bold; white-space:nowrap;">تخصيص</span>' : (item.extras ? '<span style="color:#e74c3c; font-size:8px; font-weight:bold; white-space:nowrap;">تخصيص</span>' : '')}
                             </div>
                         </div>
@@ -7341,7 +7364,7 @@ setTimeout(() => {
         if (modal) modal.remove();
     }
 
-    function addToCart(rid, n, p, img) {
+    function addToCart(rid, n, p, img, isOffer) {
         if(currentResId && currentResId !== rid) {
             // [SWITCH-RES-DIALOG] بدلاً من منع الإضافة، نعرض Dialog احترافي
             _pendingSwitchRid = rid;
@@ -7359,7 +7382,9 @@ setTimeout(() => {
         if (_existingItem) {
             _existingItem.qty = (_existingItem.qty || 1) + 1;
         } else {
-            cart.push({n, p, qty: 1});
+            // [SHAHEEN-OFFERS] نعلّم الصنف كـ"عرض شاهين" وقت الإضافة إن كان مفعّلاً — هذي العلامة
+            // تنتقل مع الطلب النهائي وتُستخدم من الخادم لحساب ربح المطعم الصحيح لهذا الصنف تحديداً
+            cart.push({n, p, qty: 1, ...(isOffer ? {is_offer: true} : {})});
         }
         document.getElementById('badge').innerText = cart.reduce((sum, it) => sum + (it.qty || 1), 0);
         document.getElementById('badge').style.display = 'block';
@@ -7776,7 +7801,9 @@ setTimeout(() => {
         let _initialOrderStatus = (_serviceType === 'pickup') ? 'pickup_pending' : 'searching';
 
         // [FIX-CART-3] تنظيف cart من أي حقول إضافية قبل إرسالها لقاعدة البيانات
-        const _cleanCart = cart.map(i => ({n: i.n, p: i.p}));
+        // [SHAHEEN-OFFERS] نحافظ على علامة "عرض شاهين" (is_offer) عند وجودها — الخادم يعتمد عليها
+        // لحساب نسبة ربح المطعم الصحيحة لهذا الصنف تحديداً وقت اكتمال الطلب
+        const _cleanCart = cart.map(i => ({n: i.n, p: i.p, ...(i.is_offer ? {is_offer: true} : {})}));
         // [PICKUP-SAFE] نحتفظ بـ _isPickupOrder قبل أي reset محتمل
         const _isPickupOrder = _serviceType === 'pickup';
         // [FIX-DRIVER-RACE] service_type (وadmin_sent_to_restaurant لطلبات الاستلام) يجب أن تكون جزءاً
@@ -10890,7 +10917,7 @@ setTimeout(() => {
             const { latitude, longitude } = pos.coords;
             _addressPickerCoords = { lat: latitude, lng: longitude };
             if (_addressPickerMap) _addressPickerMap.setView([latitude, longitude], 16);
-        }, () => showNotify('تعذّر جلب موقعك الحالي', 'error'), { enableHighAccuracy: true });
+        }, () => showNotify('تعذّر جلب موقعك الحالي، تأكد من تفعيل GPS وحاول مجدداً', 'error'), { enableHighAccuracy: true, timeout: 10000, maximumAge: 15000 });
     }
 
     async function saveNewAddress() {
@@ -11062,7 +11089,7 @@ setTimeout(() => {
                     if(mapMarker) profileMap.removeLayer(mapMarker);
                     mapMarker = L.marker([userLoc.lat, userLoc.lng]).addTo(profileMap);
                 }
-            }, () => showNotify("فشل جلب الموقع", "error"), { enableHighAccuracy: true });
+            }, () => showNotify("فشل جلب الموقع، تأكد من تفعيل GPS وحاول مجدداً", "error"), { enableHighAccuracy: true, timeout: 10000, maximumAge: 15000 });
         }
     }
 
