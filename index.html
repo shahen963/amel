@@ -15345,6 +15345,59 @@ if (typeof window.siteNotify !== 'function') window.siteNotify = function (m, t)
   };
 })();
 
+/* إشعار «تم تحديث التطبيق» — يظهر مرة واحدة فقط لكل عميل (لكل إصدار إشعار) بعد دخوله للتطبيق.
+   الحفظ محلياً على الجهاز (بدون أي تغيير بقاعدة البيانات). لإظهاره مجدداً بتحديث مستقبلي غيّر NOTICE_ID. */
+(function () {
+  var NOTICE_ID = 'v1.2.6';
+  var shown = false, tries = 0;
+  function seenKey(uid) { return 'sh_upd_notice_' + NOTICE_ID + '_' + uid; }
+  function wasSeen(uid) { try { return localStorage.getItem(seenKey(uid)) === '1'; } catch (e) { return false; } }
+  function markSeen(uid) { try { localStorage.setItem(seenKey(uid), '1'); } catch (e) {} }
+  function ready() {
+    try {
+      if (typeof currentUser === 'undefined' || !currentUser || !currentUser.uid) return null;
+      var a = document.querySelector('.page.active');
+      if (!a || a.id === 'p-login') return null;
+      if (document.getElementById('video-splash-overlay') && getComputedStyle(document.getElementById('video-splash-overlay')).display !== 'none') return null;
+      return String(currentUser.uid);
+    } catch (e) { return null; }
+  }
+  function show(uid) {
+    shown = true; markSeen(uid);
+    var ov = document.createElement('div');
+    ov.id = 'sh-upd-notice';
+    ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true');
+    ov.style.cssText = 'position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(10,2,16,0.82);direction:rtl;';
+    var items = [
+      ['fa-bolt', 'فتح أسرع للتطبيق'],
+      ['fa-location-dot', 'تتبع المندوب مع اسم الحي والشارع'],
+      ['fa-star', 'خصم من نقاط شاهين على طلبك'],
+      ['fa-arrow-right', 'زر رجوع وتنقّل أسهل'],
+      ['fa-map-pin', 'تحديد موقع أدق']
+    ];
+    var rows = '';
+    for (var i = 0; i < items.length; i++) rows += '<div style="display:flex;align-items:center;gap:12px;padding:9px 0;"><span style="width:34px;height:34px;border-radius:10px;background:rgba(212,175,55,0.14);display:flex;align-items:center;justify-content:center;flex:none;"><i class="fas ' + items[i][0] + '" style="color:#d4af37;font-size:15px;"></i></span><span style="font-size:14.5px;color:#fff;font-weight:600;">' + items[i][1] + '</span></div>';
+    ov.innerHTML = '<div style="width:100%;max-width:360px;border-radius:24px;padding:26px 22px 20px;background:linear-gradient(160deg,#3a1347 0%,#1c0826 100%);border:1.5px solid rgba(212,175,55,0.55);box-shadow:0 18px 50px rgba(0,0,0,0.55);text-align:center;">' +
+      '<div style="width:64px;height:64px;margin:0 auto 12px;border-radius:50%;background:linear-gradient(135deg,#d4af37,#f4dc83);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(212,175,55,0.35);"><i class="fas fa-circle-check" style="font-size:30px;color:#2a0e33;"></i></div>' +
+      '<div style="font-size:20px;font-weight:900;color:#d4af37;">تم تحديث التطبيق 🦅</div>' +
+      '<div style="font-size:13px;color:#d9c6e0;margin:4px 0 12px;">أهلاً بك في النسخة الجديدة من شاهين إكسبريس</div>' +
+      '<div style="text-align:right;border-top:1px solid rgba(212,175,55,0.2);border-bottom:1px solid rgba(212,175,55,0.2);padding:6px 4px;margin-bottom:16px;">' + rows + '</div>' +
+      '<button id="sh-upd-ok" type="button" style="width:100%;padding:13px 0;border:none;border-radius:14px;font-size:16px;font-weight:800;font-family:inherit;color:#2a0e33;background:linear-gradient(135deg,#d4af37,#f4dc83);cursor:pointer;">حسناً</button>' +
+      '</div>';
+    document.body.appendChild(ov);
+    var close = function () { if (ov.parentNode) ov.parentNode.removeChild(ov); };
+    document.getElementById('sh-upd-ok').addEventListener('click', close);
+  }
+  function tick() {
+    if (shown) return;
+    var uid = ready();
+    if (uid) { if (!wasSeen(uid)) show(uid); else shown = true; return; }
+    if (++tries < 600) setTimeout(tick, 1500);   // حتى ~15 دقيقة بانتظار تسجيل الدخول
+  }
+  if (document.readyState === 'complete') setTimeout(tick, 2500);
+  else window.addEventListener('load', function () { setTimeout(tick, 2500); });
+})();
+
 </script>
 <script type="text/plain" id="__mbjs">
 /* Mapbox GL JS is Copyright © 2020 Mapbox and subject to the Mapbox Terms of Service ((https://www.mapbox.com/legal/tos/). */
