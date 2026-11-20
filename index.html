@@ -1155,6 +1155,14 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
         .category-view.active { display: block; }
 
         /* خرائط وصيني */
+        .wass-saved { margin-top:6px; }
+        .wass-saved .ws-title { font-size:9.5px; color:#bbb; margin-bottom:4px; }
+        .wass-saved .ws-chips { display:flex; gap:6px; flex-wrap:wrap; }
+        .wass-saved .ws-chip { flex:1 1 auto; min-width:40%; border:1.5px solid rgba(212,175,55,0.5); border-radius:10px; padding:6px 8px; background:rgba(0,0,0,0.25); color:#eee; font-size:10.5px; text-align:right; cursor:pointer; }
+        .wass-saved .ws-chip small { display:block; font-size:9px; color:#aaa; margin-top:2px; font-weight:normal; }
+        .wass-saved .ws-chip.on { background:var(--gold); color:#000; border-color:var(--gold); font-weight:bold; }
+        .wass-saved .ws-chip.on small { color:#333; }
+        .wass-saved .ws-note { font-size:9.5px; margin-top:4px; padding:4px 6px; border-radius:6px; }
         .wassayni-map { width: 100%; height: 120px; border-radius: 12px; border: 1px solid var(--gold); margin: 8px 0; }
         .complaint-btn { background: #e74c3c; color: #fff; border: none; padding: 4px 8px; border-radius: 5px; font-size: 9px; cursor: pointer; margin-top: 5px; }
 
@@ -2497,6 +2505,8 @@ setTimeout(() => {
                     </div>
                     <!-- [BUGFIX-NOTIFY-STUCK-TIMER] تأكيد ثابت يبقى ظاهراً — بعكس الإشعار العابر
                          اللي كان يختفي بسرعة قبل ما تنتهي عملية التحليل الفعلية -->
+                    <!-- [WASSAYNI-SAVED-LOC] اختيار موقع محفوظ من الحساب -->
+                    <div id="wass-saved-pickup" class="wass-saved"></div>
                     <div id="pickup-maps-link-status" style="display:none; font-size:9.5px; margin-top:4px; padding:4px 6px; border-radius:6px;"></div>
                 </div>
             </div>
@@ -2515,10 +2525,17 @@ setTimeout(() => {
                         <button class="btn-gold" id="dropoff-maps-link-btn" onclick="_applyMapsLink('dropoff')" style="width:auto; padding:6px 10px; font-size:9px; background:#2ecc71; color:#fff;">تطبيق</button>
                     </div>
                     <!-- [BUGFIX-NOTIFY-STUCK-TIMER] تأكيد ثابت -->
+                    <!-- [WASSAYNI-SAVED-LOC] اختيار موقع محفوظ من الحساب -->
+                    <div id="wass-saved-dropoff" class="wass-saved"></div>
                     <div id="dropoff-maps-link-status" style="display:none; font-size:9.5px; margin-top:4px; padding:4px 6px; border-radius:6px;"></div>
                 </div>
             </div>
             </div><!-- end wassayni-map-section -->
+            <!-- [WASSAYNI-SAVED-LOC] وضع "بدون موقع": المندوب يستلم موقعك المحفوظ بالحساب -->
+            <div id="wassayni-noloc-card" class="card" style="display:none; margin-bottom:10px; border:1px solid #2ecc71; padding:10px;">
+                <small style="color:#2ecc71; font-weight:bold; font-size:11px; display:block; margin-bottom:6px;">📍 موقعك الذي سيراه المندوب</small>
+                <div id="wass-saved-noloc" class="wass-saved"></div>
+            </div>
 
             <!-- [WASSAYNI-MULTI-LOC] قسم المكانات المتعددة -->
             <div class="card" style="margin-bottom:10px; border:1px solid rgba(212,175,55,0.4); padding:10px;">
@@ -2911,6 +2928,8 @@ setTimeout(() => {
                     <span class="dot"></span>
                     <b id="track-order-status">--</b>
                 </div>
+                <!-- [TRACK-FRESHNESS] مؤشر حداثة موقع المندوب: مباشر / متأخر / متوقف -->
+                <div id="track-fresh" style="display:none; margin:6px 0 2px; padding:5px 10px; border-radius:10px; font-size:11px; text-align:center;"></div>
                 <div class="track-info-grid">
                     <div class="cell">رقم الطلب <b id="track-order-id">--</b></div>
                     <div class="cell">المطعم <b id="track-res-name">--</b></div>
@@ -5552,7 +5571,7 @@ setTimeout(() => {
         if(cat === 'flowers')   { document.querySelectorAll('.m-tab')[2].classList.add('active'); document.getElementById('view-flowers').classList.add('active'); _loadSpecialtyStoresFor('flowers'); }
         if(cat === 'sweets')    { document.querySelectorAll('.m-tab')[3].classList.add('active'); document.getElementById('view-sweets').classList.add('active'); _loadSpecialtyStoresFor('sweets'); }
         if(cat === 'cafe_caravan') { document.querySelectorAll('.m-tab')[4].classList.add('active'); document.getElementById('view-cafe_caravan').classList.add('active'); _loadSpecialtyStoresFor('cafe_caravan'); }
-        if(cat === 'wassayni')  { document.querySelectorAll('.m-tab')[5].classList.add('active'); document.getElementById('view-wassayni').classList.add('active'); initWassayniMaps(); calcWassayniPrice(); }
+        if(cat === 'wassayni')  { document.querySelectorAll('.m-tab')[5].classList.add('active'); document.getElementById('view-wassayni').classList.add('active'); initWassayniMaps(); calcWassayniPrice(); try { _renderWassSaved(); } catch(_e) {} }
         if(cat === 'family')    {
             document.querySelectorAll('.m-tab')[6].classList.add('active');
             document.getElementById('view-family').classList.add('active');
@@ -12029,6 +12048,95 @@ setTimeout(() => {
         calcWassayniPrice();
     }
 
+    // ===== [WASSAYNI-SAVED-LOC] خيار "موقعي المحفوظ" بخدمة وصّيني =====
+    // المصادر: (1) موقع الحساب الأساسي (customers.lat/lng/address)  (2) العناوين المحفوظة (customer_addresses).
+    // الاختيار يضبط pickupLoc/dropoffLoc نفسهما، فيصل للمندوب عبر نفس أعمدة الطلب (lat/lng, pickup_lat/lng) —
+    // أي بدون أي تغيير بتطبيق المندوب. أي تعديل لاحق على الموقع (خريطة/رابط/GPS) يُلغي علامة "المحفوظ" تلقائياً.
+    window._wassSaved = { pickup: null, dropoff: null };
+    window._wassSavedList = [];
+    function _wassValidLoc(la, ln) {
+        la = parseFloat(la); ln = parseFloat(ln);
+        return isFinite(la) && isFinite(ln) && Math.abs(la) > 0.0001 && Math.abs(ln) > 0.0001 && Math.abs(la) <= 90 && Math.abs(ln) <= 180;
+    }
+    async function _wassLoadSavedList() {
+        const list = [];
+        if (currentUser && _wassValidLoc(currentUser.lat, currentUser.lng)) {
+            list.push({ key: 'acct', label: 'موقع حسابي', text: currentUser.address || '', lat: parseFloat(currentUser.lat), lng: parseFloat(currentUser.lng), icon: '🏠' });
+        }
+        try {
+            if (currentUser && currentUser.uid) {
+                const { data, error } = await _supabase.from('customer_addresses').select('*').eq('customer_id', currentUser.uid).order('created_at', { ascending: true });
+                if (!error && data) {
+                    window._savedAddressesCache = data;
+                    data.forEach(a => { if (_wassValidLoc(a.lat, a.lng)) list.push({ key: 'addr' + a.id, label: a.label || 'عنوان محفوظ', text: a.address_text || '', lat: parseFloat(a.lat), lng: parseFloat(a.lng), icon: a.is_default ? '⭐' : '📌' }); });
+                } else if (window._savedAddressesCache) {
+                    window._savedAddressesCache.forEach(a => { if (_wassValidLoc(a.lat, a.lng)) list.push({ key: 'addr' + a.id, label: a.label || 'عنوان محفوظ', text: a.address_text || '', lat: parseFloat(a.lat), lng: parseFloat(a.lng), icon: a.is_default ? '⭐' : '📌' }); });
+                }
+            }
+        } catch (e) {}
+        // إزالة التكرار لو موقع الحساب نفسه عنوان محفوظ
+        const out = [];
+        list.forEach(it => { if (!out.some(o => Math.abs(o.lat - it.lat) < 1e-5 && Math.abs(o.lng - it.lng) < 1e-5 && o.key !== it.key && o.key === 'acct')) out.push(it); });
+        return out;
+    }
+    // يرجّع الموقع المحفوظ المختار فقط إذا لسا مطابق للموقع الحالي بالخريطة (لم يعدّله العميل بعدها)
+    function _wassGetSaved(type) {
+        const sv = window._wassSaved && window._wassSaved[type];
+        const cur = type === 'pickup' ? pickupLoc : dropoffLoc;
+        if (!sv || !cur) return null;
+        const cl = cur.lat !== undefined ? cur.lat : cur[0], cn = cur.lng !== undefined ? cur.lng : cur[1];
+        return (Math.abs(sv.lat - cl) < 1e-6 && Math.abs(sv.lng - cn) < 1e-6) ? sv : null;
+    }
+    function _wassChipsHtml(type, list) {
+        const sel = _wassGetSaved(type);
+        if (!list.length) {
+            return '<div class="ws-note" style="background:rgba(231,76,60,0.1); color:#e74c3c;">لا يوجد موقع محفوظ بحسابك بعد.' +
+                ' <a href="#" onclick="event.preventDefault(); nav(\'p-profile\'); setTimeout(function(){ if(typeof openAddAddressModal===\'function\') openAddAddressModal(); }, 300);" style="color:var(--gold); text-decoration:underline;">➕ إضافة موقع محفوظ</a></div>';
+        }
+        return '<div class="ws-title">📌 استخدم موقعك المحفوظ بالحساب:</div><div class="ws-chips">' +
+            list.map(it => '<button type="button" class="ws-chip' + (sel && sel.key === it.key ? ' on' : '') + '" data-ws-type="' + type + '" data-ws-key="' + escHtml(it.key) + '" onclick="useWassSaved(\'' + type + '\', this.getAttribute(\'data-ws-key\'))">' +
+                it.icon + ' ' + escHtml(it.label) + (it.text ? '<small>' + escHtml(String(it.text).slice(0, 60)) + '</small>' : '') + '</button>').join('') + '</div>';
+    }
+    async function _renderWassSaved() {
+        const list = await _wassLoadSavedList();
+        window._wassSavedList = list;
+        ['pickup', 'dropoff'].forEach(t => { const el = document.getElementById('wass-saved-' + t); if (el) el.innerHTML = _wassChipsHtml(t, list); });
+        const nl = document.getElementById('wass-saved-noloc');
+        if (nl) {
+            let html = _wassChipsHtml('dropoff', list);
+            const sel = _wassGetSaved('dropoff');
+            if (sel) html += '<div class="ws-note" style="background:rgba(46,204,113,0.12); color:#2ecc71;">✅ سيرى المندوب موقعك: «' + escHtml(sel.label) + '»</div>';
+            else if (currentUser && _wassValidLoc(currentUser.lat, currentUser.lng)) html += '<div class="ws-note" style="background:rgba(212,175,55,0.1); color:#d4af37;">سيرى المندوب موقع حسابك الحالي. اختر أحد المواقع أعلاه لتغييره.</div>';
+            else html += '<div class="ws-note" style="background:rgba(231,76,60,0.1); color:#e74c3c;">⚠️ ما في موقع محفوظ؛ سيصل طلبك بدون إحداثيات. أضف موقعاً من حسابي أو فعّل الموقع.</div>';
+            nl.innerHTML = html;
+        }
+    }
+    function useWassSaved(type, key) {
+        const it = (window._wassSavedList || []).find(x => x.key === key);
+        if (!it) return;
+        const coords = { lat: it.lat, lng: it.lng };
+        if (type === 'pickup') pickupLoc = coords; else dropoffLoc = coords;
+        window._wassSaved[type] = { key: it.key, label: it.label, text: it.text, lat: it.lat, lng: it.lng };
+        if (window._wassayniLocEnabled !== false) {
+            try {
+                if (!mapPickup || !mapDropoff) initWassayniMaps();
+                const m = type === 'pickup' ? mapPickup : mapDropoff;
+                m.setView([it.lat, it.lng], 17);
+                if (type === 'pickup') { if (markerPickup) mapPickup.removeLayer(markerPickup); markerPickup = L.marker(coords).addTo(mapPickup); }
+                else { if (markerDropoff) mapDropoff.removeLayer(markerDropoff); markerDropoff = L.marker(coords).addTo(mapDropoff); }
+            } catch (e) {}
+        }
+        // تأكيد ثابت بجانب الحقل
+        const stEl = document.getElementById(type + '-maps-link-status');
+        if (stEl) { stEl.style.display = 'block'; stEl.style.background = 'rgba(46,204,113,0.12)'; stEl.style.color = '#2ecc71'; stEl.innerHTML = '<i class="fas fa-check-circle"></i> تم اختيار «' + escHtml(it.label) + '» ✅'; }
+        showNotify('📌 تم اختيار «' + it.label + '»' + (type === 'pickup' ? ' كموقع استلام' : ' كموقع تسليم'));
+        ['pickup', 'dropoff'].forEach(t => { const el = document.getElementById('wass-saved-' + t); if (el) el.innerHTML = _wassChipsHtml(t, window._wassSavedList); });
+        const nl = document.getElementById('wass-saved-noloc'); if (nl) _renderWassSaved();
+        if (typeof calcWassayniPrice === 'function') calcWassayniPrice();
+    }
+    window.useWassSaved = useWassSaved;
+    // ===== [END-WASSAYNI-SAVED-LOC] =====
+
     function setWassayniLocChoice(enabled) {
         window._wassayniLocEnabled = enabled;
         const mapSection = document.getElementById('wassayni-map-section');
@@ -12046,6 +12154,10 @@ setTimeout(() => {
             if (btnYes) { btnYes.style.background = 'transparent'; btnYes.style.color = '#aaa'; btnYes.style.borderColor = '#555'; }
             if (step3Icon) step3Icon.innerText = '1';
         }
+        // [WASSAYNI-SAVED-LOC] بطاقة "بدون موقع" تظهر فقط بهذا الوضع
+        const _nl = document.getElementById('wassayni-noloc-card');
+        if (_nl) _nl.style.display = enabled ? 'none' : 'block';
+        try { _renderWassSaved(); } catch(_e) {}
     }
     // [END-LOC-CHOICE]
     async function submitWassayni() {
@@ -12081,12 +12193,14 @@ setTimeout(() => {
         const orderId = await generateServerOrderId();
         verificationCode = Math.floor(1000 + Math.random() * 9000);
         
+        // [WASSAYNI-SAVED-LOC] الموقع المحفوظ المختار (إن لم يعدّله العميل بعد اختياره)
+        const _savedDrop = (typeof _wassGetSaved === 'function') ? _wassGetSaved('dropoff') : null;
         const wassayniOrder = {
             id: orderId,
             customer_name: currentUser.name || "عميل شاهين",
             phone: currentUser.phone || "000",
             restaurant_name: "خدمة وصيني 🦅",
-            customer_address: (currentUser.address || "") + " | " + addrDetails,
+            customer_address: ((_savedDrop ? ((_savedDrop.label ? _savedDrop.label + ' — ' : '') + (_savedDrop.text || '')) : (currentUser.address || "")) || "") + " | " + addrDetails,
             total: 0,
             status: 'searching',
             items: JSON.stringify([{n: "مهمة وصيني", p: 0, task: _fullTask, locations: _locNames, loc_count: _wassayniLocCount}]),
@@ -12095,8 +12209,8 @@ setTimeout(() => {
             verify_code: verificationCode,
             res_type: 'wassayni',
             created_at: new Date().toISOString(),
-            lat: _locEnabled ? dropoffLoc.lat : ((userLoc && userLoc.lat) ? userLoc.lat : ((currentUser && currentUser.lat) || 0)),
-            lng: _locEnabled ? dropoffLoc.lng : ((userLoc && userLoc.lng) ? userLoc.lng : ((currentUser && currentUser.lng) || 0)),
+            lat: _locEnabled ? dropoffLoc.lat : (_savedDrop ? _savedDrop.lat : ((userLoc && userLoc.lat) ? userLoc.lat : ((currentUser && currentUser.lat) || 0))),
+            lng: _locEnabled ? dropoffLoc.lng : (_savedDrop ? _savedDrop.lng : ((userLoc && userLoc.lng) ? userLoc.lng : ((currentUser && currentUser.lng) || 0))),
             // [BUGFIX-WASSAYNI-NO-PICKUP-SAVED] السبب الجذري لمشكلة "يظهر موقع العميل فقط عند
             // المندوب" — موقع الاستلام (pickupLoc) اللي يحدّده العميل بعناية كان يُهمَل بالكامل ولا
             // يُحفظ بالقاعدة إطلاقاً! يستخدم تطبيق المندوب عمودي pickup_lat/pickup_lng لتحديد نقطة
@@ -12617,6 +12731,20 @@ setTimeout(() => {
         let _tOrderId = null, _tDriverId = null;
         let _tOrderChannel = null, _tPosChannel = null;
         let _tWatchdog = null, _tLastPosAt = 0, _tOrderPoll = null;
+        let _tDataAt = 0, _tDrvFlags = {}, _tFreshTimer = null;
+        // [TRACK-FRESHNESS] عرض حالة الاتصال بالمندوب للعميل بوضوح بدل أيقونة جامدة بلا تفسير
+        function _renderTrackFresh() {
+            const el = document.getElementById('track-fresh');
+            if (!el) return;
+            if (!_tDataAt) { el.style.display = 'none'; return; }
+            const age = Math.max(0, Math.round((Date.now() - _tDataAt) / 1000));
+            const fmt = s => s < 60 ? s + ' ث' : (s < 3600 ? Math.floor(s / 60) + ' د' : Math.floor(s / 3600) + ' س');
+            let bg, col, txt;
+            if (age <= 20 && !(_tDrvFlags && _tDrvFlags.offline)) { bg = 'rgba(46,204,113,0.12)'; col = '#2ecc71'; txt = '🟢 تتبّع مباشر'; }
+            else if (age <= 60 && !(_tDrvFlags && _tDrvFlags.offline)) { bg = 'rgba(212,175,55,0.12)'; col = '#d4af37'; txt = '🟡 آخر تحديث قبل ' + fmt(age); }
+            else { bg = 'rgba(231,76,60,0.12)'; col = '#e74c3c'; txt = '🔴 التتبع متوقف مؤقتاً — آخر موقع قبل ' + fmt(age); }
+            el.style.display = 'block'; el.style.background = bg; el.style.color = col; el.innerText = txt;
+        }
         let _tLastRouteAt = 0, _tLastRouteLatLng = null;
         let _tCurStage = 'to_restaurant'; // to_restaurant | arrived_restaurant | to_customer | arrived
         let _tAnimFrame = null;
@@ -13161,6 +13289,13 @@ setTimeout(() => {
             if (!row || !row.lat || !row.lng) return;
             const lat = parseFloat(row.lat), lng = parseFloat(row.lng);
             _tLastPosAt = Date.now();
+            // [TRACK-FRESHNESS] وقت البيانات الحقيقي من قاعدة البيانات (لا وقت الجلب) + علامات الانقطاع
+            try {
+                const _ts = Math.max(Date.parse(row.last_update || '') || 0, Date.parse(row.last_seen || '') || 0);
+                if (_ts) _tDataAt = _ts;
+                _tDrvFlags = { interrupted: !!row.tracking_interrupted, offline: !!row.offline_since };
+                _renderTrackFresh();
+            } catch (_e) {}
             const newPos = [lng, lat];
             try { if (window._shDriverArea) window._shDriverArea(lat, lng); } catch (_e) {}
 
@@ -13289,6 +13424,8 @@ setTimeout(() => {
             // احتياط ينتظر 12 ثانية صمت — لأن الاتصال اللحظي (Realtime) أثبت عدم استقراره مراراً في هذا
             // المشروع (TIMED_OUT متكرر). الآن يجلب الموقع الحقيقي كل 3 ثوانٍ دائماً، فتبقى الحركة شبه
             // مباشرة ومضمونة بصرف النظر عن حالة الاتصال اللحظي — والأنيميشن السلس بين كل تحديث يجعلها تبدو متصلة
+            if (_tFreshTimer) clearInterval(_tFreshTimer);
+            _tFreshTimer = setInterval(_renderTrackFresh, 1000);
             _tWatchdog = setInterval(async () => {
                 const posRow = await _fetchDriverPos(_tDriverId);
                 if (posRow) _updateDriverPosition(posRow, _tCurrentOrder || order);
@@ -13317,6 +13454,9 @@ setTimeout(() => {
             if (_tOrderChannel) { try { _supabase.removeChannel(_tOrderChannel); } catch(e){} _tOrderChannel = null; }
             if (_tWatchdog) { clearInterval(_tWatchdog); _tWatchdog = null; }
             if (_tOrderPoll) { clearInterval(_tOrderPoll); _tOrderPoll = null; }
+            if (_tFreshTimer) { clearInterval(_tFreshTimer); _tFreshTimer = null; }
+            _tDataAt = 0; _tDrvFlags = {};
+            try { const _f = document.getElementById('track-fresh'); if (_f) _f.style.display = 'none'; } catch(_e) {}
         }
 
         // [FIX-MAP-CENTER] تدمير الخريطة بالكامل عند الإغلاق لضمان إعادة تمركز صحيحة عند الفتح التالي
@@ -15348,7 +15488,7 @@ if (typeof window.siteNotify !== 'function') window.siteNotify = function (m, t)
 /* إشعار «تم تحديث التطبيق» — يظهر مرة واحدة فقط لكل عميل (لكل إصدار إشعار) بعد دخوله للتطبيق.
    الحفظ محلياً على الجهاز (بدون أي تغيير بقاعدة البيانات). لإظهاره مجدداً بتحديث مستقبلي غيّر NOTICE_ID. */
 (function () {
-  var NOTICE_ID = 'v1.2.6';
+  var NOTICE_ID = 'v1.2.7';
   var shown = false, tries = 0;
   function seenKey(uid) { return 'sh_upd_notice_' + NOTICE_ID + '_' + uid; }
   function wasSeen(uid) { try { return localStorage.getItem(seenKey(uid)) === '1'; } catch (e) { return false; } }
@@ -15369,11 +15509,10 @@ if (typeof window.siteNotify !== 'function') window.siteNotify = function (m, t)
     ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true');
     ov.style.cssText = 'position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(10,2,16,0.82);direction:rtl;';
     var items = [
-      ['fa-bolt', 'فتح أسرع للتطبيق'],
+      ['fa-bookmark', 'استخدم موقعك المحفوظ بخدمة وصّيني'],
+      ['fa-signal', 'مؤشر حالة اتصال المندوب أثناء التتبع'],
       ['fa-location-dot', 'تتبع المندوب مع اسم الحي والشارع'],
-      ['fa-star', 'خصم من نقاط شاهين على طلبك'],
-      ['fa-arrow-right', 'زر رجوع وتنقّل أسهل'],
-      ['fa-map-pin', 'تحديد موقع أدق']
+      ['fa-arrow-right', 'زر رجوع وتنقّل أسهل']
     ];
     var rows = '';
     for (var i = 0; i < items.length; i++) rows += '<div style="display:flex;align-items:center;gap:12px;padding:9px 0;"><span style="width:34px;height:34px;border-radius:10px;background:rgba(212,175,55,0.14);display:flex;align-items:center;justify-content:center;flex:none;"><i class="fas ' + items[i][0] + '" style="color:#d4af37;font-size:15px;"></i></span><span style="font-size:14.5px;color:#fff;font-weight:600;">' + items[i][1] + '</span></div>';
