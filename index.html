@@ -1154,14 +1154,55 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
         .category-view { display: none; padding-top: 10px; }
         .category-view.active { display: block; }
 
+        /* [WASSAYNI-PLACE-SEARCH] بحث الأماكن في وصيني */
+        .wass-search { position:relative; z-index:900; margin:6px 0 4px; }
+        .wass-search input[type=search] { width:100%; box-sizing:border-box; font-size:12px; padding:9px 10px; background:rgba(0,0,0,0.35); border:1px solid rgba(212,175,55,0.55); border-radius:10px; color:#fff; }
+        .wass-search.dropoff input[type=search] { border-color:rgba(46,204,113,0.55); }
+        .wass-sr { position:absolute; z-index:60; right:0; left:0; top:100%; margin-top:3px; max-height:260px; overflow-y:auto; -webkit-overflow-scrolling:touch; background:#1b1b1f; border:1px solid rgba(212,175,55,0.6); border-radius:10px; box-shadow:0 8px 22px rgba(0,0,0,0.6); }
+        .wass-sr .wsr-item { padding:9px 10px; border-bottom:1px solid rgba(255,255,255,0.07); cursor:pointer; font-size:12px; color:#eee; text-align:right; }
+        .wass-sr .wsr-item:last-child { border-bottom:none; }
+        .wass-sr .wsr-item:active { background:rgba(212,175,55,0.18); }
+        .wass-sr .wsr-item small { display:block; font-size:10px; color:#aaa; margin-top:2px; }
+        .wass-sr .wsr-head { padding:5px 10px; font-size:9.5px; color:var(--gold); background:rgba(212,175,55,0.08); }
+        .wsr-gbtn { margin:6px 0; padding:8px 12px; border:1px solid var(--gold); background:rgba(212,175,55,0.15); color:var(--gold); border-radius:8px; font-size:11px; cursor:pointer; }
+        .wass-gps { display:flex; align-items:center; gap:10px; width:100%; margin:8px 0 4px; padding:11px 12px; border-radius:12px; border:2px solid var(--gold); background:rgba(212,175,55,0.14); color:#fff; cursor:pointer; text-align:right; }
+        .wass-gps.green { border-color:#2ecc71; background:rgba(46,204,113,0.14); }
+        .wass-gps .wg-ic { font-size:22px; }
+        .wass-gps .wg-tx { flex:1; display:flex; flex-direction:column; }
+        .wass-gps .wg-tx b { font-size:13.5px; }
+        .wass-gps .wg-tx small { font-size:10px; color:#bbb; margin-top:2px; }
+        .wass-gps.busy { opacity:0.7; pointer-events:none; }
+        .wass-saved .ws-title { font-size:11px !important; color:#ddd !important; margin:8px 0 6px !important; }
+        .wass-saved .ws-list { display:flex; flex-direction:column; gap:6px; }
+        .wass-saved .ws-card { display:flex; align-items:center; gap:10px; width:100%; padding:10px 12px; border:1.5px solid rgba(212,175,55,0.5); border-radius:12px; background:rgba(0,0,0,0.3); color:#eee; text-align:right; cursor:pointer; }
+        .wass-saved .ws-ico { font-size:20px; }
+        .wass-saved .ws-txt { flex:1; display:flex; flex-direction:column; min-width:0; }
+        .wass-saved .ws-txt b { font-size:13px; }
+        .wass-saved .ws-txt small { font-size:10.5px; color:#aaa; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .wass-saved .ws-check { flex:0 0 24px; height:24px; border-radius:50%; border:2px solid #666; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:bold; }
+        .wass-saved .ws-card.on { background:rgba(46,204,113,0.16); border-color:#2ecc71; }
+        .wass-saved .ws-card.on .ws-check { background:#2ecc71; border-color:#2ecc71; color:#000; }
+        .wass-sr .wsr-note { padding:9px 10px; font-size:10.5px; color:#bbb; text-align:right; line-height:1.7; }
         /* خرائط وصيني */
         .wass-saved { margin-top:6px; }
-        .wass-saved .ws-title { font-size:9.5px; color:#bbb; margin-bottom:4px; }
-        .wass-saved .ws-chips { display:flex; gap:6px; flex-wrap:wrap; }
-        .wass-saved .ws-chip { flex:1 1 auto; min-width:40%; border:1.5px solid rgba(212,175,55,0.5); border-radius:10px; padding:6px 8px; background:rgba(0,0,0,0.25); color:#eee; font-size:10.5px; text-align:right; cursor:pointer; }
-        .wass-saved .ws-chip small { display:block; font-size:9px; color:#aaa; margin-top:2px; font-weight:normal; }
-        .wass-saved .ws-chip.on { background:var(--gold); color:#000; border-color:var(--gold); font-weight:bold; }
-        .wass-saved .ws-chip.on small { color:#333; }
+        .wass-saved .ws-title { font-size:11px; color:var(--gold); font-weight:bold; margin:8px 0 6px; }
+        .wass-saved .ws-chips { display:flex; flex-direction:column; gap:7px; }
+        .wass-saved .ws-chip { display:flex; align-items:center; gap:10px; width:100%; box-sizing:border-box; border:1.5px solid rgba(212,175,55,0.45); border-radius:12px; padding:10px 11px; background:rgba(0,0,0,0.28); color:#eee; text-align:right; cursor:pointer; font-family:inherit; }
+        .wass-saved .ws-chip .ws-ic { flex:0 0 auto; width:38px; height:38px; border-radius:50%; background:rgba(212,175,55,0.15); display:flex; align-items:center; justify-content:center; font-size:19px; }
+        .wass-saved .ws-chip .ws-tx { flex:1 1 auto; min-width:0; display:flex; flex-direction:column; gap:3px; }
+        .wass-saved .ws-chip .ws-tx b { font-size:13px; color:#fff; font-weight:bold; }
+        .wass-saved .ws-chip .ws-tx small { display:block; font-size:10.5px; color:#b5b5b5; font-weight:normal; line-height:1.5; white-space:normal; overflow-wrap:anywhere; }
+        .wass-saved .ws-chip .ws-ck { flex:0 0 auto; font-size:10.5px; font-weight:bold; padding:6px 10px; border-radius:999px; border:1.5px solid var(--gold); color:var(--gold); white-space:nowrap; }
+        .wass-saved .ws-chip:active { transform:scale(0.985); }
+        .wass-saved .ws-chip.on { background:rgba(212,175,55,0.16); border-color:var(--gold); box-shadow:0 0 0 1px var(--gold) inset; }
+        .wass-saved .ws-chip.on .ws-ck { background:var(--gold); color:#000; }
+        .wass-saved .ws-chip.on .ws-ic { background:var(--gold); }
+        .wass-saved .ws-chip[data-ws-type="dropoff"] { border-color:rgba(46,204,113,0.5); }
+        .wass-saved .ws-chip[data-ws-type="dropoff"] .ws-ic { background:rgba(46,204,113,0.16); }
+        .wass-saved .ws-chip[data-ws-type="dropoff"] .ws-ck { border-color:#2ecc71; color:#2ecc71; }
+        .wass-saved .ws-chip[data-ws-type="dropoff"].on { background:rgba(46,204,113,0.14); border-color:#2ecc71; box-shadow:0 0 0 1px #2ecc71 inset; }
+        .wass-saved .ws-chip[data-ws-type="dropoff"].on .ws-ck { background:#2ecc71; color:#fff; }
+        .wass-saved .ws-chip[data-ws-type="dropoff"].on .ws-ic { background:#2ecc71; }
         .wass-saved .ws-note { font-size:9.5px; margin-top:4px; padding:4px 6px; border-radius:6px; }
         .wassayni-map { width: 100%; height: 120px; border-radius: 12px; border: 1px solid var(--gold); margin: 8px 0; }
         .complaint-btn { background: #e74c3c; color: #fff; border: none; padding: 4px 8px; border-radius: 5px; font-size: 9px; cursor: pointer; margin-top: 5px; }
@@ -1263,7 +1304,7 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
         .light-mode .ios-toggle::before { transform: translateX(24px); }
 
         /* قائمة الاقتراحات للبحث */
-        #search-suggestions { position: absolute; top: 100%; left: 0; width: 100%; background: #222; border: 1px solid var(--gold); border-radius: 0 0 10px 10px; z-index: 9999; max-height: 150px; overflow-y: auto; display: none; }
+        #search-suggestions { position: absolute; top: 100%; left: 0; width: 100%; background: #222; border: 1px solid var(--gold); border-radius: 0 0 10px 10px; z-index: 9999; max-height: 240px; overflow-y: auto; display: none; }
         .suggestion-item { padding: 8px 12px; font-size: 11px; cursor: pointer; border-bottom: 1px solid #333; }
         .suggestion-item:hover { background: var(--gold); color: #000; }
 
@@ -1766,7 +1807,7 @@ setTimeout(() => {
             <button class="btn-gold" style="width:auto; padding:5px 15px; font-size: 11px;" onclick="confirmFullMapLocation()">حفظ الموقع ✅</button>
         </div>
         <div class="map-search-box">
-            <input type="text" id="full-map-search-input" placeholder="🔍 ابحث عن شارع، معلم، أو حي..." onkeyup="getSuggestions(this.value)">
+            <input type="text" id="full-map-search-input" placeholder="🔍 ابحث عن شارع، معلم، أو حي..." oninput="getSuggestions(this.value)" onkeyup="getSuggestions(this.value)">
             <div id="search-suggestions"></div>
             <button onclick="searchAddressFull()"><i class="fas fa-search"></i></button>
             <button onclick="updateGPSProfileFull()" style="background:#2ecc71;"><i class="fas fa-location-crosshairs"></i></button>
@@ -2494,6 +2535,12 @@ setTimeout(() => {
                 <div class="step-icon">1</div>
                 <div class="step-content">
                     <small style="color:var(--gold); font-weight:bold; font-size:10px;">📍 من أين نستلم؟</small>
+                    <button type="button" class="wass-gps gold" id="wass-gps-pickup" onclick="_wassUseGPS('pickup')"><span class="wg-ic">📍</span><span class="wg-tx"><b class="wg-t">موقعي الحالي الآن</b><small>تحديد فوري بالـ GPS (فعّل الموقع بالجوال)</small></span></button>
+                    <div id="wass-saved-pickup" class="wass-saved"></div>
+                    <div class="wass-search pickup" id="wass-search-box-pickup">
+                        <input type="search" id="wass-search-pickup" autocomplete="off" enterkeyhint="search" placeholder="🔎 اكتب اسم المطعم أو المكان (مثال: ذهوك)" oninput="_wassSearchInput('pickup')" onfocus="_wassSearchInput('pickup')">
+                        <div id="wass-sr-pickup" class="wass-sr" style="display:none;"></div>
+                    </div>
                     <div id="map-pickup" class="wassayni-map-small" onclick="openFullMap('pickup')"></div>
                     <button class="btn-gold" onclick="openFullMap('pickup')" style="font-size:9px; padding:5px; background:rgba(212,175,55,0.05); border:1px solid var(--gold); color:var(--gold); width:100%;">
                         <i class="fas fa-search-location"></i> بحث وتحديد موقع الاستلام
@@ -2506,7 +2553,7 @@ setTimeout(() => {
                     <!-- [BUGFIX-NOTIFY-STUCK-TIMER] تأكيد ثابت يبقى ظاهراً — بعكس الإشعار العابر
                          اللي كان يختفي بسرعة قبل ما تنتهي عملية التحليل الفعلية -->
                     <!-- [WASSAYNI-SAVED-LOC] اختيار موقع محفوظ من الحساب -->
-                    <div id="wass-saved-pickup" class="wass-saved"></div>
+                    
                     <div id="pickup-maps-link-status" style="display:none; font-size:9.5px; margin-top:4px; padding:4px 6px; border-radius:6px;"></div>
                 </div>
             </div>
@@ -2515,6 +2562,12 @@ setTimeout(() => {
                 <div class="step-icon" style="background:#2ecc71;">2</div>
                 <div class="step-content">
                     <small style="color:#2ecc71; font-weight:bold; font-size:10px;">📍 أين نسلمك؟</small>
+                    <button type="button" class="wass-gps green" id="wass-gps-dropoff" onclick="_wassUseGPS('dropoff')"><span class="wg-ic">📍</span><span class="wg-tx"><b class="wg-t">موقعي الحالي الآن</b><small>تحديد فوري بالـ GPS (فعّل الموقع بالجوال)</small></span></button>
+                    <div id="wass-saved-dropoff" class="wass-saved"></div>
+                    <div class="wass-search dropoff" id="wass-search-box-dropoff">
+                        <input type="search" id="wass-search-dropoff" autocomplete="off" enterkeyhint="search" placeholder="🔎 اكتب اسم المطعم أو المكان (مثال: ذهوك)" oninput="_wassSearchInput('dropoff')" onfocus="_wassSearchInput('dropoff')">
+                        <div id="wass-sr-dropoff" class="wass-sr" style="display:none;"></div>
+                    </div>
                     <div id="map-dropoff" class="wassayni-map-small" style="border-color:#2ecc71;" onclick="openFullMap('dropoff')"></div>
                     <button class="btn-gold" onclick="openFullMap('dropoff')" style="font-size:9px; padding:5px; background:rgba(46,204,113,0.05); border:1px solid #2ecc71; color:#2ecc71; width:100%;">
                         <i class="fas fa-search-location"></i> بحث وتحديد موقع التسليم
@@ -2526,7 +2579,7 @@ setTimeout(() => {
                     </div>
                     <!-- [BUGFIX-NOTIFY-STUCK-TIMER] تأكيد ثابت -->
                     <!-- [WASSAYNI-SAVED-LOC] اختيار موقع محفوظ من الحساب -->
-                    <div id="wass-saved-dropoff" class="wass-saved"></div>
+                    
                     <div id="dropoff-maps-link-status" style="display:none; font-size:9.5px; margin-top:4px; padding:4px 6px; border-radius:6px;"></div>
                 </div>
             </div>
@@ -2548,7 +2601,7 @@ setTimeout(() => {
                     </div>
                 </div>
                 <button onclick="addWassayniLocation()" style="width:100%; background:rgba(212,175,55,0.1); border:1px dashed var(--gold); color:var(--gold); padding:8px; border-radius:10px; font-size:12px; cursor:pointer; margin-top:6px;">
-                    <i class="fas fa-plus-circle"></i> إضافة مكان آخر (+10,000 ل.س)
+                    <i class="fas fa-plus-circle"></i> إضافة مكان آخر (+<span id="wass-extra-lbl">10,000</span> ل.س)
                 </button>
             </div>
             <!-- [END-WASSAYNI-MULTI-LOC] -->
@@ -3631,31 +3684,6 @@ setTimeout(() => {
             body.classList.remove('light-mode');
             localStorage.setItem('shahen_theme', 'dark');
         }
-    }
-
-    async function getSuggestions(val) {
-        if (val.length < 3) return;
-        const box = document.getElementById('search-suggestions');
-        try {
-            const resp = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${val}&countrycodes=sy,sa&limit=5`);
-            const res = await resp.json();
-            if (res.length > 0) {
-                // [SEC-PATCH-7] escHtml applied to display_name and lat/lon to prevent XSS from Nominatim
-                box.innerHTML = res.map(item => {
-                    // [SEC-FIX-NOMINATIM-XSS] display_name يأتي من Nominatim (بيانات خارجية غير موثوقة، من
-                    // مساهمي OpenStreetMap) — escHtml وحدها غير كافية داخل onclick لأن المتصفح يفكّ ترميز
-                    // HTML entities قبل تنفيذ الخاصية كـ JS، فيعيد أي علامة اقتباس مُرمَّزة إلى حرفها الأصلي
-                    // ويكسر السلسلة النصية. نستخدم escJsAttr للقيمة داخل onclick، وescHtml للنص المعروض فقط.
-                    const rawName = String(item.display_name || '');
-                    const displayName = escHtml(rawName);
-                    const jsAttrName = escJsAttr(rawName);
-                    const safeLat = parseFloat(item.lat) || 0;
-                    const safeLon = parseFloat(item.lon) || 0;
-                    return `<div class="suggestion-item" onclick="selectSuggestion('${jsAttrName}', ${safeLat}, ${safeLon})">${displayName}</div>`;
-                }).join('');
-                box.style.display = 'block';
-            }
-        } catch(e) {}
     }
 
     function selectSuggestion(name, lat, lon) {
@@ -6524,21 +6552,6 @@ setTimeout(() => {
                     currentUser.address = area;
                 }
             }
-        } catch(e) {}
-    }
-
-    async function searchAddressFull() {
-        const query = document.getElementById('full-map-search-input').value;
-        if(!query) return showNotify("أدخل اسم المنطقة للبحث", "info");
-        try {
-            const resp = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}`);
-            const results = await resp.json();
-            if(results && results.length > 0) {
-                const loc = { lat: parseFloat(results[0].lat), lng: parseFloat(results[0].lon) };
-                fullMap.setView([loc.lat, loc.lng], 16);
-                fullMapMarker.setLatLng(loc);
-                reverseGeocode(loc);
-            } else { showNotify("لم يتم العثور على نتائج", "error"); }
         } catch(e) {}
     }
 
@@ -11993,9 +12006,12 @@ setTimeout(() => {
     let _wassayniLocCount = 1;
 
     // [WASSAYNI-PRICE-CALC] حساب وعرض سعر التوصيل
+    // [WASSAYNI-EXTRA-LABEL] سعر المكان الإضافي الفعلي (من إعدادات الإدارة) لعرضه بدل رقم ثابت قديم
+    function _wassExtraPrice() { return window._wassayniExtraPriceFromAdmin || _WASSAYNI_EXTRA_PER_LOC; }
     function calcWassayniPrice() {
         const base = window._wassayniBasePrice || 25000;
-        const extraPerLoc = window._wassayniExtraPriceFromAdmin || _WASSAYNI_EXTRA_PER_LOC;
+        const extraPerLoc = _wassExtraPrice();
+        try { const _xl = document.getElementById('wass-extra-lbl'); if (_xl) _xl.textContent = Number(extraPerLoc).toLocaleString(); } catch (_e) {}
         const extra = (_wassayniLocCount - 1) * extraPerLoc;
         const total = base + extra;
         const priceEl = document.getElementById('wassayni-price-display');
@@ -12020,7 +12036,7 @@ setTimeout(() => {
         const div = document.createElement('div');
         div.className = 'wassayni-location-item';
         div.id = 'wassayni-loc-' + idx;
-        div.innerHTML = `<button class="remove-loc-btn" onclick="removeWassayniLocation(${idx})"><i class="fas fa-times"></i> حذف</button><small style="color:var(--gold); font-size:10px; font-weight:bold;">📍 المكان رقم ${_wassayniLocCount} (+${_WASSAYNI_EXTRA_PER_LOC.toLocaleString()} ل.س)</small><input type="text" id="wassayni-loc-name-${idx}" placeholder="اسم المكان / المحل" style="font-size:11px; margin-top:6px; background:rgba(0,0,0,0.3); color:#fff; border:1px solid #444; padding:8px; border-radius:8px; width:100%;">`;
+        div.innerHTML = `<button class="remove-loc-btn" onclick="removeWassayniLocation(${idx})"><i class="fas fa-times"></i> حذف</button><small style="color:var(--gold); font-size:10px; font-weight:bold;">📍 المكان رقم ${_wassayniLocCount} (+${Number(_wassExtraPrice()).toLocaleString()} ل.س)</small><input type="text" id="wassayni-loc-name-${idx}" placeholder="اسم المكان / المحل" style="font-size:11px; margin-top:6px; background:rgba(0,0,0,0.3); color:#fff; border:1px solid #444; padding:8px; border-radius:8px; width:100%;">`;
         list.appendChild(div);
         calcWassayniPrice();
     }
@@ -12038,7 +12054,7 @@ setTimeout(() => {
                 if (i === 0) return; // المكان الأول لا يُحذف
                 const lbl = item.querySelector('small');
                 const btn = item.querySelector('.remove-loc-btn');
-                if (lbl) lbl.innerText = '📍 المكان رقم ' + (i + 1) + ' (+' + _WASSAYNI_EXTRA_PER_LOC.toLocaleString() + ' ل.س)';
+                if (lbl) lbl.innerText = '📍 المكان رقم ' + (i + 1) + ' (+' + Number(_wassExtraPrice()).toLocaleString() + ' ل.س)';
                 if (btn) btn.setAttribute('onclick', 'removeWassayniLocation(' + i + ')');
                 item.id = 'wassayni-loc-' + i;
                 const inp = item.querySelector('input[type="text"]');
@@ -12087,16 +12103,6 @@ setTimeout(() => {
         const cl = cur.lat !== undefined ? cur.lat : cur[0], cn = cur.lng !== undefined ? cur.lng : cur[1];
         return (Math.abs(sv.lat - cl) < 1e-6 && Math.abs(sv.lng - cn) < 1e-6) ? sv : null;
     }
-    function _wassChipsHtml(type, list) {
-        const sel = _wassGetSaved(type);
-        if (!list.length) {
-            return '<div class="ws-note" style="background:rgba(231,76,60,0.1); color:#e74c3c;">لا يوجد موقع محفوظ بحسابك بعد.' +
-                ' <a href="#" onclick="event.preventDefault(); nav(\'p-profile\'); setTimeout(function(){ if(typeof openAddAddressModal===\'function\') openAddAddressModal(); }, 300);" style="color:var(--gold); text-decoration:underline;">➕ إضافة موقع محفوظ</a></div>';
-        }
-        return '<div class="ws-title">📌 استخدم موقعك المحفوظ بالحساب:</div><div class="ws-chips">' +
-            list.map(it => '<button type="button" class="ws-chip' + (sel && sel.key === it.key ? ' on' : '') + '" data-ws-type="' + type + '" data-ws-key="' + escHtml(it.key) + '" onclick="useWassSaved(\'' + type + '\', this.getAttribute(\'data-ws-key\'))">' +
-                it.icon + ' ' + escHtml(it.label) + (it.text ? '<small>' + escHtml(String(it.text).slice(0, 60)) + '</small>' : '') + '</button>').join('') + '</div>';
-    }
     async function _renderWassSaved() {
         const list = await _wassLoadSavedList();
         window._wassSavedList = list;
@@ -12136,6 +12142,364 @@ setTimeout(() => {
     }
     window.useWassSaved = useWassSaved;
     // ===== [END-WASSAYNI-SAVED-LOC] =====
+
+    // ===== [WASSAYNI-PLACE-SEARCH] بحث ذكي عن الأماكن في وصيني (استلام / تسليم) =====
+    // الترتيب: (1) دليل شاهين = مطاعم شاهين التي لها إحداثيات (restaurants_public) + المعالم المخصصة (custom_landmarks)
+    //          (2) احتياط OpenStreetMap (Nominatim) محصور بمحافظة حماة أولاً ثم سوريا — بدون ضمان تغطية كل المحلات.
+    // لا يغيّر أي قاعدة بيانات: قراءة فقط من جداول يقرؤها التطبيق أصلاً.
+    const _WASS_SY_BOX = { minLat: 32.0, maxLat: 37.6, minLng: 35.0, maxLng: 42.6 };
+    const _WASS_HAMA_VIEWBOX = '36.64,35.21,36.88,35.04'; // يسار,أعلى,يمين,أسفل — مستطيل تقريبي لمدينة حماة (البحث الاحتياطي لا يتجاوزه)
+    const _WASS_STOP = { 'مطعم': 1, 'مطاعم': 1, 'محل': 1, 'معرض': 1, 'restaurant': 1, 'restaurants': 1, 'resto': 1, 'shop': 1, 'store': 1 };
+    let _wassPlaces = null, _wassPlacesPromise = null, _wassPlacesAt = 0;
+    window._wassLastResults = { pickup: [], dropoff: [] };
+    const _wassSearchSeq = { pickup: 0, dropoff: 0 };
+    const _wassSearchTimer = { pickup: null, dropoff: null };
+
+    function _wassNorm(s) {
+        s = String(s == null ? '' : s).toLowerCase();
+        s = s.replace(/[٠-٩]/g, d => String(d.charCodeAt(0) - 0x0660));
+        s = s.replace(/[ً-ٰٟـ]/g, '');
+        s = s.replace(/[أإآٱ]/g, 'ا').replace(/ى/g, 'ي').replace(/ة/g, 'ه').replace(/ؤ/g, 'و').replace(/ئ/g, 'ي')
+             .replace(/ذ/g, 'د').replace(/ظ/g, 'ض').replace(/ث/g, 'ت');
+        s = s.replace(/['\u2019\u2018`\u02BC]/g, '');
+        s = s.replace(/[^a-z0-9ء-ي]+/g, ' ').trim();
+        return s;
+    }
+    function _wassTokens(s) {
+        const out = [];
+        _wassNorm(s).split(' ').forEach(w => {
+            if (!w || _WASS_STOP[w]) return;
+            if (w.length > 3 && w.indexOf('ال') === 0) w = w.slice(2);
+            if (w) out.push(w);
+        });
+        return out;
+    }
+    function _wassLev(a, b) {
+        if (a === b) return 0;
+        const m = a.length, n = b.length;
+        if (Math.abs(m - n) > 1) return 2;
+        let prev = new Array(n + 1), cur = new Array(n + 1);
+        for (let j = 0; j <= n; j++) prev[j] = j;
+        for (let i = 1; i <= m; i++) {
+            cur[0] = i;
+            for (let j = 1; j <= n; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+            const t = prev; prev = cur; cur = t;
+        }
+        return prev[n];
+    }
+    // [CROSS-SCRIPT] هيكل صوتي تقريبي يوحّد الكتابة العربية والإنكليزية (فريند = friend، دومينوز = dominos، سجق = sujuk)
+    const _wassSkelCache = {};
+    function _wassSkel(w) {
+        if (_wassSkelCache[w] !== undefined) return _wassSkelCache[w];
+        let s = w;
+        if (s.length > 4 && s.indexOf('al') === 0 && /^[a-z]+$/.test(s)) s = s.slice(2);
+        const AR = { 'ب': 'b', 'ت': 't', 'ط': 't', 'ج': 'j', 'ح': 'h', 'ه': 'h', 'خ': 'K', 'د': 'd', 'ض': 'd', 'ر': 'r', 'ز': 's', 'س': 's', 'ص': 's', 'ش': 'S', 'غ': 'G', 'ف': 'f', 'ق': 'k', 'ك': 'k', 'ل': 'l', 'م': 'm', 'ن': 'n' };
+        s = s.replace(/tch/g, 'tS').replace(/sh/g, 'S').replace(/ch/g, 'tS').replace(/kh/g, 'K').replace(/gh/g, 'G').replace(/th/g, 't').replace(/ph/g, 'f').replace(/ck/g, 'k').replace(/x/g, 'ks');
+        let out = '';
+        for (let i = 0; i < s.length; i++) {
+            const c = s[i];
+            if (AR[c]) out += AR[c];
+            else if (c === 'S' || c === 'K' || c === 'G') out += c;
+            else if ('bdfhjklmnrst'.indexOf(c) !== -1) out += c;
+            else if (c === 'c' || c === 'q') out += 'k';
+            else if (c === 'g') out += 'j';
+            else if (c === 'p') out += 'b';
+            else if (c === 'v') out += 'f';
+            else if (c === 'z') out += 's';
+            // الحروف الصائتة (a e i o u y w ا و ي ع ء) تُهمل
+        }
+        out = out.replace(/ts/g, 's').replace(/(.)\1+/g, '$1');
+        return (_wassSkelCache[w] = out);
+    }
+    // درجة تطابق كلمة البحث مع كلمات اسم المكان (0 = لا تطابق)
+    function _wassTokScore(q, words) {
+        let best = 0;
+        for (let i = 0; i < words.length; i++) {
+            const w = words[i];
+            if (w === q) best = Math.max(best, 4);
+            else if (w.indexOf(q) === 0) best = Math.max(best, 3);
+            else if (q.length >= 3 && w.indexOf(q) !== -1) best = Math.max(best, 2);
+            else if (q.length >= 3 && w.length >= 4 && w[0] === q[0] && (_wassLev(q, w) <= 1 || _wassLev(q, w.slice(0, q.length)) <= 1)) best = Math.max(best, 1);
+            else if (q.length >= 4 && (_wassLev(q, w) <= 1 || _wassLev(q, w.slice(0, q.length)) <= 1)) best = Math.max(best, 1);
+            if (best < 1.5 && q.length >= 3) {
+                const sq = _wassSkel(q), sw = _wassSkel(w);
+                if (sq.length >= 2 && sw.length >= 2 && w.length >= 3 && (sq === sw || (sq.length >= 3 && sw.length >= 3 && sq[0] === sw[0] && _wassLev(sq, sw) <= 1))) best = Math.max(best, 1.5);
+            }
+        }
+        return best;
+    }
+    function _wassValidSy(la, ln) {
+        la = parseFloat(la); ln = parseFloat(ln);
+        return isFinite(la) && isFinite(ln) && la >= _WASS_SY_BOX.minLat && la <= _WASS_SY_BOX.maxLat && ln >= _WASS_SY_BOX.minLng && ln <= _WASS_SY_BOX.maxLng;
+    }
+    async function _wassLoadPlaces(force) {
+        if (_wassPlaces && !force && (Date.now() - _wassPlacesAt) < 10 * 60 * 1000) return _wassPlaces;
+        if (_wassPlacesPromise) return _wassPlacesPromise;
+        _wassPlacesPromise = (async () => {
+            const list = [];
+            try {
+                const { data } = await _supabase.from('restaurants_public').select('id,name,branch,res_address,res_type,pickup_lat,pickup_lng,active');
+                (data || []).forEach(r => {
+                    if (r.active === false || !r.name || !_wassValidSy(r.pickup_lat, r.pickup_lng)) return;
+                    const sub = [r.branch, r.res_address].filter(Boolean).join(' — ');
+                    list.push({ kind: 'res', icon: '🍽️', name: String(r.name), sub: sub, lat: parseFloat(r.pickup_lat), lng: parseFloat(r.pickup_lng),
+                                nameTok: _wassTokens(r.name + ' ' + (r.branch || '')), subTok: _wassTokens(r.res_address || '') });
+                });
+            } catch (e) { console.warn('wass places res', e); }
+            try {
+                const { data } = await _supabase.from('custom_landmarks').select('name,type,lat,lng').eq('active', true);
+                (data || []).forEach(l => {
+                    if (!l.name || !_wassValidSy(l.lat, l.lng)) return;
+                    const em = (typeof _SHAHEEN_LM_EMOJI !== 'undefined' && _SHAHEEN_LM_EMOJI[l.type]) || '📍';
+                    list.push({ kind: 'lm', icon: em, name: String(l.name), sub: l.type ? String(l.type) : '', lat: parseFloat(l.lat), lng: parseFloat(l.lng),
+                                nameTok: _wassTokens(l.name + ' ' + (l.type || '')), subTok: [] });
+                });
+            } catch (e) { console.warn('wass places lm', e); }
+            _wassPlaces = list; _wassPlacesAt = Date.now();
+            return list;
+        })();
+        try { return await _wassPlacesPromise; } finally { _wassPlacesPromise = null; }
+    }
+    function _wassSearchLocal(query, list) {
+        const qt = _wassTokens(query);
+        if (!qt.length) return [];
+        const out = [];
+        list.forEach(p => {
+            let total = 0, ok = true;
+            for (let i = 0; i < qt.length; i++) {
+                let sc = _wassTokScore(qt[i], p.nameTok);
+                if (!sc && p.subTok.length) { const s2 = _wassTokScore(qt[i], p.subTok); if (s2 >= 2) sc = 0.5; }
+                if (!sc) { ok = false; break; }
+                total += sc;
+            }
+            if (ok) out.push({ p: p, score: total / qt.length });
+        });
+        out.sort((a, b) => (b.score - a.score) || (a.p.name.length - b.p.name.length));
+        return out.slice(0, 7).map(x => x.p);
+    }
+    async function _wassFetchOsm(query, isStale) {
+        const ctl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+        const to = setTimeout(() => { try { ctl && ctl.abort(); } catch (_e) {} }, 8000);
+        try {
+            let url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&accept-language=ar,en&limit=6&countrycodes=sy&q=' + encodeURIComponent(query);
+            url += '&viewbox=' + _WASS_HAMA_VIEWBOX + '&bounded=1';
+            const resp = await fetch(url, ctl ? { signal: ctl.signal } : undefined);
+            const arr = await resp.json();
+            if (isStale && isStale()) return null;
+            return (Array.isArray(arr) ? arr : []).filter(it => _wassValidSy(it.lat, it.lon)).map(it => {
+                const parts = String(it.display_name || '').split('،').map(x => x.trim()).filter(Boolean);
+                return { kind: 'osm', icon: '🌐', name: String(it.name || parts[0] || it.display_name || 'موقع'), sub: parts.slice(1, 4).join('، '), lat: parseFloat(it.lat), lng: parseFloat(it.lon) };
+            });
+        } catch (e) { return (isStale && isStale()) ? null : []; }
+        finally { clearTimeout(to); }
+    }
+    function _wassRenderResults(type, query, local, osm, state) {
+        const box = document.getElementById('wass-sr-' + type);
+        if (!box) return;
+        const all = [];
+        let html = '';
+        if (local.length) {
+            html += '<div class="wsr-head">📍 من دليل شاهين</div>';
+            local.forEach(p => { const i = all.push(p) - 1; html += _wassItemHtml(type, i, p); });
+        }
+        if (osm && osm.length) {
+            html += '<div class="wsr-head">🌐 من الخريطة العامة — مدينة حماة فقط (قد لا تكون دقيقة لأسماء المحلات)</div>';
+            osm.forEach(p => { const i = all.push(p) - 1; html += _wassItemHtml(type, i, p); });
+        }
+        if (state === 'loading') html += '<div class="wsr-note">⏳ جاري البحث في الخريطة العامة…</div>';
+        if (!all.length && state !== 'loading') {
+            html += _wassNoResultHtml(query, type);
+        }
+        window._wassLastResults[type] = all;
+        box.innerHTML = html;
+        box.style.display = html ? 'block' : 'none';
+    }
+    // [WASSAYNI-SHAHIN-MAP-FALLBACK] عند عدم العثور على المكان: يفتح العميل خريطة شاهين ويحدد المكان بنفسه (بدون خرائط جوجل)
+    function _wassNoResultHtml(query, src) {
+        if (src === 'full') {
+            return '<div class="wsr-note">ما لقينا «' + escHtml(query) + '» في دليل شاهين ولا في مدينة حماة.' +
+                '<br><button type="button" class="wsr-gbtn" onclick="_wassHideSuggest()">📍 حدّد المكان بنفسك على الخريطة</button>' +
+                '<br>حرّك الدبوس أو اضغط على الخريطة ثم «حفظ الموقع».</div>';
+        }
+        return '<div class="wsr-note">ما لقينا «' + escHtml(query) + '» في دليل شاهين ولا في مدينة حماة.' +
+            '<br><button type="button" class="wsr-gbtn" onclick="_wassOpenShahinMap(\'' + src + '\')">🗺️ افتح خريطة شاهين وحدّد المكان</button>' +
+            '<br>أو الصق رابط الموقع بحقل الرابط تحت.</div>';
+    }
+    function _wassHideSuggest() { const b = document.getElementById('search-suggestions'); if (b) b.style.display = 'none'; }
+    function _wassOpenShahinMap(type) {
+        const b = document.getElementById('wass-sr-' + type); if (b) b.style.display = 'none';
+        openFullMap(type);
+    }
+    window._wassOpenShahinMap = _wassOpenShahinMap; window._wassHideSuggest = _wassHideSuggest;
+    // ----- البحث بالخريطة الكاملة (شاشة تحديد الموقع): دليل شاهين أولاً ثم مدينة حماة فقط -----
+    let _gsSeq = 0, _gsTimer = null;
+    function _gsRender(q, local, osm, state) {
+        const box = document.getElementById('search-suggestions');
+        if (!box) return;
+        const item = p => '<div class="suggestion-item" onclick="selectSuggestion(\'' + escJsAttr(p.name) + '\', ' + (parseFloat(p.lat) || 0) + ', ' + (parseFloat(p.lng) || 0) + ')">' + p.icon + ' ' + escHtml(p.name) + (p.sub ? '<small style="display:block;color:#999;font-size:9.5px;margin-top:2px;">' + escHtml(String(p.sub).slice(0, 80)) + '</small>' : '') + '</div>';
+        let html = '';
+        (local || []).forEach(p => { html += item(p); });
+        (osm || []).forEach(p => { html += item(p); });
+        if (state === 'loading') html += '<div class="suggestion-item" style="color:#bbb;">⏳ جاري البحث في مدينة حماة…</div>';
+        if (!html && state !== 'loading') html = '<div class="suggestion-item" style="cursor:default;line-height:1.7;">' + _wassNoResultHtml(q, 'full').replace('class="wsr-note"', 'style="font-size:10.5px;color:#ccc;"') + '</div>';
+        box.innerHTML = html; box.style.display = html ? 'block' : 'none';
+    }
+    async function getSuggestions(val) {
+        const box = document.getElementById('search-suggestions');
+        if (!box) return;
+        const q = String(val || '').trim(), seq = ++_gsSeq;
+        clearTimeout(_gsTimer);
+        if (q.length < 2 || !_wassTokens(q).length) { box.style.display = 'none'; box.innerHTML = ''; return; }
+        let list = []; try { list = await _wassLoadPlaces(false); } catch (_e) {}
+        if (seq !== _gsSeq) return;
+        const local = _wassSearchLocal(q, list);
+        if (local.length >= 3 || q.length < 3) { _gsRender(q, local, null, 'done'); return; }
+        _gsRender(q, local, null, 'loading');
+        _gsTimer = setTimeout(async () => {
+            const osm = await _wassFetchOsm(q, () => seq !== _gsSeq);
+            if (osm === null) return;
+            _gsRender(q, local, osm, 'done');
+        }, 600);
+    }
+    async function searchAddressFull() {
+        const input = document.getElementById('full-map-search-input');
+        const query = input ? input.value.trim() : '';
+        if (!query) return showNotify("أدخل اسم المنطقة للبحث", "info");
+        _gsSeq++; clearTimeout(_gsTimer);
+        let list = []; try { list = await _wassLoadPlaces(false); } catch (_e) {}
+        const local = _wassSearchLocal(query, list);
+        let loc = null;
+        if (local.length) loc = { lat: local[0].lat, lng: local[0].lng };
+        else { const osm = await _wassFetchOsm(query, null); if (osm && osm.length) loc = { lat: osm[0].lat, lng: osm[0].lng }; }
+        if (loc) { fullMap.setView(loc, 16); fullMapMarker.setLatLng(loc); reverseGeocode(loc); const bx = document.getElementById('search-suggestions'); if (bx) bx.style.display = 'none'; }
+        else { _gsRender(query, [], [], 'done'); showNotify("لم يتم العثور على نتائج", "error"); }
+    }
+    function _wassItemHtml(type, i, p) {
+        return '<div class="wsr-item" onclick="_wassPickPlace(\'' + type + '\',' + i + ')">' + p.icon + ' ' + escHtml(p.name) + (p.sub ? '<small>' + escHtml(String(p.sub).slice(0, 90)) + '</small>' : '') + '</div>';
+    }
+    function _wassSearchInput(type) {
+        const inp = document.getElementById('wass-search-' + type);
+        const box = document.getElementById('wass-sr-' + type);
+        if (!inp || !box) return;
+        const q = inp.value.trim();
+        const seq = ++_wassSearchSeq[type];
+        clearTimeout(_wassSearchTimer[type]);
+        if (q.length < 2 || !_wassTokens(q).length) { box.style.display = 'none'; box.innerHTML = ''; window._wassLastResults[type] = []; return; }
+        (async () => {
+            if (!_wassPlaces) { box.innerHTML = '<div class="wsr-note">⏳ جاري تحميل دليل شاهين…</div>'; box.style.display = 'block'; }
+            const list = await _wassLoadPlaces(false);
+            if (seq !== _wassSearchSeq[type]) return;
+            const local = _wassSearchLocal(q, list);
+            if (local.length >= 3 || q.length < 3) { _wassRenderResults(type, q, local, null, 'done'); return; }
+            _wassRenderResults(type, q, local, null, 'loading');
+            _wassSearchTimer[type] = setTimeout(async () => {
+                const osm = await _wassFetchOsm(q, () => seq !== _wassSearchSeq[type]);
+                if (osm === null) return;
+                _wassRenderResults(type, q, local, osm, 'done');
+            }, 700);
+        })();
+    }
+    function _wassPickPlace(type, idx) {
+        const p = (window._wassLastResults[type] || [])[idx];
+        if (!p || !_wassValidSy(p.lat, p.lng)) return;
+        // إلغاء أي بحث معلّق حتى لا يعيد فتح القائمة بعد الاختيار
+        _wassSearchSeq[type]++; clearTimeout(_wassSearchTimer[type]);
+        const coords = { lat: p.lat, lng: p.lng };
+        try { if (!mapPickup || !mapDropoff) initWassayniMaps(); } catch (_e) {}
+        try {
+            if (type === 'pickup') {
+                pickupLoc = coords; mapPickup.setView([coords.lat, coords.lng], 17);
+                if (markerPickup) mapPickup.removeLayer(markerPickup);
+                markerPickup = L.marker(coords).addTo(mapPickup);
+            } else {
+                dropoffLoc = coords; mapDropoff.setView([coords.lat, coords.lng], 17);
+                if (markerDropoff) mapDropoff.removeLayer(markerDropoff);
+                markerDropoff = L.marker(coords).addTo(mapDropoff);
+            }
+        } catch (_e) { if (type === 'pickup') pickupLoc = coords; else dropoffLoc = coords; }
+        if (window._wassSaved) window._wassSaved[type] = null;
+        const inp = document.getElementById('wass-search-' + type); if (inp) inp.value = p.name;
+        const box = document.getElementById('wass-sr-' + type); if (box) { box.style.display = 'none'; }
+        // نسهّل على المندوب: اسم مكان الاستلام يُملأ تلقائياً إن كان الحقل فارغاً
+        if (type === 'pickup') { const n0 = document.getElementById('wassayni-loc-name-0'); if (n0 && !n0.value.trim()) n0.value = p.name; }
+        const stEl = document.getElementById(type + '-maps-link-status');
+        if (stEl) {
+            stEl.style.display = 'block';
+            if (p.kind === 'osm') { stEl.style.background = 'rgba(212,175,55,0.12)'; stEl.style.color = '#d4af37'; stEl.innerHTML = '<i class="fas fa-info-circle"></i> تم اختيار «' + escHtml(p.name) + '» من الخريطة العامة — تأكد من الدبوس على الخريطة'; }
+            else { stEl.style.background = 'rgba(46,204,113,0.12)'; stEl.style.color = '#2ecc71'; stEl.innerHTML = '<i class="fas fa-check-circle"></i> تم تحديد «' + escHtml(p.name) + '» ✅'; }
+        }
+        showNotify((p.kind === 'osm' ? '📍 تم اختيار «' : '✅ تم تحديد «') + p.name + '»');
+        try { ['pickup', 'dropoff'].forEach(t => { const el = document.getElementById('wass-saved-' + t); if (el && typeof _wassChipsHtml === 'function') el.innerHTML = _wassChipsHtml(t, window._wassSavedList || []); }); } catch (_e) {}
+        if (typeof calcWassayniPrice === 'function') calcWassayniPrice();
+    }
+    window._wassSearchInput = _wassSearchInput;
+    window._wassPickPlace = _wassPickPlace;
+    document.addEventListener('click', function (ev) {
+        ['pickup', 'dropoff'].forEach(t => {
+            const wrap = document.getElementById('wass-search-box-' + t), box = document.getElementById('wass-sr-' + t);
+            if (wrap && box && !wrap.contains(ev.target)) box.style.display = 'none';
+        });
+    });
+
+    // ===== [WASSAYNI-GPS-BUTTON] زر «موقعي الحالي الآن» (تحديد فوري بالـ GPS) خارج الخريطة =====
+    function _wassUseGPS(type) {
+        const btn = document.getElementById('wass-gps-' + type);
+        const lab = btn ? btn.querySelector('.wg-t') : null;
+        const stEl = document.getElementById(type + '-maps-link-status');
+        const showSt = (bg, color, html) => { if (stEl) { stEl.style.display = 'block'; stEl.style.background = bg; stEl.style.color = color; stEl.innerHTML = html; } };
+        if (!navigator.geolocation || typeof _shBestFixCall !== 'function') { showNotify('جهازك أو متصفحك لا يدعم تحديد الموقع', 'error'); return; }
+        if (btn && btn.getAttribute('data-busy') === '1') return;
+        if (btn) { btn.setAttribute('data-busy', '1'); btn.classList.add('busy'); }
+        const oldTxt = lab ? lab.textContent : '';
+        if (lab) lab.textContent = '⏳ جاري تحديد موقعك… (حتى 9 ثوانٍ)';
+        showSt('rgba(212,175,55,0.12)', '#d4af37', '<i class="fas fa-spinner fa-spin"></i> جاري تحديد موقعك بدقة…');
+        const finish = () => { if (btn) { btn.removeAttribute('data-busy'); btn.classList.remove('busy'); } if (lab) lab.textContent = oldTxt; };
+        _shBestFixCall(function (pos) {
+            finish();
+            const la = pos.coords.latitude, ln = pos.coords.longitude, acc = Math.round(pos.coords.accuracy || 0);
+            if (!_wassValidSy(la, ln)) {
+                showSt('rgba(231,76,60,0.12)', '#e74c3c', '<i class="fas fa-exclamation-triangle"></i> موقعك الحالي خارج سوريا، حدّد المكان على الخريطة أو بالبحث.');
+                showNotify('⚠️ موقعك الحالي خارج سوريا', 'error'); return;
+            }
+            const coords = { lat: la, lng: ln };
+            try { if (!mapPickup || !mapDropoff) initWassayniMaps(); } catch (_e) {}
+            try {
+                if (type === 'pickup') { pickupLoc = coords; mapPickup.setView([la, ln], 17); if (markerPickup) mapPickup.removeLayer(markerPickup); markerPickup = L.marker(coords).addTo(mapPickup); }
+                else { dropoffLoc = coords; mapDropoff.setView([la, ln], 17); if (markerDropoff) mapDropoff.removeLayer(markerDropoff); markerDropoff = L.marker(coords).addTo(mapDropoff); }
+            } catch (_e) { if (type === 'pickup') pickupLoc = coords; else dropoffLoc = coords; }
+            if (window._wassSaved) window._wassSaved[type] = null;
+            const inp = document.getElementById('wass-search-' + type); if (inp) inp.value = '';
+            showSt('rgba(46,204,113,0.12)', '#2ecc71', '<i class="fas fa-check-circle"></i> تم تحديد موقعك الحالي ✅' + (acc ? ' (الدقة ±' + acc + ' م)' : '') + (acc > 50 ? ' — حرّك الدبوس لتدقيقه' : ''));
+            showNotify('✅ تم تحديد موقعك الحالي');
+            try { ['pickup', 'dropoff'].forEach(t => { const el = document.getElementById('wass-saved-' + t); if (el) el.innerHTML = _wassChipsHtml(t, window._wassSavedList || []); }); } catch (_e) {}
+            if (typeof calcWassayniPrice === 'function') calcWassayniPrice();
+        }, function (err) {
+            finish();
+            const denied = err && err.code === 1;
+            const msg = denied ? 'صلاحية الموقع مرفوضة: فعّل «الموقع» لتطبيق شاهين من إعدادات الجوال ثم جرّب' : 'تعذّر تحديد موقعك. تأكد أن GPS مفعّل وجرّب في مكان مكشوف، أو حدّد المكان بالبحث/الخريطة';
+            showSt('rgba(231,76,60,0.12)', '#e74c3c', '<i class="fas fa-exclamation-triangle"></i> ' + msg);
+            showNotify('⚠️ ' + (denied ? 'صلاحية الموقع مرفوضة' : 'تعذّر تحديد موقعك'), 'error');
+        }, { enableHighAccuracy: true });
+    }
+    window._wassUseGPS = _wassUseGPS;
+
+    // [WASSAYNI-SAVED-LOC-UI] واجهة أوضح لاختيار «موقع حسابي» والمواقع المحفوظة: بطاقات كبيرة مع علامة اختيار واضحة
+    function _wassChipsHtml(type, list) {
+        const sel = _wassGetSaved(type);
+        if (!list.length) {
+            return '<div class="ws-note" style="background:rgba(231,76,60,0.1); color:#e74c3c;">لا يوجد موقع محفوظ بحسابك بعد.' +
+                ' <a href="#" onclick="event.preventDefault(); nav(\'p-profile\'); setTimeout(function(){ if(typeof openAddAddressModal===\'function\') openAddAddressModal(); }, 300);" style="color:var(--gold); text-decoration:underline;">➕ إضافة موقع محفوظ</a></div>';
+        }
+        return '<div class="ws-title">📌 أو اختر من مواقعك المحفوظة (اضغط على الموقع)</div><div class="ws-list">' +
+            list.map(it => {
+                const on = !!(sel && sel.key === it.key);
+                return '<button type="button" class="ws-card' + (on ? ' on' : '') + '" data-ws-type="' + type + '" data-ws-key="' + escHtml(it.key) + '" onclick="useWassSaved(\'' + type + '\', this.getAttribute(\'data-ws-key\'))">' +
+                    '<span class="ws-ico">' + it.icon + '</span>' +
+                    '<span class="ws-txt"><b>' + escHtml(it.label) + '</b>' + (it.text ? '<small>' + escHtml(String(it.text).slice(0, 70)) + '</small>' : '<small>اضغط لاستخدام هذا الموقع</small>') + '</span>' +
+                    '<span class="ws-check">' + (on ? '✓' : '') + '</span></button>';
+            }).join('') + '</div>';
+    }
+    // ===== [END-WASSAYNI-PLACE-SEARCH] =====
 
     function setWassayniLocChoice(enabled) {
         window._wassayniLocEnabled = enabled;
@@ -15004,11 +15368,21 @@ setTimeout(() => {
         STORAGE: 'مساحة التخزين في جهازك غير كافية لتنزيل التحديث. أفرغ بعض المساحة وحاول مجدداً.',
         INSTALL_UNAVAILABLE: 'تعذّر فتح شاشة التثبيت. حاول مجدداً.',
         _INVALID: 'ملف التحديث غير صالح أو غير موثوق، لذلك لم يتم تثبيته. يرجى التواصل مع الدعم.',
-        _DOWNLOAD: 'تعذّر تنزيل التحديث. حاول مجدداً بعد قليل.'
+        _DOWNLOAD: 'تعذّر تنزيل التحديث. حاول مجدداً — سيُستكمل التنزيل من حيث توقف 🔄',
+        // [INSTALLER-SESSION] أسباب حقيقية من مثبّت أندرويد (نعرضها كما هي، لا نخفي رسائل الحماية)
+        INSTALL_BLOCKED: 'منع الجهاز تثبيت التحديث (Google Play Protect أو «الحظر التلقائي/Auto Blocker» أو إعدادات الشركة المصنّعة). افتح Play Store ← Play Protect ← الإعدادات، أو إعدادات الأمان في جوالك، واسمح بالتثبيت ثم أعد المحاولة.',
+        INSTALL_ABORTED: 'تم إلغاء التثبيت. اضغط «تحديث الآن» لإعادة المحاولة.',
+        INSTALL_INVALID: 'رفض أندرويد ملف التحديث لأنه غير صالح. يرجى التواصل مع الدعم.',
+        INSTALL_CONFLICT: 'تعذّر التحديث فوق النسخة الحالية (تعارض مع النسخة المثبّتة، غالباً اختلاف مفتاح التوقيع). لن نحذف تطبيقك؛ تواصل مع الدعم.',
+        INSTALL_STORAGE: 'مساحة التخزين غير كافية للتثبيت. أفرغ بعض المساحة وحاول مجدداً.',
+        INSTALL_INCOMPATIBLE: 'هذا الإصدار غير متوافق مع جهازك. تواصل مع الدعم.',
+        INSTALL_FAILED: 'فشل التثبيت لسبب غير محدد من النظام. حاول مجدداً أو تواصل مع الدعم.',
+        SIGNATURE_MISMATCH: 'هذا التحديث موقَّع بمفتاح مختلف عن نسخة تطبيقك الحالية، لذلك يرفضه أندرويد فوقها. لن نحذف تطبيقك ولا بياناتك؛ تواصل مع الدعم.'
     };
+    function _fmtMB(b) { return (b / 1048576).toFixed(1) + ' MB'; }
     function _updErrorText(code) {
         if (_UPD_ERRORS[code]) return _UPD_ERRORS[code];
-        if (['HASH_MISMATCH', 'SIGNATURE_MISMATCH', 'WRONG_PACKAGE', 'INVALID_APK', 'VERSION_MISMATCH', 'INSECURE_URL', 'BAD_RELEASE'].includes(code)) return _UPD_ERRORS._INVALID;
+        if (['HASH_MISMATCH', 'WRONG_PACKAGE', 'INVALID_APK', 'VERSION_MISMATCH', 'INSECURE_URL', 'BAD_RELEASE'].includes(code)) return _UPD_ERRORS._INVALID;
         return _UPD_ERRORS._DOWNLOAD;   // HTTP_xxx / INCOMPLETE / BAD_REDIRECT / UNKNOWN ... (لا نعرض رموزاً تقنية أبداً)
     }
     const _upd = { rel: null, forced: false, busy: false, installing: false, lastCheck: 0 };
@@ -15033,6 +15407,8 @@ setTimeout(() => {
             <h3 style="color:var(--gold);margin:0 0 10px;font-size:19px;">${title}</h3>
             <div style="color:#fff;font-size:13.5px;line-height:1.7;white-space:pre-wrap;margin-bottom:8px;">${escHtml(rel.message || '')}</div>
             <div style="color:#bbb;font-size:12px;margin-bottom:14px;">${foot}${rel.version_name ? ' (' + escHtml(rel.version_name) + ')' : ''}</div>
+            <!-- [PLAY-PROTECT-HINT] تنبيه استباقي: Play Protect يحذّر من أي تطبيق مثبَّت خارج المتجر -->
+            <div id="upd-pp-hint" style="background:rgba(52,152,219,0.10);border:1px solid rgba(52,152,219,0.35);border-radius:10px;padding:8px 10px;margin:0 0 12px;color:#9fd3f5;font-size:11.5px;line-height:1.7;text-align:right;">ℹ️ قد تظهر رسالة من <b>Google Play Protect</b> («تم حظر تطبيق ضار») أثناء التثبيت — هذا تنبيه عام لأي تطبيق خارج المتجر وليس خطراً.<br>اضغط <b>«مزيد من التفاصيل»</b> ثم <b>«تثبيت على أي حال»</b>.</div>
             <div id="upd-bar-wrap" style="display:none;background:#222;border-radius:8px;height:10px;overflow:hidden;margin:6px 0 4px;"><div id="upd-bar" style="width:0%;height:100%;background:var(--gold);transition:width .2s;"></div></div>
             <div id="upd-status" style="display:none;color:#f1c40f;font-size:12.5px;margin:8px 0;line-height:1.6;"></div>
             <button id="upd-now" style="width:100%;background:var(--gold);color:#000;border:none;padding:13px;border-radius:12px;font-weight:bold;font-size:15px;">تحديث الآن</button>
@@ -15065,18 +15441,26 @@ setTimeout(() => {
             if (!ev) return;
             const st = document.getElementById('upd-status'), bar = document.getElementById('upd-bar'), wrap = document.getElementById('upd-bar-wrap');
             if (ev.type === 'stage') {
-                const names = { checking: 'جاري التحقق من التحديث…', downloading: 'جاري تنزيل التحديث…', verifying: 'جاري التحقق من سلامة الملف…', installing: 'جاري فتح شاشة التثبيت… 🦅' };
+                const names = { checking: 'جاري التحقق من التحديث…', downloading: 'جاري تنزيل التحديث…', resuming: 'جاري استكمال التنزيل من حيث توقف…', verifying: 'جاري التحقق من سلامة الملف…', installing: 'جاري فتح شاشة التثبيت… 🦅' };
                 if (st) { st.style.display = 'block'; st.textContent = names[ev.name] || ''; }
-                if (ev.name === 'installing') { _upd.installing = true; _upd.busy = false; }
+                if (ev.name === 'installing') {
+                    _upd.installing = true; _upd.busy = false;
+                    // [PLAY-PROTECT-HINT] لو ظهر حظر Play Protect: الخطوات بالضبط
+                    if (st) st.innerHTML = 'جاري فتح شاشة التثبيت…<br><span style="color:#9fd3f5;font-size:11.5px;">إن ظهر «تم حظر تطبيق ضار»: اضغط <b>«مزيد من التفاصيل»</b> ثم <b>«تثبيت على أي حال»</b>.</span>';
+                }
             } else if (ev.type === 'progress') {
                 if (wrap) wrap.style.display = 'block';
                 if (bar) bar.style.width = (ev.pct || 0) + '%';
-                if (st) { st.style.display = 'block'; st.textContent = 'جاري التنزيل ' + (ev.pct || 0) + '%'; }
+                if (st) { st.style.display = 'block'; st.textContent = 'جاري التنزيل ' + (ev.pct || 0) + '%' + (ev.total > 0 ? '  (' + _fmtMB(ev.done) + ' / ' + _fmtMB(ev.total) + ')' : ''); }
+            } else if (ev.type === 'info') {
+                if (ev.size > 0 && st) { st.style.display = 'block'; st.textContent = 'حجم التحديث: ' + _fmtMB(ev.size); }
+            } else if (ev.type === 'log') {
+                console.warn('[AUTO-UPDATE]', ev.code, ev.detail);   // تشخيص فقط (مثلاً فشل إنشاء جلسة التثبيت ثم الرجوع للطريقة القديمة)
             } else if (ev.type === 'error') {
                 _upd.busy = false;
                 if (ev.code === 'NEEDS_INSTALL_PERMISSION') { _updNeedsPermission(); return; }
                 if (ev.code === 'NO_UPDATE' || ev.code === 'NOT_NEWER') { try { localStorage.removeItem(_UPD_FORCED_KEY); } catch (_) {} _updRemoveUI(); return; }
-                _updSetState(_updErrorText(ev.code), true);
+                _updSetState(_updErrorText(ev.code) + (ev.detail ? '<div dir="ltr" style="margin-top:6px;color:#888;font-size:10.5px;word-break:break-all;">' + escHtml(String(ev.code)) + ' · ' + escHtml(String(ev.detail)) + '</div>' : ''), true);
                 const btn = document.getElementById('upd-now'); if (btn) btn.textContent = 'إعادة المحاولة';
             }
         } catch (e) { console.error('[AUTO-UPDATE] event error', e); }
@@ -15085,6 +15469,8 @@ setTimeout(() => {
         if (!window.AndroidUpdate) return 'skipped-web';       // ليس داخل تطبيق أندرويد
         const local = _updLocal();
         if (!local || !local.versionCode) return 'no-local-version';
+        // [UPDATE-DONE] اكتمل تحديث بدأه المستخدم سابقاً → رسالة نجاح لمرة واحدة (الجلسة وبيانات الحساب لم تُمسّ)
+        if (local.justUpdated) { try { if (typeof window.showNotify === 'function') window.showNotify('✅ تم تحديث التطبيق إلى ' + (local.versionName || ''), 'success'); } catch (_) {} }
         _upd.lastCheck = Date.now();
         // 1) تحديث إجباري محفوظ سابقاً (موثوق: جاء من السيرفر) — يُطبَّق حتى بدون إنترنت
         let stored = null;
