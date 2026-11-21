@@ -15924,6 +15924,167 @@ if (typeof window.siteNotify !== 'function') window.siteNotify = function (m, t)
 })();
 
 </script>
+<style id="wt-css">/* [WEB-TIDY-WASSAYNI] ترتيب تحديد الموقع في وصّيني (نسخة الويب فقط) */
+.wt-card{margin:8px 0 4px;padding:10px;border:1px solid rgba(212,175,55,0.35);border-radius:14px;background:rgba(0,0,0,0.22);--wt:var(--gold,#d4af37);}
+.wt-card.drop{border-color:rgba(46,204,113,0.4);--wt:#2ecc71;}
+.wt-head{font-size:10.5px;color:#cfcfcf;margin:0 2px 8px;}
+.wt-chips{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+.wt-card .wass-saved{display:contents;margin:0;}
+.wt-card .wass-saved .ws-title,.wt-card .wass-saved .ws-note{display:none !important;}
+.wt-card .wass-saved .ws-list{display:contents;}
+.wt-card .wass-gps,.wt-card .wass-saved .ws-card{width:auto;margin:0;min-width:0;min-height:46px;padding:8px 10px;gap:8px;border-radius:12px;border:1.5px solid color-mix(in srgb,var(--wt) 55%,transparent);background:rgba(0,0,0,0.3);color:#eee;text-align:right;position:relative;}
+.wt-card .wass-gps .wg-ic,.wt-card .wass-saved .ws-ico{font-size:18px;flex:0 0 auto;}
+.wt-card .wass-gps .wg-tx,.wt-card .wass-saved .ws-txt{min-width:0;flex:1;}
+.wt-card .wass-gps .wg-tx b,.wt-card .wass-saved .ws-txt b{font-size:12.5px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;}
+.wt-card .wass-gps .wg-tx small{display:none;}
+.wt-card .wass-saved .ws-txt small{display:block;font-size:9.5px;color:#aaa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.wt-card .wass-saved .ws-check{display:none;flex:0 0 auto;width:18px;height:18px;border-radius:50%;border:1.5px solid var(--wt);}
+.wt-card .wass-saved .ws-card.on,.wt-card .wass-gps.wt-on{background:color-mix(in srgb,var(--wt) 18%,transparent);border-color:var(--wt);box-shadow:0 0 0 1px var(--wt) inset;}
+.wt-card .wass-saved .ws-card.on .ws-check{display:inline-block;background:var(--wt);border-color:var(--wt);position:relative;}
+.wt-card .wass-saved .ws-card.on .ws-check::after{content:"✓";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;color:#000;font-weight:bold;}
+.wt-card .wass-search{margin:8px 0 8px;}
+.wt-card .wassayni-map-small{height:150px;margin:0;}
+.wt-hint{font-size:9.5px;color:#9a9a9a;text-align:center;margin:4px 0 0;}
+.wt-sel{display:none;margin-top:8px;padding:7px 10px;border-radius:10px;font-size:11px;font-weight:bold;background:color-mix(in srgb,var(--wt) 16%,transparent);color:var(--wt);border:1px solid color-mix(in srgb,var(--wt) 50%,transparent);}
+.wt-sel.show{display:block;}
+.wt-more{margin-top:8px;border-top:1px dashed rgba(255,255,255,0.12);padding-top:6px;}
+.wt-more>summary{cursor:pointer;list-style:none;font-size:10.5px;color:#bbb;padding:4px 2px;}
+.wt-more>summary::-webkit-details-marker{display:none;}
+.wt-more>summary::before{content:"▸ ";color:var(--wt);}
+.wt-more[open]>summary::before{content:"▾ ";}
+.wt-more .btn-gold{margin-top:6px;}
+
+.wt-sel.soft{font-weight:normal;font-size:10.5px;background:transparent;color:#bbb;border:1px dashed rgba(255,255,255,0.2);}
+.wt-card .wass-saved .ws-card{gap:6px;padding:8px 8px;}
+.wt-card .wass-saved .ws-txt b{white-space:normal;font-size:12px;overflow:visible;text-overflow:clip;line-height:1.25;}
+.wt-card .wass-saved .ws-check{width:16px;height:16px;}
+
+.wt-head{line-height:1.7;}
+.wt-head b{color:var(--wt);font-size:11px;display:block;margin-bottom:2px;}
+.wt-head span{font-size:10px;color:#bdbdbd;}
+.wt-mapwrap{position:relative;border-radius:12px;overflow:hidden;}
+.wt-mapwrap .wassayni-map-small{margin:0 !important;}
+.wt-mapshade{position:absolute;left:0;right:0;bottom:0;z-index:950;height:62%;display:flex;align-items:flex-end;justify-content:center;padding:0 8px 9px;cursor:pointer;background:linear-gradient(to top,rgba(0,0,0,0.82) 0%,rgba(0,0,0,0.55) 45%,rgba(0,0,0,0) 100%);border-radius:0 0 12px 12px;}
+.wt-mapshade span{font-size:11px;font-weight:bold;color:#fff;background:color-mix(in srgb,var(--wt) 85%,#000);border:1px solid var(--wt);padding:5px 12px;border-radius:999px;text-shadow:0 1px 2px rgba(0,0,0,0.6);box-shadow:0 2px 8px rgba(0,0,0,0.5);}
+.wt-card .wass-saved .ws-txt small{white-space:normal;overflow:visible;text-overflow:clip;}
+.wt-hint{display:none;}
+
+/* ===== v1.2.19: أزرار مرتّبة عمودياً (أيقونة فوق، اسم تحتها) بدون اقتطاع نص ===== */
+.wt-card .wass-gps,.wt-card .wass-saved .ws-card{flex-direction:column !important;align-items:center !important;justify-content:center !important;text-align:center !important;gap:3px !important;min-height:70px !important;padding:10px 6px !important;overflow:visible !important;}
+.wt-card .wass-gps .wg-ic,.wt-card .wass-saved .ws-ico{font-size:22px !important;line-height:1;}
+.wt-card .wass-gps .wg-tx,.wt-card .wass-saved .ws-txt{flex:0 0 auto !important;align-items:center !important;width:100%;}
+.wt-card .wass-gps .wg-tx b,.wt-card .wass-saved .ws-txt b{font-size:13px !important;white-space:normal !important;overflow:visible !important;text-overflow:clip !important;text-align:center;line-height:1.3;}
+.wt-card .wass-saved .ws-txt small{display:none !important;}
+.wt-card .wass-saved .ws-check{position:absolute;top:6px;left:6px;width:18px;height:18px;}
+.wt-head b{font-size:12.5px !important;}
+.wt-head span{font-size:11px !important;color:#d0d0d0 !important;}
+.wt-card .wass-search input[type=search]{font-size:13px !important;}
+
+.wt-first-note{font-size:10.5px;color:#cfcfcf;margin:2px 2px 8px;line-height:1.6;}
+
+.wt-info{position:absolute;top:-8px;left:-6px;width:22px;height:22px;border-radius:50%;background:#1a1020;border:1.5px solid var(--gold,#d4af37);color:var(--gold,#d4af37);font-weight:bold;font-size:13px;line-height:19px;text-align:center;cursor:pointer;z-index:3;box-shadow:0 1px 4px rgba(0,0,0,0.6);}
+.wt-info.no{border-color:#3498db;color:#3498db;}
+.wt-info:active{transform:scale(0.92);}
+.wt-info-panel{display:none;margin-top:10px;padding:10px 12px;border-radius:12px;font-size:11px;line-height:1.8;color:#e6e6e6;background:rgba(0,0,0,0.35);border:1px solid var(--gold,#d4af37);}
+.wt-info-panel.n{border-color:#3498db;}
+.wt-info-panel.show{display:block;}
+.wt-ip-t{font-weight:bold;font-size:12px;margin-bottom:3px;color:var(--gold,#d4af37);}
+.wt-info-panel.n .wt-ip-t{color:#3498db;}
+.wt-ip-l b{color:#fff;}
+</style>
+<script id="wt-js">/* [WEB-TIDY-WASSAYNI] ترتيب تحديد الموقع في وصّيني (نسخة الويب فقط) — لا يغيّر الدوال ولا المعرّفات */
+(function(){
+  var last={pickup:'',dropoff:''}, seen={pickup:'',dropoff:''};
+  function q(id){return document.getElementById(id);}
+  function tidy(t){
+    var gps=q('wass-gps-'+t), saved=q('wass-saved-'+t), sbox=q('wass-search-box-'+t), map=q('map-'+t);
+    if(!gps||!saved||!sbox||!map||gps.getAttribute('data-wt')) return;
+    var step=gps.closest('.step-content'); if(!step) return;
+    var card=document.createElement('div'); card.className='wt-card '+(t==='dropoff'?'drop':'');
+    var head=document.createElement('div'); head.className='wt-head'; head.innerHTML='<b>حدّد المكان بإحدى 3 طرق:</b> <span>① زر جاهز &nbsp;·&nbsp; ② اكتب الاسم &nbsp;·&nbsp; ③ الخريطة</span>';
+    var chips=document.createElement('div'); chips.className='wt-chips';
+    // الأزرار المخفية تبقى كما هي (نفس المعرّفات والدوال)
+    var fullBtn=null, pasteRow=null;
+    [].forEach.call(step.children,function(c){
+      if(c.tagName==='BUTTON'&&/openFullMap/.test(c.getAttribute('onclick')||'')&&c.id!=='wass-gps-'+t) fullBtn=c;
+      if(c.tagName==='DIV'&&c.querySelector&&c.querySelector('#'+t+'-maps-link')) pasteRow=c;
+    });
+    step.insertBefore(card,gps);
+    card.appendChild(head); card.appendChild(chips);
+    chips.appendChild(gps); chips.appendChild(saved);
+    card.appendChild(sbox);
+    var inp=q('wass-search-'+t); if(inp) inp.setAttribute('placeholder','🔎 اكتب اسم المطعم أو المكان (مثال: ذهوك)');
+    var mw=document.createElement('div'); mw.className='wt-mapwrap'; card.appendChild(mw); mw.appendChild(map);
+    var shade=document.createElement('div'); shade.className='wt-mapshade'; shade.innerHTML='<span>🗺️ اضغط هنا لفتح الخريطة وتحديد الموقع بدقة</span>';
+    shade.addEventListener('click',function(){ try{ openFullMap(t); }catch(e){} });
+    mw.appendChild(shade);
+    var sel=document.createElement('div'); sel.id='wt-sel-'+t; sel.className='wt-sel'; card.appendChild(sel);
+    var st=q(t+'-maps-link-status'); if(st) card.appendChild(st);
+    var more=document.createElement('details'); more.className='wt-more';
+    var sm=document.createElement('summary'); sm.textContent='خيارات أخرى (لصق رابط / الخريطة الكاملة)'; more.appendChild(sm);
+    if(fullBtn){ fullBtn.innerHTML='<i class="fas fa-search-location"></i> فتح الخريطة الكاملة'; more.appendChild(fullBtn); }
+    if(pasteRow) more.appendChild(pasteRow);
+    card.appendChild(more);
+    var b=gps.querySelector('.wg-t'); if(b) b.textContent='موقعي الآن';
+    gps.setAttribute('data-wt','1');
+  }
+
+  // إخفاء خانة «المكان الأول» (اختيارية): تبقى في الصفحة لتعبئتها تلقائياً من البحث وتُرسل مع الطلب
+  function tidyFirst(){
+    var f=q('wassayni-loc-0'), list=q('wassayni-locations-list');
+    if(!f||!list||list.getAttribute('data-wt1')) return;
+    list.setAttribute('data-wt1','1'); f.style.display='none';
+    var n=document.createElement('div'); n.className='wt-first-note';
+    n.textContent='✅ المكان الأول مشمول بالسعر الأساسي. إن كان عندك أكثر من وجهة أضف مكاناً آخر:';
+    list.parentNode.insertBefore(n,list);
+  }
+
+  // علامات إرشادية على «تفعيل الموقع» و«بدون موقع» (تفتح شرحاً بدون تغيير الاختيار)
+  var INFO={
+    yes:{t:'📍 تفعيل الموقع',cls:'y',b:['استخدمه لما تريد من المندوب أن ينقل شيئاً من مكان إلى مكان.','<b>مكان الاستلام:</b> مطعم أو محل أو شخص (طرف آخر).','<b>مكان التسليم:</b> عندك أو عند شخص آخر.','تحدّد المكانين بإحدى 3 طرق (زر جاهز · اكتب الاسم · الخريطة) والمندوب يتوجّه لهما مباشرة.']},
+    no:{t:'✖ بدون موقع',cls:'n',b:['استخدمه لما تطلب من مطعم أو محل ولا تريد تحديد الأماكن على الخريطة.','اكتب اسم المطعم أو المحل وما تريده في خانة <b>«تفاصيل طلبك»</b>.','المندوب يصلك على <b>موقعك المحفوظ</b> (موقع اللقاء)، وتظهر لك بطاقة «موقعك الذي سيراه المندوب» لتتأكد منه أو تغيّره.']}
+  };
+  function tidyChoice(){
+    var by=q('loc-btn-yes'), bn=q('loc-btn-no');
+    if(!by||!bn||by.getAttribute('data-wt')) return;
+    by.setAttribute('data-wt','1');
+    var card=by.parentElement&&by.parentElement.parentElement; if(!card) return;
+    var panel=document.createElement('div'); panel.id='wt-info-panel'; panel.className='wt-info-panel'; card.appendChild(panel);
+    var open='';
+    function show(k){
+      if(open===k){ panel.className='wt-info-panel'; panel.innerHTML=''; open=''; return; }
+      var d=INFO[k]; open=k; panel.className='wt-info-panel show '+d.cls;
+      panel.innerHTML='<div class="wt-ip-t">'+d.t+'</div>'+d.b.map(function(x){return '<div class="wt-ip-l">• '+x+'</div>';}).join('');
+    }
+    [['yes',by],['no',bn]].forEach(function(p){
+      var el=p[1]; el.style.position='relative';
+      var i=document.createElement('span'); i.className='wt-info '+p[0]; i.setAttribute('role','button'); i.setAttribute('aria-label','شرح'); i.textContent='!';
+      i.addEventListener('click',function(ev){ ev.stopPropagation(); ev.preventDefault(); show(p[0]); });
+      el.appendChild(i);
+    });
+  }
+  function wrap(name,fn){ var o=window[name]; if(typeof o!=='function'||o.__wt) return; var w=function(){ try{fn.apply(this,arguments);}catch(e){} return o.apply(this,arguments); }; w.__wt=1; window[name]=w; }
+  function labelFor(t,what){ last[t]=what; }
+  function wrapAll(){
+    wrap('_wassUseGPS',function(t){labelFor(t,'موقعك الحالي (GPS)');});
+    wrap('useWassSaved',function(t,k){ var el=document.querySelector('#wass-saved-'+t+' .ws-card[data-ws-key="'+k+'"] b'); labelFor(t,(el&&el.textContent)||'موقع محفوظ'); });
+    wrap('_wassPickPlace',function(t){ labelFor(t,'مكان من البحث'); setTimeout(function(){ var v=((q('wass-search-'+t)||{}).value||'').trim(); if(!v&&t==='pickup') v=((q('wassayni-loc-name-0')||{}).value||'').trim(); if(v) labelFor(t,v.slice(0,40)); },40); });
+    wrap('_applyMapsLink',function(t){ labelFor(t,'من الرابط الذي لصقته'); });
+    wrap('openFullMap',function(t){ labelFor(t,'من الخريطة'); });
+  }
+  function cur(t){ try{ var l=(t==='pickup')?pickupLoc:dropoffLoc; return (l&&l.lat!=null&&l.lng!=null)?(Number(l.lat).toFixed(5)+','+Number(l.lng).toFixed(5)):''; }catch(e){return '';} }
+  function refresh(t){
+    var sel=q('wt-sel-'+t), gps=q('wass-gps-'+t); if(!sel) return;
+    var c=cur(t);
+    if(c!==seen[t]){ seen[t]=c; }
+    if(c){ sel.classList.add('show'); sel.classList.toggle('soft',!last[t]); sel.textContent= last[t] ? ('✓ تم تحديد '+(t==='pickup'?'مكان الاستلام':'مكان التسليم')+': '+last[t]) : ('📍 المكان المعروض على الخريطة الآن. اختر من الأعلى أو اضغط الخريطة للتغيير'); }
+    else { sel.classList.remove('show'); sel.textContent=''; }
+    if(gps) gps.classList.toggle('wt-on', !!c && /GPS/.test(last[t]||''));
+  }
+  function tick(){ tidy('pickup'); tidy('dropoff'); tidyFirst(); tidyChoice(); wrapAll(); refresh('pickup'); refresh('dropoff'); }
+  setInterval(tick,600);
+})();
+</script>
 <script type="text/plain" id="__mbjs">
 /* Mapbox GL JS is Copyright © 2020 Mapbox and subject to the Mapbox Terms of Service ((https://www.mapbox.com/legal/tos/). */
 (function (global, factory) {
